@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { requireInt, optionalInt, requireString } from "../src/validation.js";
+import {
+  requireInt,
+  optionalInt,
+  requireString,
+  requireDate,
+  requireIsoDateTime,
+  requireOneOf,
+} from "../src/validation.js";
 import { HttpError } from "../src/errors.js";
 
 describe("requireInt", () => {
@@ -47,5 +54,35 @@ describe("requireString", () => {
     expect(() => requireString("abcd", "x", { maxLength: 3 })).toThrow(
       HttpError,
     );
+  });
+});
+
+describe("requireDate", () => {
+  it("geçerli takvim gününü kabul eder", () => {
+    expect(requireDate("2026-10-12", "x")).toBe("2026-10-12");
+  });
+  it.each(["2026-02-30", "2026-13-01", "12.10.2026", "dün", "", 20261012, null])(
+    "%s değerini reddeder",
+    (value) => {
+      expect(() => requireDate(value, "x")).toThrow(HttpError);
+    },
+  );
+});
+
+describe("requireIsoDateTime", () => {
+  it("ISO zamanını UTC ISO biçimine çevirip döner", () => {
+    expect(requireIsoDateTime("2026-10-12T10:00:00.000Z", "x")).toBe("2026-10-12T10:00:00.000Z");
+    expect(requireIsoDateTime("2026-10-12T13:00:00+03:00", "x")).toBe("2026-10-12T10:00:00.000Z");
+  });
+  it.each(["dün", "2026-10-12", "", 5, null])("%s değerini reddeder", (value) => {
+    expect(() => requireIsoDateTime(value, "x")).toThrow(HttpError);
+  });
+});
+
+describe("requireOneOf", () => {
+  it("listedeki değeri kabul eder, diğerlerini reddeder", () => {
+    expect(requireOneOf("manual", "x", ["manual", "pomodoro"])).toBe("manual");
+    expect(() => requireOneOf("x", "x", ["manual", "pomodoro"])).toThrow(HttpError);
+    expect(() => requireOneOf(undefined, "x", ["manual"])).toThrow(HttpError);
   });
 });

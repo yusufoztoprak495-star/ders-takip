@@ -55,3 +55,49 @@ export function parseId(param) {
   }
   return id;
 }
+
+// 'YYYY-MM-DD' biçiminde, takvimde gerçekten var olan bir gün (örn. 30 Şubat reddedilir)
+export function requireDate(value, field) {
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split('-').map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    // Date taşan günleri sonraki aya kaydırır; geri çevirince aynı çıkmıyorsa tarih geçersizdir
+    if (date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d) {
+      return value;
+    }
+  }
+  throw new HttpError(400, `${field} geçerli bir tarih olmalı (YYYY-AA-GG)`);
+}
+
+// Saat bilgisi içeren ISO zamanı; her zaman UTC ISO biçimine çevrilerek saklanır
+export function requireIsoDateTime(value, field) {
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+    const time = new Date(value);
+    if (!Number.isNaN(time.getTime())) return time.toISOString();
+  }
+  throw new HttpError(400, `${field} geçerli bir zaman olmalı`);
+}
+
+// Değer izin verilen listede değilse reddeder
+export function requireOneOf(value, field, allowed) {
+  if (!allowed.includes(value)) {
+    throw new HttpError(400, `${field} şunlardan biri olmalı: ${allowed.join(', ')}`);
+  }
+  return value;
+}
+
+export function assertSubjectExists(db, subjectId) {
+  if (!db.prepare('SELECT 1 FROM subjects WHERE id = ?').get(subjectId)) {
+    throw new HttpError(400, 'Ders bulunamadı');
+  }
+}
+
+// Konu seçilmişse var olmalı ve seçilen derse ait olmalı (null = konu seçilmedi)
+export function assertTopicMatchesSubject(db, topicId, subjectId) {
+  if (topicId === null) return;
+  const topic = db.prepare('SELECT subject_id FROM topics WHERE id = ?').get(topicId);
+  if (!topic) throw new HttpError(400, 'Konu bulunamadı');
+  if (topic.subject_id !== subjectId) {
+    throw new HttpError(400, 'Konu seçilen derse ait değil');
+  }
+}
