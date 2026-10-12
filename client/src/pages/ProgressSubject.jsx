@@ -10,6 +10,8 @@ import { useDailyStats } from '../hooks/useDailyStats.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDuration, formatNet, formatPercent } from '../lib/format.js';
 import { questionCount, sortWeakestFirst } from '../lib/topics.js';
+import EmptyState from '../components/EmptyState.jsx';
+import { EmptyBook } from '../components/Doodles.jsx';
 
 // Ders sayfası (2. katman): o dersin göstergeleri, zaman grafikleri ve konular (en zayıftan en güçlüye).
 export default function ProgressSubject() {
@@ -111,7 +113,7 @@ export default function ProgressSubject() {
               }))}
             />
           ) : (
-            <p className="muted">Bu derste henüz konu yok. Konular sayfasından ekleyebilirsin.</p>
+            <EmptyState Doodle={EmptyBook} title="Bu derste henüz konu yok" hint="Konular sayfasından ekleyebilirsin." />
           )}
 
           <h2>Grafikler</h2>

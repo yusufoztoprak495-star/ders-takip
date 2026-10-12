@@ -5,6 +5,8 @@ import ErrorBanner from '../components/ErrorBanner.jsx';
 import { fillMissingDays, summarize } from '../lib/charts.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDuration, formatNet, formatShortDate } from '../lib/format.js';
+import EmptyState from '../components/EmptyState.jsx';
+import { EmptyChart } from '../components/Doodles.jsx';
 
 // Son 7 günün çalışma süresi: eksen ve sayı olmadan, yalnızca ritmi gösteren ince çubuklar.
 // Bugünün çubuğu turuncu, öncekiler soluk.
@@ -84,7 +86,15 @@ export default function Home() {
           </div>
 
           <h2>Son 7 gün</h2>
-          <WeekBars days={days} />
+          {days.every((d) => d.totalSeconds === 0 && d.correct + d.wrong + d.blank === 0) ? (
+            <EmptyState
+              Doodle={EmptyChart}
+              title="Bu hafta henüz kayıt yok"
+              hint="Bir Pomodoro başlat ya da soru kaydı gir; son 7 günün burada görünür."
+            />
+          ) : (
+            <WeekBars days={days} />
+          )}
 
           <p className="home-actions">
             <Link to="/pomodoro" className="button-link">

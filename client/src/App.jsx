@@ -10,6 +10,7 @@ import Topics from './pages/Topics.jsx';
 import Progress from './pages/Progress.jsx';
 import ProgressSubject from './pages/ProgressSubject.jsx';
 import ProgressTopic from './pages/ProgressTopic.jsx';
+import Decor from './components/Decor.jsx';
 
 import {
   HomeIcon,
@@ -57,6 +58,7 @@ export default function App() {
         ))}
         <NavTimer />
       </nav>
+      <Decor />
       <main className="page">
         <Routes>
           <Route path="/" element={<Home />} />

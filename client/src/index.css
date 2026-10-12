@@ -28,8 +28,8 @@
   --chart-axis: #3a3a3d;
 
   --radius: 6px;
-  --font-ui: "Hanken Grotesk Variable", "Segoe UI", sans-serif;
-  --font-display: "Newsreader Variable", Georgia, serif;
+  --font-ui: "Figtree Variable", "Segoe UI", sans-serif;
+  --font-display: "Fraunces Variable", Georgia, serif;
   --nav-width: 232px;
 }
 
@@ -182,7 +182,9 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 350;
+  /* SOFT: harf köşelerini yumuşatır, el çizimi çizgilerle uyumlu durur */
+  font-variation-settings: 'SOFT' 100;
 }
 
 h1 {
@@ -859,4 +861,9 @@ form.card .dial {
 
 .list li.resource.is-done progress::-webkit-progress-value {
   background: var(--series-blank);
+}
+
+/* --- El çizimi motifler --- */
+.doodle * {
+  vector-effect: non-scaling-stroke;
 }

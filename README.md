@@ -74,7 +74,18 @@ Sunucu testleri (Vitest + Supertest) her uç için başarılı ve başarısız d
 
 ## Tasarım
 
-Koyu tema (grafit zemin, kırık beyaz yazı) ve iki vurgu rengi: turuncu çalışmayı, turkuaz molayı ve doğru cevapları gösterir. Hazır ikon paketi ya da grafik kütüphanesi kullanılmadı: menü ikonları, Pomodoro kadranı ve tüm grafikler bu projeye özel SVG olarak çizildi. Grafik renkleri, renk körlüğü ve karşıtlık kontrollerinden geçirilerek seçildi. Masaüstünde sol menü, telefonda alt sekme çubuğu kullanılır.
+Koyu tema (grafit zemin, kırık beyaz yazı) ve iki vurgu rengi: turuncu çalışmayı, turkuaz molayı ve doğru cevapları gösterir. Başlıklar **Fraunces** (yumuşatılmış, karakterli bir serif), metinler **Figtree** (okunaklı bir grotesk) ile yazılır. Font dosyaları projeye gömülüdür; uygulama internet olmadan da aynı görünür.
+
+Hazır ikon paketi ya da grafik kütüphanesi kullanılmadı, her şey bu projeye özel SVG olarak çizildi:
+
+- **Menü ikonları** ve **Pomodoro kadranı** (60 çentikli saat çerçevesi).
+- **Grafikler:** renkleri renk körlüğü ve karşıtlık kontrollerinden geçirildi.
+- **El çizimi süsler:** kitap, kalem, cetvel, kahve fincanı, ataç ve not kâğıdı. Hepsi aynı çizgi kalınlığında, tek renkte ve düşük opaklıktadır. Ekranın köşelerindeki boş kenar boşluklarında durur, içeriğin üstüne binmez (1300px'ten dar ekranlarda gizlenir; bu, tarayıcıda 390–1920px arası her sayfada ölçülerek doğrulandı).
+- **Boş durumlar:** henüz kayıt yokken büyük bir çizim ve ne yapılacağını söyleyen kısa bir yönlendirme gösterilir.
+
+![Boş durum: henüz kitap yok](docs/screenshots/bos-durum.png)
+
+Masaüstünde sol menü, telefonda alt sekme çubuğu kullanılır.
 
 ## Teknolojiler
 
@@ -84,7 +95,7 @@ Koyu tema (grafit zemin, kırık beyaz yazı) ve iki vurgu rengi: turuncu çalı
 | Veritabanı | SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3)) |
 | Arayüz     | React + Vite (React Router, `HashRouter`)                             |
 | Grafikler  | Elle çizilmiş SVG (kütüphanesiz)                                      |
-| Yazı tipi  | Newsreader, Hanken Grotesk (`@fontsource`, projeye gömülü)            |
+| Yazı tipi  | Fraunces (başlık), Figtree (metin); `@fontsource`, projeye gömülü     |
 | Test       | Vitest, Supertest                                                     |
 
 ## Proje yapısı
@@ -101,7 +112,7 @@ server/
 client/
   src/
     pages/                Pomodoro, Çalışma Günlüğü, Soru Kaydı, Kaynaklar, Konular, İlerleme (özet, ders, konu)
-    components/, hooks/   ortak parçalar, ikonlar, Pomodoro kadranı, SVG grafikler
+    components/, hooks/   ortak parçalar, ikonlar, çizimler (Doodles), Pomodoro kadranı, SVG grafikler
     context/              Pomodoro sayacının durumu
     lib/                  saf yardımcı fonksiyonlar (tarih, süre, grafik verisi, eksen, kadran)
   tests/

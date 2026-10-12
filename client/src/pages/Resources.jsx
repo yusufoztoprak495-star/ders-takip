@@ -5,6 +5,8 @@ import ResourceCard from '../components/ResourceCard.jsx';
 import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
 import { splitByStatus } from '../lib/resources.js';
+import EmptyState from '../components/EmptyState.jsx';
+import { EmptyBook } from '../components/Doodles.jsx';
 
 export default function Resources() {
   const selection = useSubjectSelection();
@@ -153,8 +155,14 @@ export default function Resources() {
         <button type="submit">Ekle</button>
       </form>
 
-      <h2>Elimde</h2>
-      {active.length === 0 ? <p className="muted">Şu an elinde kitap yok.</p> : renderList(active)}
+      {resources.length === 0 ? (
+        <EmptyState Doodle={EmptyBook} title="Henüz kitap yok" hint="Yukarıdaki formdan ilk test kitabını ekle." />
+      ) : (
+        <>
+          <h2>Elimde</h2>
+          {active.length === 0 ? <p className="muted">Şu an elinde kitap yok.</p> : renderList(active)}
+        </>
+      )}
 
       {done.length > 0 && (
         <>

@@ -1,0 +1,95 @@
+/* --- Süs çizimleri ve boş durumlar --- */
+:root {
+  /* Tek renk, düşük opaklık: dikkat dağıtmasın */
+  --doodle: color-mix(in srgb, var(--text) 20%, transparent);
+  --doodle-strong: color-mix(in srgb, var(--text) 30%, transparent);
+}
+
+.doodle {
+  display: block;
+  color: var(--doodle);
+}
+
+/* Süsler sabit konumda, yalnızca içerik kutusunun dışındaki kenar boşluklarında durur */
+.decor {
+  display: none;
+  pointer-events: none;
+}
+
+.decor-item {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* İçerik kutusu en çok 880px; sağdaki boşluk yaklaşık (ekran/2 − 492)px. 84px'lik çizim ve
+   28px kenar payı, dönüş ve kaydırma çubuğu için en az ~145px gerekir: bu yüzden 1300px altında
+   süsler gizlenir (tarayıcıda 1240–1920px arası her sayfada ölçülerek doğrulandı). */
+@media (min-width: 1300px) {
+  .decor {
+    display: block;
+  }
+
+  .decor-tr {
+    top: 36px;
+    right: 28px;
+    transform: rotate(8deg);
+  }
+
+  .decor-br {
+    bottom: 32px;
+    right: 28px;
+    transform: rotate(-10deg);
+  }
+
+  /* Sol menünün altındaki boşluk (menü öğeleri ve sayaç düğmesinin arasında) */
+  .decor-side {
+    left: 40px;
+    bottom: 96px;
+    z-index: 11; /* menünün (z-index 10) arka planının üstünde görünsün; tıklamayı engellemez */
+    transform: rotate(-6deg);
+  }
+}
+
+/* Çok kısa pencerede sol menüdeki süs, menü öğeleriyle çakışmasın diye gizlenir */
+@media (max-height: 640px) {
+  .decor-side {
+    display: none;
+  }
+}
+
+/* Boş durum: büyük çizim, başlık, yönlendirme */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 36px 16px;
+  text-align: center;
+}
+
+.empty-state .doodle {
+  color: var(--doodle-strong);
+  margin-bottom: 14px;
+}
+
+.empty-state.compact {
+  padding: 18px 8px;
+}
+
+.empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 350;
+  font-variation-settings: "SOFT" 100;
+}
+
+.empty-hint {
+  margin: 0;
+  max-width: 34ch;
+}
+
+.empty-state.compact .empty-title {
+  font-size: 1.05rem;
+}

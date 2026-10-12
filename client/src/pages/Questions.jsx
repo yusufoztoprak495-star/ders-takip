@@ -6,6 +6,8 @@ import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatNet } from '../lib/format.js';
 import { bookLabel, selectableBooks } from '../lib/resources.js';
+import EmptyState from '../components/EmptyState.jsx';
+import { EmptyNote } from '../components/Doodles.jsx';
 
 // Boş bırakılan sayı alanı 0 sayılır (örn. hiç boş bırakmadıysan "Boş" alanına dokunmana gerek yok)
 const toCount = (value) => (value === '' ? 0 : Number(value));
@@ -161,7 +163,11 @@ export default function Questions() {
 
       <h2>Son 30 gün</h2>
       {logs.length === 0 ? (
-        <p className="muted">Henüz kayıt yok.</p>
+        <EmptyState
+          Doodle={EmptyNote}
+          title="Son 30 günde soru kaydı yok"
+          hint="Çözdüğün soruların doğru, yanlış ve boş sayısını yukarıdaki formdan kaydet."
+        />
       ) : (
         <ul className="list">
           {logs.map((log) => {

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import EmptyState from './EmptyState.jsx';
+import { EmptyChart } from './Doodles.jsx';
 
 // Bir grafiğin kartı: başlık, açıklama ve grafik/tablo görünümü arasında geçiş.
 // Tablo görünümü her grafiğin eşdeğeridir: renk ya da fare imleciyle okunamayan değerler için.
@@ -33,7 +35,7 @@ export default function ChartCard({
       </header>
 
       {empty ? (
-        <p className="muted empty">{emptyText}</p>
+        <EmptyState Doodle={EmptyChart} title={emptyText} compact />
       ) : asTable ? (
         <div className="table-wrap">
           <table>

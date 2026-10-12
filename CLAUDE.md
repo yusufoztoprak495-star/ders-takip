@@ -58,7 +58,7 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal) hazırlığı sıras�
 
 ### Teknoloji yığını
 
-Node.js 22+ ve Express (sunucu), SQLite / better-sqlite3 (veritabanı), React + Vite ve React Router `HashRouter` (arayüz), elle çizilmiş SVG grafikler (kütüphanesiz), `@fontsource` ile gömülü yazı tipleri, Vitest + Supertest (test). Tasarım: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
+Node.js 22+ ve Express (sunucu), SQLite / better-sqlite3 (veritabanı), React + Vite ve React Router `HashRouter` (arayüz), elle çizilmiş SVG grafikler (kütüphanesiz), `@fontsource` ile gömülü yazı tipleri (Fraunces, Figtree), Vitest + Supertest (test). Tasarım: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
 
 ### Komutlar (proje kökünden)
 

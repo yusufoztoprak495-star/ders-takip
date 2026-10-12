@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api.js';
 import ChartCard from '../components/ChartCard.jsx';
+import { EmptyChart } from '../components/Doodles.jsx';
+import EmptyState from '../components/EmptyState.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import { QuestionStacks, SubjectTimeBars } from '../components/ProgressCharts.jsx';
 import RangeFilter from '../components/RangeFilter.jsx';
@@ -49,6 +51,15 @@ export default function Progress() {
       questions: bySubject.filter((r) => questionTotal(r) > 0).sort((a, b) => questionTotal(b) - questionTotal(a)),
     };
   }, [bySubject]);
+
+  // Seçili aralıkta hiç kayıt yoksa grafikler yerine tek bir boş durum gösterilir
+  const noData =
+    view &&
+    rows &&
+    view.summary.totalSeconds === 0 &&
+    view.summary.questions === 0 &&
+    rows.time.length === 0 &&
+    rows.questions.length === 0;
 
   const highlightId = subjectId === 'all' ? null : Number(subjectId);
   const chosen = subjects.find((s) => String(s.id) === subjectId);
@@ -119,6 +130,14 @@ export default function Progress() {
             </>
           )}
 
+          {noData ? (
+            <EmptyState
+              Doodle={EmptyChart}
+              title="Bu aralıkta henüz kayıt yok"
+              hint="Bir Pomodoro başlat ya da soru kaydı gir; grafikler burada belirir."
+            />
+          ) : (
+            <>
           <h2>Grafikler</h2>
           <div className="chart-grid">
             <TimeSeriesCharts view={view} range={range} scope={scope} totalNote={chosen ? '' : ' (toplam)'} />
@@ -155,6 +174,8 @@ export default function Progress() {
               </>
             )}
           </div>
+            </>
+          )}
         </div>
       )}
       {!view && !error && <p className="muted">Yükleniyor…</p>}

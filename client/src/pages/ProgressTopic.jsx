@@ -10,6 +10,8 @@ import { toLocalDateString } from '../lib/dates.js';
 import { formatDate, formatDuration, formatLastStudied, formatNet, formatPercent } from '../lib/format.js';
 import { accuracyOf } from '../lib/charts.js';
 import { questionCount } from '../lib/topics.js';
+import EmptyState from '../components/EmptyState.jsx';
+import { EmptyNote } from '../components/Doodles.jsx';
 
 const SERIES = [
   { key: 'correct', label: 'Doğru', color: 'var(--series-2)' },
@@ -130,9 +132,11 @@ export default function ProgressTopic() {
       </p>
 
       {!hasQuestions ? (
-        <p className="muted">
-          Bu konuda henüz soru çözmedin. Soru Kaydı sayfasından bu konuyu seçerek kayıt ekleyebilirsin.
-        </p>
+        <EmptyState
+          Doodle={EmptyNote}
+          title="Bu konuda henüz soru çözmedin"
+          hint="Soru Kaydı sayfasından bu konuyu seçerek kayıt ekleyebilirsin."
+        />
       ) : (
         <>
           <h2>Doğru / yanlış / boş</h2>
