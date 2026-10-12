@@ -3,3 +3,5 @@ node_modules/
 *.db
 client/dist/
 .playwright-mcp/
+*.db.yedek-*
+data/yedek/
