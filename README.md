@@ -1,8 +1,25 @@
 # Ders Çalışma Takip Uygulaması
 
-YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması. Pomodoro zamanlayıcı, çalışma süresi ve çözülen soru kaydı, kaynak/video takibi ve grafiklerle ilerleme görme özelliklerini içerecek.
+YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması: Pomodoro ile çalışma süresini kaydet, çözdüğün soruları gir, kitap ve video setlerinde nerede kaldığını takip et, ilerlemeni grafiklerle gör.
 
-> **Durum:** Geliştirme aşamasında. Şu an sunucu iskeleti hazır; özellikler adım adım ekleniyor.
+Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan bir proje. Uygulama mağazalarında yayınlanmaz; indirip kendi bilgisayarında çalıştırabilirsin. Veriler yalnızca senin bilgisayarındaki tek bir dosyada durur.
+
+![İlerleme sayfası: günlük ve haftalık çalışma süresi, derse göre dağılım, doğru/yanlış/boş ve net grafikleri](docs/screenshots/ilerleme.png)
+
+## Özellikler
+
+- **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
+- **Çalışma günlüğü:** Pomodoro kullanmadığın çalışmaları ders, konu, tarih ve dakika girerek elle eklersin. Bugünün kayıtları (Pomodoro ve elle girilenler) toplam süreyle listelenir, istediğini silebilirsin.
+- **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı kaynak seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
+- **Kaynaklar:** Kitap ve video setlerini ders ve toplam birim sayısıyla (sayfa, test ya da video) eklersin. Her kaynakta ilerleme çubuğu ve "kaldığım yer" alanı vardır; sayıyı güncelledikçe yüzde hesaplanır. Silerken onay istenir; kaynağı silsen de ona bağlı soru kayıtların kaybolmaz.
+- **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
+- **İlerleme:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru ve net özetini görürsün. Beş grafik var: günlük ve haftalık çalışma süresi, derse göre çalışma süresi, derse göre doğru/yanlış/boş ve günlük net değişimi. Bir ders seçersen zaman grafikleri o dersi gösterir, ders karşılaştırmalarında seçtiğin ders vurgulanır. Her grafiğin tablo görünümü vardır; açık ve koyu modu destekler.
+
+| Pomodoro                                                  | Kaynaklar                                                               |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| ![Çalışan Pomodoro sayacı](docs/screenshots/pomodoro.png) | ![Kaynak listesi ve ilerleme çubukları](docs/screenshots/kaynaklar.png) |
+
+![Soru kaydı formu ve son kayıtlar](docs/screenshots/soru-kaydi.png)
 
 ## Gereksinimler
 
@@ -11,14 +28,28 @@ YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması. Po
 ## Kurulum ve çalıştırma
 
 ```bash
+git clone <bu-deponun-adresi>
+cd <klasör>
 npm install
-cp .env.example .env   # ayarları istersen değiştir
 npm start
 ```
 
-`npm start` arayüzü derler ve sunucuyu başlatır. Uygulama varsayılan olarak `http://localhost:3000` adresinde açılır.
+`npm start` arayüzü derler ve sunucuyu başlatır. Uygulama `http://localhost:3000` adresinde açılır. Ayarları değiştirmek istersen önce `cp .env.example .env` ile örnek ayar dosyasını kopyala (zorunlu değil).
 
 **Geliştirme modu:** `npm run dev` sunucuyu ve arayüzü birlikte başlatır; arayüz `http://localhost:5173` adresinde açılır ve kodu değiştirdikçe kendiliğinden yenilenir. İki mod da aynı veritabanı dosyasını kullanır.
+
+### Ayarlar (`.env`)
+
+| Değişken  | Açıklama                                                      | Varsayılan        |
+| --------- | ------------------------------------------------------------- | ----------------- |
+| `PORT`    | Sunucunun portu                                               | `3000`            |
+| `DB_PATH` | SQLite dosyasının yolu (göreli yol proje köküne göre çözülür) | `data/calisma.db` |
+
+`.env` dosyası Git'e eklenmez; örnek değerler `.env.example` içindedir.
+
+### Veriler ve yedekleme
+
+Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalıştırmada kendiliğinden oluşur ve Git'e eklenmez. Yedeklemek için bu dosyayı kopyalamak yeterli. İlk kurulumda TYT/AYT ders ve konu listesi otomatik yüklenir.
 
 ## Testler
 
@@ -26,11 +57,42 @@ npm start
 npm test
 ```
 
-## Veritabanı
+Sunucu testleri (Vitest + Supertest) her uç için başarılı ve başarısız durumları, gün sınırı gibi riskli yerleri ve net/istatistik hesaplarını kapsar. Arayüz testleri (Vitest) hesap yapan küçük parçaları sınar: Pomodoro süre hesabı, tarih ve süre biçimlendirme, grafik verisi.
 
-Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalıştırmada kendiliğinden oluşur. Yedeklemek için bu dosyayı kopyalamak yeterli. İlk kurulumda TYT/AYT ders ve konu listesi otomatik yüklenir.
+## Teknolojiler
 
-## API (şimdilik)
+| Katman     | Teknoloji                                                             |
+| ---------- | --------------------------------------------------------------------- |
+| Sunucu     | Node.js + Express                                                     |
+| Veritabanı | SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3)) |
+| Arayüz     | React + Vite (React Router, `HashRouter`)                             |
+| Grafikler  | Chart.js (react-chartjs-2)                                            |
+| Test       | Vitest, Supertest                                                     |
+
+## Proje yapısı
+
+```
+server/
+  src/
+    app.js, server.js     uygulamayı kurar / başlatır
+    db.js, seed.js        SQLite şeması ve ilk ders/konu verisi
+    validation.js         giriş doğrulama (sunucu her girdiyi kendisi doğrular)
+    stats.js              net ve istatistik hesapları
+    routes/               sessions, questions, resources, topics, subjects, stats
+  tests/
+client/
+  src/
+    pages/                Pomodoro, Çalışma Günlüğü, Soru Kaydı, Kaynaklar, Konular, İlerleme
+    components/, hooks/   ortak parçalar ve grafik bileşenleri
+    context/              Pomodoro sayacının durumu
+    lib/                  saf yardımcı fonksiyonlar (tarih, süre, grafik verisi)
+  tests/
+docs/                     tasarım belgesi, uygulama planı, ekran görüntüleri
+```
+
+## API
+
+Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla döner (`400` geçersiz girdi, `404` kayıt yok).
 
 | Uç                                          | Açıklama                                                                                     |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -56,24 +118,12 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 
 **Net hesabı:** `net = doğru − yanlış / 4`. Net veritabanında saklanmaz, her seferinde hesaplanır.
 
-## Özellikler
+**Gün sınırı:** Çalışma kayıtları evrensel saatle (UTC) saklanır, istatistikler ise bilgisayarının yerel saatine göre günlere ayrılır. Gece 00:30'da başlayan çalışma o günün sayılır.
 
-- **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
-- **Çalışma günlüğü:** Pomodoro kullanmadığın çalışmaları ders, konu, tarih ve dakika girerek elle eklersin. Bugünün kayıtları (Pomodoro ve elle girilenler) toplam süreyle listelenir, istediğini silebilirsin.
-- **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı kaynak seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
-- **Kaynaklar:** Kitap ve video setlerini ders ve toplam birim sayısıyla (sayfa, test ya da video) eklersin. Her kaynakta ilerleme çubuğu ve "kaldığım yer" alanı vardır; sayıyı güncelledikçe yüzde hesaplanır. Silerken onay istenir; kaynağı silsen de ona bağlı soru kayıtların kaybolmaz.
-- **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
-- **İlerleme:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru ve net özetini görürsün. Beş grafik var: günlük ve haftalık çalışma süresi, derse göre çalışma süresi, derse göre doğru/yanlış/boş ve günlük net değişimi. Bir ders seçersen zaman grafikleri o dersi gösterir, ders karşılaştırmalarında seçtiğin ders vurgulanır. Her grafiğin tablo görünümü vardır; açık ve koyu modu destekler.
+## Yol haritası
 
-## Teknolojiler
+- PDF'ten soru üretme (henüz yapılmadı; ileride eklenecek).
 
-Node.js + Express (sunucu), SQLite (veritabanı), React + Vite (arayüz), Chart.js (grafikler), Vitest + Supertest (test).
+## Nasıl yapıldı?
 
-## Ayarlar (`.env`)
-
-| Değişken  | Açıklama                                                      | Varsayılan        |
-| --------- | ------------------------------------------------------------- | ----------------- |
-| `PORT`    | Sunucunun portu                                               | `3000`            |
-| `DB_PATH` | SQLite dosyasının yolu (göreli yol proje köküne göre çözülür) | `data/calisma.db` |
-
-`.env` dosyası Git'e eklenmez; örnek değerler `.env.example` içindedir.
+Proje, önce tasarım ve plan yazılıp sonra küçük adımlarla (her adımda test ve commit) geliştirildi. Tasarım belgesi ve uygulama planı `docs/superpowers/` altında durur.

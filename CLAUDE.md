@@ -56,4 +56,28 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal) hazırlığı sıras�
 
 ## Teknoloji ve Komutlar
 
-_Henüz belirlenmedi. Brainstorming sonrasında bu bölüm (teknoloji yığını, kurulum, çalıştırma, test komutları, klasör yapısı) güncellenecek._
+### Teknoloji yığını
+
+Node.js 20+ ve Express (sunucu), SQLite / better-sqlite3 (veritabanı), React + Vite ve React Router `HashRouter` (arayüz), Chart.js (grafikler), Vitest + Supertest (test). Tasarım: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
+
+### Komutlar (proje kökünden)
+
+- `npm install`: bağımlılıkları kurar (npm workspaces: `server` ve `client`).
+- `npm start`: arayüzü derler ve sunucuyu başlatır (`http://localhost:3000`).
+- `npm run dev`: sunucu + Vite geliştirme sunucusu (`http://localhost:5173`, `/api` isteklerini 3000'e yönlendirir).
+- `npm test`: sunucu ve arayüz testlerinin hepsi. Tek paket: `npm test -w server` / `npm test -w client`.
+- Ayarlar `.env` içinde (`PORT`, `DB_PATH`); örnek: `.env.example`. Veritabanı `data/calisma.db` (Git'e eklenmez).
+
+### Klasör yapısı
+
+- `server/src/`: `app.js` (`createApp(db, { clientDist })`), `db.js`, `seed.js`, `validation.js`, `stats.js`, `routes/`. Testler `server/tests/` (bellek içi veritabanıyla, `makeTestApp()`).
+- `client/src/`: `pages/`, `components/`, `hooks/`, `context/` (Pomodoro sayacı durumu), `lib/` (saf yardımcılar). Testler `client/tests/`.
+
+### Proje kuralları (kodda uyulan)
+
+- **Doğrulama sunucudadır.** Arayüz kontrolleri yalnızca kolaylıktır; her girdiyi sunucu `400` + Türkçe mesajla reddeder.
+- **Net saklanmaz**, hesaplanır: `net = doğru − yanlış / 4` (`server/src/stats.js` → `netOf`; arayüzde `client/src/lib/charts.js`).
+- **Gün sınırı yereldir:** çalışma kayıtları UTC saklanır, istatistikler `date(started_at, 'localtime')` ile yerel güne göre gruplanır.
+- **Önce test:** sunucu mantığı ve saf arayüz fonksiyonları için önce başarısız test yazılır. Sayfaların görünümü tarayıcıda gerçekten açılıp denenir (testler görsel hataları yakalamaz).
+- Silinen konu/kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır (`ON DELETE SET NULL`).
+- Kapsam dışı: PDF'ten soru üretme (ileride).
