@@ -3,6 +3,7 @@ import { notFoundHandler, errorHandler } from "./errors.js";
 import { subjectsRouter } from "./routes/subjects.js";
 import { topicsRouter } from "./routes/topics.js";
 import { sessionsRouter } from "./routes/sessions.js";
+import { resourcesRouter } from "./routes/resources.js";
 
 export function createApp(db) {
   const app = express();
@@ -14,6 +15,7 @@ export function createApp(db) {
   app.use("/api/subjects", subjectsRouter(db));
   app.use("/api/topics", topicsRouter(db));
   app.use("/api/sessions", sessionsRouter(db));
+  app.use("/api/resources", resourcesRouter(db));
 
   // Sıra önemli: önce rotalar, sonra 404, en sonda hata yakalayıcı
   app.use("/api", notFoundHandler);

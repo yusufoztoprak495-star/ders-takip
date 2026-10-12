@@ -41,6 +41,10 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 | `POST /api/sessions`          | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`) |
 | `PUT /api/sessions/:id`       | Kaydı güncelle (tüm alanlar gönderilir)                                              |
 | `DELETE /api/sessions/:id`    | Kaydı sil                                                                            |
+| `GET /api/resources`          | Kitap/video kaynakları (ilerleme yüzdesiyle)                                         |
+| `POST /api/resources`         | Kaynak ekle (`{ name, type, subjectId, totalUnits, currentUnit? }`)                  |
+| `PUT /api/resources/:id`      | Kaynağı güncelle (`currentUnit` verilmezse mevcut değer korunur)                     |
+| `DELETE /api/resources/:id`   | Kaynağı sil                                                                          |
 
 ## Teknolojiler
 
