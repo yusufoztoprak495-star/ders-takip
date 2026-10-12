@@ -1,3 +1,4 @@
+import Dial from '../components/Dial.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { usePomodoro } from '../context/PomodoroContext.jsx';
@@ -50,19 +51,25 @@ export default function Pomodoro() {
       {notice && !phase && <p className="notice">{notice}</p>}
 
       {phase ? (
-        <div className="card timer-card">
-          <p className="muted">
-            {phase.kind === 'work' ? `Çalışma · ${runningSubject?.name ?? ''}` : 'Mola'}
-          </p>
-          <div className="timer" aria-live="off">
-            {formatTime(remaining)}
-          </div>
+        <div className="timer-card">
+          <Dial kind={phase.kind} remaining={remaining} duration={phase.durationSeconds}>
+            <div className="timer" aria-live="off">
+              {formatTime(remaining)}
+            </div>
+            <p className="dial-label">
+              {phase.kind === 'work' ? (runningSubject?.name ?? 'Çalışma') : 'Mola'}
+            </p>
+          </Dial>
           <button type="button" className="secondary" onClick={cancel}>
             Vazgeç
           </button>
         </div>
       ) : (
         <form className="card" onSubmit={handleStart}>
+          <Dial kind="work">
+            <div className="timer idle">{formatTime(settings.workMinutes * 60)}</div>
+            <p className="dial-label">Hazır</p>
+          </Dial>
           <SubjectTopicFields selection={selection} />
           <div className="row">
             <label>
