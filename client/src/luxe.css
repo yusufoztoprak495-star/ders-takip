@@ -1,0 +1,377 @@
+/* --- Lüks ajanda katmanı: tipografi, ince çizgili kartlar, kâğıt dokusu, ana sayfa kartları --- */
+
+/* Zemin: çok silik defter çizgileri (altın, ~%5). Kartlar düz yüzey rengi olduğu için çizgiler yalnızca
+   boş alanlarda görünür; metnin arkasında okunabilirliği bozmayacak kadar hafiftir. */
+body {
+  background-color: var(--bg);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 35px,
+    rgba(205, 176, 122, 0.04) 35px,
+    rgba(205, 176, 122, 0.04) 36px
+  );
+  background-attachment: fixed;
+}
+
+/* Kâğıt/grain dokusu: tüm ekranın üstünde, tıklamayı engellemez, çok hafif. Harmanlama (blend mode)
+   kullanılmaz, çünkü tüm ekranı her karede yeniden birleştirir ve kaydırmayı yavaşlatır; bunun yerine
+   gürültü doğrudan şeffaf beyaz benek olarak üretilir (alfa kanalı gürültüden türetilir). */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.085;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.2 0 0 0 -0.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- Tipografi --- */
+h1,
+h2,
+h3 {
+  font-weight: 500;
+}
+
+h1 {
+  font-size: 3.2rem;
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+}
+
+/* h2: altında ince çizgi ve sol başta kısa bir altın ayırıcı */
+h2 {
+  margin: 48px 0 18px;
+  padding-bottom: 12px;
+  font-size: 1.75rem;
+  background: linear-gradient(var(--gold), var(--gold)) left bottom / 32px 1px
+    no-repeat;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+/* Etiketler: küçük boyutlu büyük harf (small caps görünümü) ve geniş harf aralığı.
+   Gerçek small caps yerine text-transform kullanılır: yazı tipinin small caps tablosu Türkçe
+   noktalı İ'yi üretmez; text-transform ise html lang="tr" ile i → İ kuralını doğru uygular. */
+.label,
+label,
+.tile .muted,
+.stat-head span,
+.table-wrap th,
+.panel-label {
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+/* Etiketin içindeki alanlar etiketin yazı biçimini miras almasın */
+label input,
+label select {
+  font-family: var(--font-ui);
+  font-size: 0.97rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.badge {
+  font-family: var(--font-ui);
+  border-radius: 2px;
+}
+
+/* --- Yüzeyler: kalın gölge yok, ince 1px çizgi kenarlık ve üstte altın ışık çizgisi --- */
+.card,
+.chart-card,
+.panel,
+.kpis,
+.list li.resource {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  box-shadow: inset 0 1px 0 var(--gold-hair);
+}
+
+.card {
+  gap: 20px;
+  padding: 28px;
+}
+
+.card .row label,
+.card label {
+  min-width: 0;
+}
+
+select,
+input {
+  padding: 10px 12px;
+  border-radius: 3px;
+  background: var(--bg);
+  border-color: var(--border-strong);
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+select:hover,
+input:hover {
+  border-color: var(--gold);
+}
+
+select:focus-visible,
+input:focus-visible {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold-hair);
+}
+
+.chart-card {
+  padding: 22px 24px;
+}
+
+.chart-grid {
+  gap: 24px;
+}
+
+.kpis {
+  margin-bottom: 36px;
+}
+
+.tile {
+  padding: 20px 22px;
+}
+
+.tile + .tile {
+  border-left-color: var(--border);
+}
+
+/* Kitap kartları: her biri kendi çizgi kenarlıklı kutusunda */
+.list.resources {
+  border-top: 0;
+  max-width: 680px;
+}
+
+.list li.resource {
+  margin-bottom: 16px;
+  padding: 22px 24px;
+}
+
+/* --- Düğmeler --- */
+button,
+.button-link {
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  transition:
+    filter 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+button.secondary {
+  border-color: var(--border-strong);
+}
+
+button.secondary:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.button-link {
+  display: inline-block;
+}
+
+/* --- Menü --- */
+.nav {
+  background: #0a0d12;
+}
+
+.brand {
+  position: relative;
+  margin: 0 0 24px 12px;
+  padding-bottom: 14px;
+  font-size: 1.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.brand::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 32px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.nav a {
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+@media (min-width: 821px) and (min-height: 680px) {
+  /* Köşe süsleri için menünün üstünde ve altında boşluk ayrılır */
+  .nav {
+    padding-top: 96px;
+    padding-bottom: 100px;
+  }
+}
+
+/* --- Pomodoro kadranı yazısı --- */
+.timer {
+  font-weight: 400;
+  font-size: clamp(3.4rem, 14vw, 4.9rem);
+}
+
+.dial-label {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* --- Ana sayfa kartları --- */
+.panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 28px 0 8px;
+}
+
+.panel {
+  padding: 22px 26px;
+  transition: border-color 0.16s ease;
+}
+
+.panel:hover {
+  border-color: var(--border-strong);
+}
+
+.panel-wide {
+  grid-column: 1 / -1;
+}
+
+/* Kart başlığı h2 ayırıcısını taşımaz; küçük etiket gibi durur */
+.panel-label {
+  margin: 0 0 12px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.value small {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.today-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px 28px;
+}
+
+.today-grid .label {
+  display: block;
+  margin-top: 6px;
+}
+
+.panel-note {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.change-up {
+  color: var(--teal);
+}
+
+.change-down {
+  color: var(--rose);
+}
+
+.change-new,
+.change-flat {
+  color: var(--text);
+}
+
+/* --- Kitap sayacı --- */
+.solved-counter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 18px 0 4px;
+}
+
+.solved-number {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.solved-label {
+  color: var(--muted);
+}
+
+.solved-last {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  font-size: 0.92rem;
+  text-align: right;
+}
+
+.resume {
+  align-items: flex-end;
+  margin-top: 14px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* --- Küçük ayrıntılar --- */
+.week-bars .bar {
+  fill: var(--series-dim);
+}
+
+.week-bars .bar.today {
+  fill: var(--gold);
+}
+
+@media (max-width: 820px) {
+  .panels {
+    grid-template-columns: 1fr;
+  }
+
+  .today-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  h1 {
+    font-size: 2.6rem;
+  }
+
+  .card {
+    padding: 22px;
+  }
+
+  .solved-last {
+    margin-left: 0;
+    align-items: flex-start;
+    text-align: left;
+  }
+}

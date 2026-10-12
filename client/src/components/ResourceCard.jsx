@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { toLocalDateString } from '../lib/dates.js';
+import { formatLastSolved } from '../lib/format.js';
 
-// Tek bir test kitabı: ilerleme çubuğu, "çözülen test" alanı, durum değiştirme ve silme.
+// Tek bir test kitabı: kaç test çözüldüğü, son çözüm tarihi, sayacı güncelleme, durum değiştirme ve silme.
 // Kaydetme, durum değiştirme ve silme işlemleri üst sayfadan gelir (hata gösterimi de orada yapılır).
 export default function ResourceCard({ resource, subjectName, onSave, onToggleStatus, onDelete }) {
   const [solved, setSolved] = useState(String(resource.solvedTests));
@@ -24,17 +26,22 @@ export default function ResourceCard({ resource, subjectName, onSave, onToggleSt
         </span>
       </div>
 
-      <div className="progress-line">
-        <progress max="100" value={resource.progressPercent} aria-label="İlerleme" />
-        <span>
-          {resource.solvedTests} / {resource.totalTests} test
+      <div className="solved-counter">
+        <span className="solved-number">{resource.solvedTests}</span>
+        <span className="solved-label">test çözüldü</span>
+        <span className="solved-last">
+          <span className="label">Son çözüm</span>
+          {formatLastSolved(resource.lastSolvedAt, toLocalDateString(new Date()))}
         </span>
       </div>
 
       {!done && (
         <div className="resume">
+          <button type="button" className="secondary" onClick={() => onSave(resource, String(resource.solvedTests + 1))}>
+            +1 test
+          </button>
           <label>
-            Çözülen test ({resource.totalTests} testten)
+            Çözülen test sayısı
             <input type="number" step="1" value={solved} onChange={(e) => setSolved(e.target.value)} />
           </label>
           <button type="button" disabled={!changed} onClick={() => onSave(resource, solved)}>

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { todayLocal } from "../dates.js";
 import { HttpError } from "../errors.js";
 import {
   assertSubjectExists,
@@ -9,12 +10,17 @@ import {
   requireString,
 } from "../validation.js";
 
-// Makul üst sınır: bir kitapta en fazla 10000 test (yazım hatasına karşı)
-const MAX_TOTAL_TESTS = 10000;
+// Makul üst sınır: bir kitaptan en fazla 10000 test çözülmüş sayılır (yazım hatasına karşı)
+const MAX_SOLVED_TESTS = 10000;
 const PUBLISHER_MAX = 100;
 const STATUSES = ["elimde", "bitirdim"];
 
-const COLUMNS = "id, name, publisher, subject_id, status, total_tests, solved_tests";
+// last_solved_at: elle (çözülen test artınca) yazılan gün. Kitaba bağlı soru kayıtlarının en yeni
+// tarihi de hesaba katılır; ikisinden yeni olanı "son çözüm tarihi" sayılır.
+const SELECT = `
+  SELECT r.id, r.name, r.publisher, r.subject_id, r.status, r.solved_tests,
+         MAX(COALESCE(r.last_solved_at, ''), COALESCE((SELECT MAX(q.date) FROM question_logs q WHERE q.resource_id = r.id), '')) AS last_solved
+  FROM resources r`;
 
 const toResource = (row) => ({
   id: row.id,
@@ -22,19 +28,21 @@ const toResource = (row) => ({
   publisher: row.publisher,
   subjectId: row.subject_id,
   status: row.status,
-  totalTests: row.total_tests,
   solvedTests: row.solved_tests,
-  // İlerleme yüzdesi saklanmaz, her seferinde hesaplanır
-  progressPercent: Math.round((row.solved_tests / row.total_tests) * 100),
+  lastSolvedAt: row.last_solved || null,
 });
 
 // Yayınevi isteğe bağlıdır: verilmezse boş metin olur
 function parsePublisher(value) {
   if (value === undefined || value === null) return "";
-  if (typeof value !== "string") throw new HttpError(400, "Yayınevi metin olmalı");
+  if (typeof value !== "string")
+    throw new HttpError(400, "Yayınevi metin olmalı");
   const trimmed = value.trim();
   if (trimmed.length > PUBLISHER_MAX) {
-    throw new HttpError(400, `Yayınevi en fazla ${PUBLISHER_MAX} karakter olabilir`);
+    throw new HttpError(
+      400,
+      `Yayınevi en fazla ${PUBLISHER_MAX} karakter olabilir`,
+    );
   }
   return trimmed;
 }
@@ -42,43 +50,51 @@ function parsePublisher(value) {
 export function resourcesRouter(db) {
   const router = Router();
 
-  const findResource = (id) =>
-    db.prepare(`SELECT ${COLUMNS} FROM resources WHERE id = ?`).get(id);
+  const findResource = (id) => db.prepare(`${SELECT} WHERE r.id = ?`).get(id);
 
   // POST ve PUT aynı kuralları kullanır. `solvedTests` verilmezse `fallbackSolved` kullanılır:
-  // POST'ta 0, PUT'ta mevcut değer (böylece ad değiştirirken ilerleme sıfırlanmaz).
+  // POST'ta 0, PUT'ta mevcut değer (böylece ad değiştirirken sayaç sıfırlanmaz).
   function parseResourceBody(req, fallbackSolved) {
     const body = requireBody(req);
     const subjectId = requireInt(body.subjectId, "Ders");
     assertSubjectExists(db, subjectId);
-    const totalTests = requireInt(body.totalTests, "Toplam test sayısı", { min: 1, max: MAX_TOTAL_TESTS });
-    const solvedTests = requireInt(body.solvedTests ?? fallbackSolved, "Çözülen test sayısı", {
-      min: 0,
-      max: totalTests,
-    });
     return {
       name: requireString(body.name, "Kitap adı", { maxLength: 150 }),
       publisher: parsePublisher(body.publisher),
       subjectId,
       status: requireOneOf(body.status ?? "elimde", "Durum", STATUSES),
-      totalTests,
-      solvedTests,
+      solvedTests: requireInt(
+        body.solvedTests ?? fallbackSolved,
+        "Çözülen test sayısı",
+        {
+          min: 0,
+          max: MAX_SOLVED_TESTS,
+        },
+      ),
     };
   }
 
   router.get("/", (req, res) => {
-    const rows = db.prepare(`SELECT ${COLUMNS} FROM resources ORDER BY id`).all();
-    res.json(rows.map(toResource));
+    res.json(db.prepare(`${SELECT} ORDER BY r.id`).all().map(toResource));
   });
 
   router.post("/", (req, res) => {
     const r = parseResourceBody(req, 0);
+    // İlk kayıtta zaten test çözülmüşse son çözüm tarihi bugün olur
+    const lastSolvedAt = r.solvedTests > 0 ? todayLocal() : null;
     const { lastInsertRowid } = db
       .prepare(
-        `INSERT INTO resources (name, publisher, subject_id, status, total_tests, solved_tests)
+        `INSERT INTO resources (name, publisher, subject_id, status, solved_tests, last_solved_at)
          VALUES (?, ?, ?, ?, ?, ?)`,
       )
-      .run(r.name, r.publisher, r.subjectId, r.status, r.totalTests, r.solvedTests);
+      .run(
+        r.name,
+        r.publisher,
+        r.subjectId,
+        r.status,
+        r.solvedTests,
+        lastSolvedAt,
+      );
     res.status(201).json(toResource(findResource(lastInsertRowid)));
   });
 
@@ -87,17 +103,31 @@ export function resourcesRouter(db) {
     const existing = findResource(id);
     if (!existing) throw new HttpError(404, "Bulunamadı");
     const r = parseResourceBody(req, existing.solved_tests);
+    // Çözülen test arttıysa bugün çözülmüş demektir; aynı kalır ya da azalırsa tarih değişmez
+    const raised = r.solvedTests > existing.solved_tests;
     db.prepare(
       `UPDATE resources
-       SET name = ?, publisher = ?, subject_id = ?, status = ?, total_tests = ?, solved_tests = ?
+       SET name = ?, publisher = ?, subject_id = ?, status = ?, solved_tests = ?,
+           last_solved_at = CASE WHEN ? THEN ? ELSE last_solved_at END
        WHERE id = ?`,
-    ).run(r.name, r.publisher, r.subjectId, r.status, r.totalTests, r.solvedTests, id);
+    ).run(
+      r.name,
+      r.publisher,
+      r.subjectId,
+      r.status,
+      r.solvedTests,
+      raised ? 1 : 0,
+      todayLocal(),
+      id,
+    );
     res.json(toResource(findResource(id)));
   });
 
   router.delete("/:id", (req, res) => {
     const id = parseId(req.params.id);
-    const { changes } = db.prepare("DELETE FROM resources WHERE id = ?").run(id);
+    const { changes } = db
+      .prepare("DELETE FROM resources WHERE id = ?")
+      .run(id);
     if (changes === 0) throw new HttpError(404, "Bulunamadı");
     res.status(204).end();
   });

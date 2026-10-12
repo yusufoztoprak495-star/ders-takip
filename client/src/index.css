@@ -1,35 +1,38 @@
-/* Obsidyen teması: grafit zemin, kırık beyaz yazı, turuncu (çalışma) ve turkuaz (mola/doğru) vurgu */
+/* Lüks ajanda teması: gece mavisi-kömür zemin, fildişi yazı, az ve yerinde şampanya altını vurgu */
 :root {
   color-scheme: dark;
 
-  --bg: #0e0e0f;
-  --surface: #161617;
-  --surface-2: #1d1d1f;
-  --text: #eceae4;
-  --muted: #8d8b86;
-  --border: #262628;
-  --border-strong: #3a3a3d;
+  --bg: #0c0f14;
+  --surface: #11151c;
+  --surface-2: #171c25;
+  --text: #ebe5d6;
+  --muted: #8e8b83;
+  --border: #1f2631;
+  --border-strong: #2f3846;
 
-  --orange: #f28c4b;
-  --turquoise: #4fd1c0;
-  --accent: var(--orange);
-  --on-accent: #1a0f07;
+  /* Vurgu: şampanya altını. Yalnızca etkin öğe, ana düğme, kadran ve ince ayırıcılarda kullanılır */
+  --gold: #cdb07a;
+  --gold-hair: rgba(205, 176, 122, 0.22);
+  --teal: #5fa89e; /* mola, doğru cevap, olumlu değişim */
+  --rose: #c8584f; /* olumsuz değişim */
+  --accent: var(--gold);
+  --on-accent: #17120a;
 
-  --danger-bg: #2a1817;
-  --danger-text: #f0a09a;
+  --danger-bg: #2a1a1c;
+  --danger-text: #e0a29c;
 
-  /* Grafik renkleri: renk doğrulayıcıdan (CVD, parlaklık bandı, karşıtlık) geçti */
-  --series-1: #d87238;
-  --series-2: #27ab9b;
-  --series-3: #c25a68;
+  /* Grafik renkleri: renk doğrulayıcıdan (CVD, parlaklık bandı, karşıtlık) geçti: pirinç, deniz yeşili, kiremit */
+  --series-1: #b88a28;
+  --series-2: #1e9c96;
+  --series-3: #c8584f;
   --series-blank: #7d7b77; /* boş: sonuç değil eksik, bilinçli olarak nötr */
-  --series-dim: #4a4a4e;
-  --chart-grid: #232325;
-  --chart-axis: #3a3a3d;
+  --series-dim: #333b49;
+  --chart-grid: #1b222c;
+  --chart-axis: #2f3846;
 
-  --radius: 6px;
+  --radius: 3px;
   --font-ui: "Figtree Variable", "Segoe UI", sans-serif;
-  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-display: "Cormorant Garamond Variable", Georgia, serif;
   --nav-width: 232px;
 }
 
@@ -45,11 +48,14 @@ body {
   color: var(--text);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  /* Tüm sayılar düz (lining) ve tabular: alt alta düzgün hizalanır */
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
 
 /* Klavye ile gezerken görünen odak çerçevesi */
 :focus-visible {
-  outline: 2px solid var(--turquoise);
+  outline: 2px solid var(--teal);
   outline-offset: 2px;
 }
 
@@ -94,11 +100,11 @@ body {
 .nav a.active {
   color: var(--text);
   background: var(--surface);
-  box-shadow: inset 2px 0 0 var(--orange);
+  box-shadow: inset 2px 0 0 var(--gold);
 }
 
 .nav a.active .icon {
-  color: var(--orange);
+  color: var(--gold);
 }
 
 .nav-short {
@@ -108,7 +114,7 @@ body {
 .nav .nav-timer {
   margin-top: auto;
   justify-content: center;
-  color: var(--orange);
+  color: var(--gold);
   border: 1px solid var(--border-strong);
   font-variant-numeric: tabular-nums;
   font-size: 0.9rem;
@@ -159,7 +165,7 @@ body {
   }
 
   .nav a.active {
-    box-shadow: inset 0 2px 0 var(--orange);
+    box-shadow: inset 0 2px 0 var(--gold);
   }
 
   .nav .nav-timer {
@@ -183,8 +189,6 @@ h2,
 h3 {
   font-family: var(--font-display);
   font-weight: 350;
-  /* SOFT: harf köşelerini yumuşatır, el çizimi çizgilerle uyumlu durur */
-  font-variation-settings: 'SOFT' 100;
 }
 
 h1 {
@@ -214,7 +218,7 @@ h2 {
 
 .notice {
   padding: 10px 14px;
-  border-left: 2px solid var(--turquoise);
+  border-left: 2px solid var(--teal);
   background: var(--surface);
 }
 
@@ -268,7 +272,7 @@ input:hover {
 select:focus-visible,
 input:focus-visible {
   outline: none;
-  border-color: var(--turquoise);
+  border-color: var(--teal);
 }
 
 .row {
@@ -291,8 +295,8 @@ button {
   font: inherit;
   font-weight: 600;
   color: var(--on-accent);
-  background: var(--orange);
-  border: 1px solid var(--orange);
+  background: var(--gold);
+  border: 1px solid var(--gold);
   border-radius: var(--radius);
   cursor: pointer;
   transition: filter 0.15s;
@@ -332,11 +336,11 @@ button.small {
   width: min(100%, 340px);
   aspect-ratio: 1;
   margin: 0 auto;
-  --dial-color: var(--orange);
+  --dial-color: var(--gold);
 }
 
 .dial-break {
-  --dial-color: var(--turquoise);
+  --dial-color: var(--teal);
 }
 
 .dial svg {
@@ -418,7 +422,7 @@ form.card .dial {
 }
 
 .net {
-  color: var(--turquoise);
+  color: var(--teal);
 }
 
 .resources {
@@ -444,24 +448,6 @@ form.card .dial {
   color: var(--muted);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
-}
-
-.progress-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.progress-line progress {
-  flex: 1;
-  height: 4px;
-  accent-color: var(--turquoise);
-}
-
-.progress-line span {
-  min-width: 3.2em;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 
 .resume {
@@ -646,7 +632,7 @@ form.card .dial {
 }
 
 .week-bars .bar.today {
-  fill: var(--orange);
+  fill: var(--gold);
 }
 
 .bar-label {
@@ -665,7 +651,7 @@ form.card .dial {
   padding: 10px 18px;
   font-weight: 600;
   color: var(--on-accent);
-  background: var(--orange);
+  background: var(--gold);
   border-radius: var(--radius);
   text-decoration: none;
 }
@@ -690,27 +676,6 @@ form.card .dial {
 .resume button {
   padding: 6px 12px;
   font-size: 0.85rem;
-}
-
-.progress-line progress {
-  appearance: none;
-  height: 3px;
-  border: 0;
-  border-radius: 2px;
-  background: var(--border-strong);
-  overflow: hidden;
-}
-
-.progress-line progress::-webkit-progress-bar {
-  background: var(--border-strong);
-}
-
-.progress-line progress::-webkit-progress-value {
-  background: var(--turquoise);
-}
-
-.progress-line progress::-moz-progress-bar {
-  background: var(--turquoise);
 }
 
 .badge {

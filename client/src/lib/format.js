@@ -47,3 +47,8 @@ export function formatLastStudied(dateString, todayString) {
   if (days <= 0) return 'Bugün';
   return `${days === 1 ? 'Dün' : `${days} gün önce`} · ${formatDate(dateString)}`;
 }
+
+// Kitabın son çözüm tarihi: 'Bugün', '3 gün önce · 09.10.2026'; hiç yoksa 'Henüz test çözülmedi'
+export function formatLastSolved(dateString, todayString) {
+  return dateString ? formatLastStudied(dateString, todayString) : 'Henüz test çözülmedi';
+}

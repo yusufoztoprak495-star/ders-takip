@@ -9,7 +9,7 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal) hazırlığı sıras�
 - Pomodoro zamanlayıcı
 - Günlük çalışma süresi kaydı (ders/konu bazında)
 - Çözülen soru sayısı kaydı (ders, konu, doğru/yanlış/boş)
-- Kaynak takibi: test kitapları (kitap, yayınevi, ders, çözülen/toplam test, elimde/bitirdim)
+- Kaynak takibi: test kitapları (kitap, yayınevi, ders, çözülen test sayısı, son çözüm tarihi, elimde/bitirdim)
 - Grafiklerle ilerleme takibi (günlük, haftalık, ders bazında)
 
 ### Kapsam Dışı (şimdilik YAPILMAYACAK)
@@ -58,7 +58,7 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal) hazırlığı sıras�
 
 ### Teknoloji yığını
 
-Node.js 22+ ve Express (sunucu), SQLite / better-sqlite3 (veritabanı), React + Vite ve React Router `HashRouter` (arayüz), elle çizilmiş SVG grafikler (kütüphanesiz), `@fontsource` ile gömülü yazı tipleri (Fraunces, Figtree), Vitest + Supertest (test). Tasarım: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
+Node.js 22+ ve Express (sunucu), SQLite / better-sqlite3 (veritabanı), React + Vite ve React Router `HashRouter` (arayüz), elle çizilmiş SVG grafikler (kütüphanesiz), `@fontsource` ile gömülü yazı tipleri (Cormorant Garamond, Figtree), Vitest + Supertest (test). Tasarım: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
 
 ### Komutlar (proje kökünden)
 

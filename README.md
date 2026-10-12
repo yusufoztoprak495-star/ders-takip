@@ -4,6 +4,8 @@ YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması: Po
 
 Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan bir proje. Uygulama mağazalarında yayınlanmaz; indirip kendi bilgisayarında çalıştırabilirsin. Veriler yalnızca senin bilgisayarındaki tek bir dosyada durur.
 
+![Ana sayfa: bugünün özeti, haftalık değişim, seri ve günün dersi](docs/screenshots/ana-sayfa.png)
+
 ![İlerleme sayfası: tüm derslerin özeti ve grafikler](docs/screenshots/ilerleme.png)
 
 ## Özellikler
@@ -11,14 +13,14 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 - **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Sayaç, saat çerçevesi gibi 60 çentikli bir kadrandır: süre aktıkça çentikler söner (çalışmada turuncu, molada turkuaz). Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
 - **Çalışma günlüğü:** Pomodoro kullanmadığın çalışmaları ders, konu, tarih ve dakika girerek elle eklersin. Bugünün kayıtları (Pomodoro ve elle girilenler) toplam süreyle listelenir, istediğini silebilirsin.
 - **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı olarak hangi kitaptan çözdüğünü seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
-- **Kaynaklar:** Yalnızca test kitapları: kitap adı, yayınevi, ders ve toplam test sayısıyla eklersin. Her kitapta ilerleme çubuğu ve "çözülen test" alanı vardır. Kitap "Elimde" ya da "Bitirdim" durumunda olur; "Bitirdim" dediğinde çözülen test sayısı toplama tamamlanır. Silerken onay istenir; kitabı silsen de ona bağlı soru kayıtların kaybolmaz.
+- **Kaynaklar:** Yalnızca test kitapları: kitap adı, yayınevi ve ders ile eklersin. Her kitap kartında kaç test çözdüğün ("X test çözüldü") ve son çözüm tarihi görünür. "+1 test" düğmesiyle ya da sayıyı yazıp kaydederek sayacı güncellersin; sayı artınca son çözüm tarihi bugüne ayarlanır, kitaba bağlı soru kayıtlarının tarihi de hesaba katılır. Kitap "Elimde" ya da "Bitirdim" durumunda olur. Silerken onay istenir; kitabı silsen de ona bağlı soru kayıtların kaybolmaz.
 - **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
 - **İlerleme (üç katman):**
   - **Ana sayfa:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru, net ve doğruluk oranı özetini görürsün. Altında tüm derslerin listesi ve grafikler (günlük/haftalık çalışma süresi, günlük net, derse göre süre ve doğru/yanlış/boş) var. Bir ders seçersen göstergeler ve zaman grafikleri o dersi gösterir.
   - **Ders sayfası:** Bir derse tıklayınca açılır: o dersin göstergeleri, zaman grafikleri ve konular. Konular **en zayıftan en güçlüye** (doğruluk oranına göre) sıralanır; henüz soru çözmediğin konular sönük ve en altta durur.
   - **Konu sayfası:** Bir konuya tıklayınca açılır: toplam çalışma süresi, çözülen soru, net, doğruluk, doğru/yanlış/boş dağılımı, zaman içinde doğruluk grafiği, hangi kitaplardan çözdüğün ve en son ne zaman çalıştığın.
   - Sayfaların üstünde yol çubuğu (İlerleme › Matematik › Türev) bulunur. Grafiklerin üzerine gelince ayrıntı balonu çıkar; her grafiğin tablo görünümü de vardır.
-- **Ana sayfa:** Bugünün çalışma süresi, çözülen soru sayısı ve neti ile son 7 günün çalışma ritmi.
+- **Ana sayfa:** Dört kart: bugünün özeti (süre, soru, net, doğruluk), haftalık değişim (son 7 gün önceki 7 güne göre, ↑ / ↓ yüzde), seri (kaç gündür üst üste çalıştığın) ve günün en çok çalışılan dersi. Altında son 7 günün çalışma ritmi vardır.
 
 | Pomodoro                                                  | Kaynaklar                                                               |
 | --------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -74,14 +76,16 @@ Sunucu testleri (Vitest + Supertest) her uç için başarılı ve başarısız d
 
 ## Tasarım
 
-Koyu tema (grafit zemin, kırık beyaz yazı) ve iki vurgu rengi: turuncu çalışmayı, turkuaz molayı ve doğru cevapları gösterir. Başlıklar **Fraunces** (yumuşatılmış, karakterli bir serif), metinler **Figtree** (okunaklı bir grotesk) ile yazılır. Font dosyaları projeye gömülüdür; uygulama internet olmadan da aynı görünür.
+Hedef his: deri kaplı bir ajanda ve dolma kalem. Gece mavisi-kömür zemin, fildişi yazı ve az kullanılan şampanya altını vurgu (etkin menü öğesi, ana düğmeler, Pomodoro kadranı, ince ayırıcılar).
 
-Hazır ikon paketi ya da grafik kütüphanesi kullanılmadı, her şey bu projeye özel SVG olarak çizildi:
-
-- **Menü ikonları** ve **Pomodoro kadranı** (60 çentikli saat çerçevesi).
-- **Grafikler:** renkleri renk körlüğü ve karşıtlık kontrollerinden geçirildi.
-- **El çizimi süsler:** kitap, kalem, cetvel, kahve fincanı, ataç ve not kâğıdı. Hepsi aynı çizgi kalınlığında, tek renkte ve düşük opaklıktadır. Ekranın köşelerindeki boş kenar boşluklarında durur, içeriğin üstüne binmez (1300px'ten dar ekranlarda gizlenir; bu, tarayıcıda 390–1920px arası her sayfada ölçülerek doğrulandı).
-- **Boş durumlar:** henüz kayıt yokken büyük bir çizim ve ne yapılacağını söyleyen kısa bir yönlendirme gösterilir.
+- **Tipografi:** Başlıklarda zarif **Cormorant Garamond**, metinde okunaklı **Figtree**. Etiketler küçük boyutlu büyük harf ve geniş harf aralığıyla yazılır (gerçek small caps yerine `text-transform` kullanıldı, çünkü yazı tipinin small caps tablosu Türkçe noktalı İ'yi üretmiyor). Tüm sayılar düz ve tabular rakamdır, alt alta düzgün hizalanır. Font dosyaları projeye gömülüdür; uygulama internet olmadan da aynı görünür.
+- **Yüzeyler:** Kalın gölge yok; kartlar 1px çizgi kenarlıklı, üstte ince altın ışık çizgisiyle. Bol boşluk, ince ayırıcı çizgiler, başlık altlarında kısa altın çizgi.
+- **Doku:** Zeminde çok hafif kâğıt dokusu (grain) ve defter çizgileri.
+- **Etkileşim:** Geçişler kısa ve yumuşaktır (0,16 sn), abartılı animasyon yoktur.
+- **Grafikler:** Elle çizilmiş SVG, kütüphanesiz. Renkleri (pirinç, deniz yeşili, kiremit) renk körlüğü ve karşıtlık kontrollerinden geçirildi.
+- **Motifler:** 13 özel çizim: dolma kalem, kurşun kalem, kitap yığını, açık defter, kum saati, pergel, cetvel, masa lambası, kahve fincanı, ataç, mühür, küre ve mektup zarfı. Hepsi aynı ince çizgi kalınlığında, tek renkte (altın) ve düşük opaklıkta, gravür tarzı tarama çizgileriyle. Dört ekran köşesinde süslemeli köşe ornamentleri vardır. Her sayfa farklı bir motif düzeni alır, stil aynı kalır.
+- **Okunabilirlik:** Motifler yalnızca içerik kutusunun dışındaki boş kenar boşluklarında durur; dar ya da kısa ekranlarda gizlenir. Bu, tarayıcıda 390–1920px arası genişlik, 540–1080px arası yükseklik ve tüm sayfalarda ölçülerek doğrulandı (600'den fazla ölçümde veri, form ya da grafiklerle çakışma yok).
+- **Boş durumlar:** Henüz kayıt yokken büyük bir çizim ve ne yapılacağını söyleyen kısa bir yönlendirme gösterilir.
 
 ![Boş durum: henüz kitap yok](docs/screenshots/bos-durum.png)
 
@@ -95,7 +99,7 @@ Masaüstünde sol menü, telefonda alt sekme çubuğu kullanılır.
 | Veritabanı | SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3)) |
 | Arayüz     | React + Vite (React Router, `HashRouter`)                             |
 | Grafikler  | Elle çizilmiş SVG (kütüphanesiz)                                      |
-| Yazı tipi  | Fraunces (başlık), Figtree (metin); `@fontsource`, projeye gömülü     |
+| Yazı tipi  | Cormorant Garamond (başlık), Figtree (metin); `@fontsource`, gömülü  |
 | Test       | Vitest, Supertest                                                     |
 
 ## Proje yapısı
@@ -134,9 +138,9 @@ Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla 
 | `POST /api/sessions`                        | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`)         |
 | `PUT /api/sessions/:id`                     | Kaydı güncelle (tüm alanlar gönderilir)                                                      |
 | `DELETE /api/sessions/:id`                  | Kaydı sil                                                                                    |
-| `GET /api/resources`                        | Test kitapları (ilerleme yüzdesiyle)                                                         |
-| `POST /api/resources`                       | Kitap ekle (`{ name, publisher?, subjectId, totalTests, solvedTests?, status? }`)            |
-| `PUT /api/resources/:id`                    | Kitabı güncelle (`solvedTests` verilmezse mevcut değer korunur; `status`: elimde/bitirdim)   |
+| `GET /api/resources`                        | Test kitapları (çözülen test sayısı ve son çözüm tarihiyle)                                  |
+| `POST /api/resources`                       | Kitap ekle (`{ name, publisher?, subjectId, solvedTests?, status? }`)                        |
+| `PUT /api/resources/:id`                    | Kitabı güncelle (`solvedTests` verilmezse mevcut değer korunur; artarsa son çözüm tarihi bugün olur) |
 | `DELETE /api/resources/:id`                 | Kaynağı sil                                                                                  |
 | `GET /api/questions?from=&to=`              | Soru kayıtları, net ile birlikte (tarih aralığı isteğe bağlı)                                |
 | `POST /api/questions`                       | Soru kaydı ekle (`{ date, subjectId, topicId?, correct, wrong, blank, resourceId? }`)        |
@@ -153,7 +157,7 @@ Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla 
 
 **Gün sınırı:** Çalışma kayıtları evrensel saatle (UTC) saklanır, istatistikler ise bilgisayarının yerel saatine göre günlere ayrılır. Gece 00:30'da başlayan çalışma o günün sayılır.
 
-**Sınırlar:** Yazım hatalarının istatistikleri bozmaması için bir çalışma kaydı en fazla 24 saat, soru kaydında doğru/yanlış/boş her biri en fazla 10000, bir kitap en fazla 10000 test olabilir. Tarihler 2000–2100 yılları arasında olmalıdır.
+**Sınırlar:** Yazım hatalarının istatistikleri bozmaması için bir çalışma kaydı en fazla 24 saat, soru kaydında doğru/yanlış/boş her biri en fazla 10000, bir kitaptan çözülen test sayısı en fazla 10000 olabilir. Tarihler 2000–2100 yılları arasında olmalıdır.
 
 ## Yol haritası
 

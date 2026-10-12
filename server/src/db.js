@@ -16,15 +16,15 @@ const SCHEMA = `
     name TEXT NOT NULL
   );
 
-  -- Kaynaklar yalnızca test kitaplarıdır
+  -- Kaynaklar yalnızca test kitaplarıdır. last_solved_at: kitaptan son test çözülen yerel gün (YYYY-MM-DD)
   CREATE TABLE IF NOT EXISTS resources (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     publisher TEXT NOT NULL DEFAULT '',
     subject_id INTEGER NOT NULL REFERENCES subjects(id),
     status TEXT NOT NULL DEFAULT 'elimde' CHECK (status IN ('elimde', 'bitirdim')),
-    total_tests INTEGER NOT NULL CHECK (total_tests > 0),
-    solved_tests INTEGER NOT NULL DEFAULT 0 CHECK (solved_tests >= 0)
+    solved_tests INTEGER NOT NULL DEFAULT 0 CHECK (solved_tests >= 0),
+    last_solved_at TEXT
   );
 
   CREATE TABLE IF NOT EXISTS study_sessions (
@@ -48,22 +48,37 @@ const SCHEMA = `
   );
 `;
 
-// Şema sürümü (PRAGMA user_version). 1: kaynaklar yalnızca test kitabı (video kalktı).
-const SCHEMA_VERSION = 1;
+// Şema sürümü (PRAGMA user_version).
+// 1: kaynaklar yalnızca test kitabı (video kalktı). 2: toplam test sayısı kalktı, son çözüm tarihi geldi.
+const SCHEMA_VERSION = 2;
 
-// Eski şemada resources tablosunda 'type' sütunu vardı
-function hasLegacyResources(db) {
-  return db.prepare("PRAGMA table_info(resources)").all().some((c) => c.name === "type");
-}
+const resourceColumns = (db) => db.prepare("PRAGMA table_info(resources)").all().map((c) => c.name);
 
-// Eski kaynaklar tablosunu yeni şemaya çevirir; veri kaybolmasın diye önce dosyanın yedeği alınır.
-// Kitaplar korunur (id'leri aynı kalır, soru kayıtlarının kitap bağlantısı bozulmaz), videolar silinir
-// ve onlara bağlı soru kayıtları kalır, yalnızca bağlantıları boşalır.
+// Kaynaklar tablosunu güncel şemaya çevirir. İki eski şemadan gelinebilir:
+//  - sürüm 0: 'type' sütunlu (kitap/video) tablo. Kitaplar korunur, videolar silinir ve onlara bağlı
+//    soru kayıtlarının yalnızca kitap bağlantısı boşalır.
+//  - sürüm 1: 'total_tests' sütunlu tablo. Yalnızca o sütun kalkar.
+// Veri kaybolmasın diye önce dosyanın yedeği alınır. Kitapların id'leri aynı kalır, böylece soru
+// kayıtlarının kitap bağlantısı bozulmaz.
 function migrateResources(db, filePath) {
+  const columns = resourceColumns(db);
+  const fromV0 = columns.includes("type");
+  if (!fromV0 && !columns.includes("total_tests")) return;
+
   if (filePath !== ":memory:") {
     const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
     fs.copyFileSync(filePath, `${filePath}.yedek-${stamp.slice(0, 8)}-${stamp.slice(8)}`);
   }
+
+  const copyRows = fromV0
+    ? `INSERT INTO resources_new (id, name, subject_id, status, solved_tests)
+         SELECT id, name, subject_id,
+                CASE WHEN current_unit >= total_units THEN 'bitirdim' ELSE 'elimde' END,
+                current_unit
+         FROM resources WHERE type = 'kitap';`
+    : `INSERT INTO resources_new (id, name, publisher, subject_id, status, solved_tests)
+         SELECT id, name, publisher, subject_id, status, solved_tests FROM resources;`;
+
   // Tabloyu silip yeniden kurarken ON DELETE SET NULL tetiklenip soru kayıtlarının kitap
   // bağlantısını silmesin diye yabancı anahtar kontrolü geçişin süresince kapatılır.
   db.pragma("foreign_keys = OFF");
@@ -76,14 +91,10 @@ function migrateResources(db, filePath) {
           publisher TEXT NOT NULL DEFAULT '',
           subject_id INTEGER NOT NULL REFERENCES subjects(id),
           status TEXT NOT NULL DEFAULT 'elimde' CHECK (status IN ('elimde', 'bitirdim')),
-          total_tests INTEGER NOT NULL CHECK (total_tests > 0),
-          solved_tests INTEGER NOT NULL DEFAULT 0 CHECK (solved_tests >= 0)
+          solved_tests INTEGER NOT NULL DEFAULT 0 CHECK (solved_tests >= 0),
+          last_solved_at TEXT
         );
-        INSERT INTO resources_new (id, name, subject_id, status, total_tests, solved_tests)
-          SELECT id, name, subject_id,
-                 CASE WHEN current_unit >= total_units THEN 'bitirdim' ELSE 'elimde' END,
-                 total_units, current_unit
-          FROM resources WHERE type = 'kitap';
+        ${copyRows}
         UPDATE question_logs SET resource_id = NULL
           WHERE resource_id IS NOT NULL AND resource_id NOT IN (SELECT id FROM resources_new);
         DROP TABLE resources;
@@ -107,7 +118,7 @@ export function openDb(filePath) {
   const db = new Database(filePath);
   // SQLite'ta yabancı anahtar kontrolü varsayılan olarak kapalıdır, açıkça açılır
   db.pragma("foreign_keys = ON");
-  if (hasLegacyResources(db)) migrateResources(db, filePath);
+  migrateResources(db, filePath);
   db.exec(SCHEMA);
   db.pragma(`user_version = ${SCHEMA_VERSION}`);
   return db;

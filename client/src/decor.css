@@ -1,8 +1,8 @@
-/* --- Süs çizimleri ve boş durumlar --- */
+/* --- Süs çizimleri, köşe ornamentleri ve boş durumlar --- */
 :root {
-  /* Tek renk, düşük opaklık: dikkat dağıtmasın */
-  --doodle: color-mix(in srgb, var(--text) 20%, transparent);
-  --doodle-strong: color-mix(in srgb, var(--text) 30%, transparent);
+  /* Tek renk (altın), düşük opaklık: dikkat dağıtmasın */
+  --doodle: rgba(205, 176, 122, 0.3);
+  --doodle-strong: rgba(205, 176, 122, 0.5);
 }
 
 .doodle {
@@ -10,7 +10,13 @@
   color: var(--doodle);
 }
 
-/* Süsler sabit konumda, yalnızca içerik kutusunun dışındaki kenar boşluklarında durur */
+/* Her çizginin kalınlığı boyuttan bağımsız aynı kalır */
+.doodle * {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Süsler sabit konumda durur ve yalnızca içerik kutusunun dışındaki boşluklara yerleşir.
+   Hiçbiri tıklamayı engellemez. Hangi ekranda hangisinin görüneceği aşağıdaki şartlarla belirlenir. */
 .decor {
   display: none;
   pointer-events: none;
@@ -19,41 +25,110 @@
 .decor-item {
   position: fixed;
   z-index: 0;
+  display: none;
   pointer-events: none;
 }
 
-/* İçerik kutusu en çok 880px; sağdaki boşluk yaklaşık (ekran/2 − 492)px. 84px'lik çizim ve
-   28px kenar payı, dönüş ve kaydırma çubuğu için en az ~145px gerekir: bu yüzden 1300px altında
-   süsler gizlenir (tarayıcıda 1240–1920px arası her sayfada ölçülerek doğrulandı). */
-@media (min-width: 1300px) {
+.corner {
+  z-index: 11; /* menünün (z-index 10) üstünde, tıklamayı engellemez */
+}
+
+/* Sağdaki süsler ve genel kap: menü olsun olmasın, pencere en az 560px yüksekse */
+@media (min-width: 821px) and (min-height: 560px) {
   .decor {
     display: block;
   }
+}
 
-  .decor-tr {
-    top: 36px;
-    right: 28px;
-    transform: rotate(8deg);
+/* Sol iki köşe ornamenti menünün içinde durur; menüde üstte ve altta ornament için boşluk bırakılır
+   (luxe.css). Pencere 680px'ten kısaysa menü öğeleri ve sayaç düğmesi sıkışır, bu yüzden gizlenir. */
+@media (min-width: 821px) and (min-height: 680px) {
+  .corner-tl,
+  .corner-bl {
+    display: block;
+    left: 10px;
   }
 
-  .decor-br {
-    bottom: 32px;
-    right: 28px;
-    transform: rotate(-10deg);
+  .corner-tl {
+    top: 10px;
   }
 
-  /* Sol menünün altındaki boşluk (menü öğeleri ve sayaç düğmesinin arasında) */
-  .decor-side {
-    left: 40px;
-    bottom: 96px;
-    z-index: 11; /* menünün (z-index 10) arka planının üstünde görünsün; tıklamayı engellemez */
-    transform: rotate(-6deg);
+  .corner-bl {
+    bottom: 10px;
+    transform: scaleY(-1);
   }
 }
 
-/* Çok kısa pencerede sol menüdeki süs, menü öğeleriyle çakışmasın diye gizlenir */
-@media (max-height: 640px) {
-  .decor-side {
+/* İçerik kutusu en çok 880px; sağdaki boşluk yaklaşık (ekran/2 − 492)px. 76px'lik motif ve kenar payı,
+   kaydırma çubuğu için en az ~145px gerekir: bu yüzden 1300px altında sağ süsler gizlenir
+   (tarayıcıda 1240–1920px arası her sayfada ölçülerek doğrulandı). */
+@media (min-width: 1300px) and (min-height: 560px) {
+  .corner-tr,
+  .corner-br {
+    display: block;
+    right: 10px;
+  }
+
+  .corner-tr {
+    top: 10px;
+    transform: scaleX(-1);
+  }
+
+  .corner-br {
+    bottom: 10px;
+    transform: scale(-1, -1);
+  }
+
+  .slot-r1,
+  .slot-r2,
+  .slot-r3 {
+    display: block;
+    right: 30px;
+  }
+
+  .slot-r1 {
+    top: 128px;
+  }
+
+  .slot-r2 {
+    top: 50%;
+    margin-top: -38px;
+  }
+
+  .slot-r3 {
+    bottom: 128px;
+  }
+}
+
+/* Sol kenar boşluğu (menü ile içerik arası) 1440px'te ~164px: 64px'lik motif sığar */
+@media (min-width: 1440px) and (min-height: 560px) {
+  .slot-l1,
+  .slot-l2 {
+    display: block;
+    left: 268px;
+  }
+
+  .slot-l1 {
+    top: 26%;
+  }
+
+  .slot-l2 {
+    top: 62%;
+  }
+}
+
+/* Sol menünün altındaki boşluk (menü öğeleri ile alt köşe ornamenti arasında) */
+@media (min-width: 821px) and (min-height: 760px) {
+  .slot-side {
+    display: block;
+    left: 44px;
+    bottom: 150px;
+    z-index: 11;
+  }
+}
+
+@media (max-height: 700px) {
+  .slot-r2 {
     display: none;
   }
 }
@@ -80,9 +155,8 @@
 .empty-title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 350;
-  font-variation-settings: "SOFT" 100;
+  font-size: 1.45rem;
+  font-weight: 500;
 }
 
 .empty-hint {
@@ -91,5 +165,5 @@
 }
 
 .empty-state.compact .empty-title {
-  font-size: 1.05rem;
+  font-size: 1.2rem;
 }

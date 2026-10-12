@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { sortWeakestFirst, questionCount } from "../src/lib/topics.js";
-import { formatLastStudied, formatPercent } from "../src/lib/format.js";
+import { formatLastSolved, formatLastStudied, formatPercent } from "../src/lib/format.js";
 
 const row = (topicName, correct, wrong, blank, accuracy) => ({ topicName, correct, wrong, blank, accuracy });
 
@@ -59,5 +59,15 @@ describe("formatLastStudied", () => {
   it("ay ve yıl sınırını doğru sayar", () => {
     expect(formatLastStudied("2026-09-30", "2026-10-02")).toBe("2 gün önce · 30.09.2026");
     expect(formatLastStudied("2025-12-31", "2026-01-01")).toBe("Dün · 31.12.2025");
+  });
+});
+
+describe("formatLastSolved", () => {
+  it("hiç test çözülmemişse bunu söyler", () => {
+    expect(formatLastSolved(null, "2026-10-12")).toBe("Henüz test çözülmedi");
+  });
+  it("tarihi göreli ve tam olarak yazar", () => {
+    expect(formatLastSolved("2026-10-12", "2026-10-12")).toBe("Bugün");
+    expect(formatLastSolved("2026-10-09", "2026-10-12")).toBe("3 gün önce · 09.10.2026");
   });
 });

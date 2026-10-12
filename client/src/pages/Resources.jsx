@@ -13,7 +13,6 @@ export default function Resources() {
   const { subjects, subject } = selection;
   const [name, setName] = useState('');
   const [publisher, setPublisher] = useState('');
-  const [totalTests, setTotalTests] = useState('');
   const [resources, setResources] = useState([]);
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -41,12 +40,10 @@ export default function Resources() {
           name,
           publisher,
           subjectId: subject?.id,
-          totalTests: totalTests === '' ? null : Number(totalTests),
         },
       });
       setName('');
       setPublisher('');
-      setTotalTests('');
       setNotice('Kitap eklendi.');
       await loadResources();
     } catch (e) {
@@ -66,7 +63,6 @@ export default function Resources() {
           name: resource.name,
           publisher: resource.publisher,
           subjectId: resource.subjectId,
-          totalTests: resource.totalTests,
           solvedTests: resource.solvedTests,
           status: resource.status,
           ...changes,
@@ -86,13 +82,9 @@ export default function Resources() {
     update(resource, { solvedTests: Number(solvedText) });
   }
 
-  // Bitirdim'e geçerken çözülen test sayısı toplama tamamlanır; geri alırken sayı korunur
+  // Bitirdim ile Elimde arasında geçiş; çözülen test sayısı aynen kalır
   function handleToggleStatus(resource) {
-    if (resource.status === 'elimde') {
-      update(resource, { status: 'bitirdim', solvedTests: resource.totalTests });
-    } else {
-      update(resource, { status: 'elimde' });
-    }
+    update(resource, { status: resource.status === 'elimde' ? 'bitirdim' : 'elimde' });
   }
 
   async function handleDelete(resource) {
@@ -133,7 +125,7 @@ export default function Resources() {
   return (
     <section>
       <h1>Kaynaklar</h1>
-      <p className="muted">Test kitaplarını ekle, kaçıncı teste geldiğini takip et.</p>
+      <p className="muted">Test kitaplarını ekle, her kitaptan kaç test çözdüğünü takip et.</p>
       <ErrorBanner message={selection.error || error} />
       {notice && <p className="notice">{notice}</p>}
 
@@ -148,10 +140,6 @@ export default function Resources() {
           <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)} />
         </label>
         <SubjectTopicFields selection={selection} showTopic={false} />
-        <label>
-          Toplam test sayısı
-          <input type="number" step="1" value={totalTests} onChange={(e) => setTotalTests(e.target.value)} />
-        </label>
         <button type="submit">Ekle</button>
       </form>
 
