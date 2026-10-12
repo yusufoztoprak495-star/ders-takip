@@ -30,3 +30,20 @@ export function addedNotice(date, today) {
   if (date === today) return 'Kayıt eklendi.';
   return `Kayıt eklendi (${formatDate(date)}). Bugün listesinde görünmez.`;
 }
+
+// 75 -> '%75'; soru çözülmemişse (null) çizgi
+export function formatPercent(accuracy) {
+  return accuracy === null ? '—' : `%${accuracy}`;
+}
+
+// 'Bugün', 'Dün · 11.10.2026', '3 gün önce · 09.10.2026'; hiç yoksa 'Henüz çalışılmadı'
+export function formatLastStudied(dateString, todayString) {
+  if (!dateString) return 'Henüz çalışılmadı';
+  const toUtcDay = (s) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return Date.UTC(y, m - 1, d) / 86_400_000;
+  };
+  const days = toUtcDay(todayString) - toUtcDay(dateString);
+  if (days <= 0) return 'Bugün';
+  return `${days === 1 ? 'Dün' : `${days} gün önce`} · ${formatDate(dateString)}`;
+}

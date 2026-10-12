@@ -174,7 +174,7 @@ describe("GET /api/stats/daily", () => {
 });
 
 describe("GET /api/stats/by-subject", () => {
-  it("veri yokken 8 dersin hepsi sıfırlarla döner (NaN/null yok)", async () => {
+  it("veri yokken 8 dersin hepsi sıfırlarla döner (NaN yok; doğruluk oranı bilinçli olarak null)", async () => {
     const { app } = makeTestApp();
     const res = await request(app).get(
       "/api/stats/by-subject?from=2026-10-01&to=2026-10-31",
@@ -191,6 +191,7 @@ describe("GET /api/stats/by-subject", () => {
         wrong: 0,
         blank: 0,
         net: 0,
+        accuracy: null,
       });
     }
   });

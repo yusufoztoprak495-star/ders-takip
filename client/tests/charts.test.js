@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  accuracyOf,
   fillMissingDays,
   groupByWeek,
   weekStartOf,
@@ -136,6 +137,7 @@ describe("summarize", () => {
       wrong: 4,
       blank: 2,
       net: 9,
+      accuracy: 63, // 10 / 16
     });
   });
 
@@ -147,6 +149,25 @@ describe("summarize", () => {
       wrong: 0,
       blank: 0,
       net: 0,
+      accuracy: null,
     });
+  });
+});
+
+describe("accuracyOf", () => {
+  it("doğru / (doğru + yanlış + boş) yüzdesi; soru yoksa null", () => {
+    expect(accuracyOf(3, 1, 0)).toBe(75);
+    expect(accuracyOf(0, 0, 0)).toBeNull();
+  });
+});
+
+describe("summarize doğruluk", () => {
+  it("toplamlardan doğruluk oranını da verir", () => {
+    const result = summarize([
+      { totalSeconds: 60, correct: 6, wrong: 2, blank: 2 },
+      { totalSeconds: 0, correct: 4, wrong: 0, blank: 0 },
+    ]);
+    expect(result.accuracy).toBe(71);
+    expect(summarize([]).accuracy).toBeNull();
   });
 });

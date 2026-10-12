@@ -11,6 +11,12 @@ function netOf(correct, wrong) {
   return Math.round((correct - wrong / 4) * 100) / 100;
 }
 
+// Doğruluk oranı (sunucudaki accuracyOf ile aynı): doğru / tüm çözülenler, yüzde; soru yoksa null
+export function accuracyOf(correct, wrong, blank) {
+  const total = correct + wrong + blank;
+  return total === 0 ? null : Math.round((correct / total) * 100);
+}
+
 const emptyDay = (date) => ({
   date,
   totalSeconds: 0,
@@ -89,5 +95,6 @@ export function summarize(daily) {
     ...total,
     questions: total.correct + total.wrong + total.blank,
     net: netOf(total.correct, total.wrong),
+    accuracy: accuracyOf(total.correct, total.wrong, total.blank),
   };
 }

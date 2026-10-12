@@ -4,7 +4,7 @@ YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması: Po
 
 Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan bir proje. Uygulama mağazalarında yayınlanmaz; indirip kendi bilgisayarında çalıştırabilirsin. Veriler yalnızca senin bilgisayarındaki tek bir dosyada durur.
 
-![İlerleme sayfası: günlük ve haftalık çalışma süresi, derse göre dağılım, doğru/yanlış/boş ve net grafikleri](docs/screenshots/ilerleme.png)
+![İlerleme sayfası: tüm derslerin özeti ve grafikler](docs/screenshots/ilerleme.png)
 
 ## Özellikler
 
@@ -13,7 +13,11 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 - **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı olarak hangi kitaptan çözdüğünü seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
 - **Kaynaklar:** Yalnızca test kitapları: kitap adı, yayınevi, ders ve toplam test sayısıyla eklersin. Her kitapta ilerleme çubuğu ve "çözülen test" alanı vardır. Kitap "Elimde" ya da "Bitirdim" durumunda olur; "Bitirdim" dediğinde çözülen test sayısı toplama tamamlanır. Silerken onay istenir; kitabı silsen de ona bağlı soru kayıtların kaybolmaz.
 - **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
-- **İlerleme:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru ve net özetini görürsün. Beş grafik var: günlük ve haftalık çalışma süresi, derse göre çalışma süresi, derse göre doğru/yanlış/boş ve günlük net değişimi. Bir ders seçersen zaman grafikleri o dersi gösterir, ders karşılaştırmalarında seçtiğin ders vurgulanır. Grafiklerin üzerine gelince ayrıntı balonu çıkar; her grafiğin tablo görünümü de vardır.
+- **İlerleme (üç katman):**
+  - **Ana sayfa:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru, net ve doğruluk oranı özetini görürsün. Altında tüm derslerin listesi ve grafikler (günlük/haftalık çalışma süresi, günlük net, derse göre süre ve doğru/yanlış/boş) var. Bir ders seçersen göstergeler ve zaman grafikleri o dersi gösterir.
+  - **Ders sayfası:** Bir derse tıklayınca açılır: o dersin göstergeleri, zaman grafikleri ve konular. Konular **en zayıftan en güçlüye** (doğruluk oranına göre) sıralanır; henüz soru çözmediğin konular sönük ve en altta durur.
+  - **Konu sayfası:** Bir konuya tıklayınca açılır: toplam çalışma süresi, çözülen soru, net, doğruluk, doğru/yanlış/boş dağılımı, zaman içinde doğruluk grafiği, hangi kitaplardan çözdüğün ve en son ne zaman çalıştığın.
+  - Sayfaların üstünde yol çubuğu (İlerleme › Matematik › Türev) bulunur. Grafiklerin üzerine gelince ayrıntı balonu çıkar; her grafiğin tablo görünümü de vardır.
 - **Ana sayfa:** Bugünün çalışma süresi, çözülen soru sayısı ve neti ile son 7 günün çalışma ritmi.
 
 | Pomodoro                                                  | Kaynaklar                                                               |
@@ -21,6 +25,10 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 | ![Çalışan Pomodoro sayacı](docs/screenshots/pomodoro.png) | ![Kaynak listesi ve ilerleme çubukları](docs/screenshots/kaynaklar.png) |
 
 ![Soru kaydı formu ve son kayıtlar](docs/screenshots/soru-kaydi.png)
+
+| Ders sayfası (konular zayıftan güçlüye) | Konu sayfası |
+| --------------------------------------- | ------------ |
+| ![Ders sayfası](docs/screenshots/ilerleme-ders.png) | ![Konu sayfası](docs/screenshots/ilerleme-konu.png) |
 
 ## Gereksinimler
 
@@ -92,7 +100,7 @@ server/
   tests/
 client/
   src/
-    pages/                Pomodoro, Çalışma Günlüğü, Soru Kaydı, Kaynaklar, Konular, İlerleme
+    pages/                Pomodoro, Çalışma Günlüğü, Soru Kaydı, Kaynaklar, Konular, İlerleme (özet, ders, konu)
     components/, hooks/   ortak parçalar, ikonlar, Pomodoro kadranı, SVG grafikler
     context/              Pomodoro sayacının durumu
     lib/                  saf yardımcı fonksiyonlar (tarih, süre, grafik verisi, eksen, kadran)
@@ -127,6 +135,8 @@ Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla 
 | `GET /api/stats/by-subject?from=&to=`       | Ders bazında toplamlar (8 dersin hepsi, verisiz olanlar sıfırla)                             |
 
 **Net hesabı:** `net = doğru − yanlış / 4`. Net veritabanında saklanmaz, her seferinde hesaplanır.
+
+**Doğruluk oranı:** `doğru / (doğru + yanlış + boş)`, yüzde olarak yuvarlanır. Hiç soru çözülmemişse `null` döner (sıfır değil, "veri yok" demektir).
 
 **Gün sınırı:** Çalışma kayıtları evrensel saatle (UTC) saklanır, istatistikler ise bilgisayarının yerel saatine göre günlere ayrılır. Gece 00:30'da başlayan çalışma o günün sayılır.
 

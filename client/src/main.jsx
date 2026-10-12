@@ -7,6 +7,7 @@ import '@fontsource-variable/newsreader';
 import '@fontsource-variable/hanken-grotesk';
 import App from './App.jsx';
 import './index.css';
+import './progress.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

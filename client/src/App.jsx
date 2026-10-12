@@ -8,6 +8,8 @@ import Questions from './pages/Questions.jsx';
 import Resources from './pages/Resources.jsx';
 import Topics from './pages/Topics.jsx';
 import Progress from './pages/Progress.jsx';
+import ProgressSubject from './pages/ProgressSubject.jsx';
+import ProgressTopic from './pages/ProgressTopic.jsx';
 
 import {
   HomeIcon,
@@ -47,7 +49,7 @@ export default function App() {
       <nav className="nav" aria-label="Ana menü">
         <span className="brand">Ders Takip</span>
         {NAV_ITEMS.map(({ to, label, short, Icon }) => (
-          <NavLink key={to} to={to} end title={label}>
+          <NavLink key={to} to={to} end={to === '/'} title={label}>
             <Icon />
             <span className="nav-label">{label}</span>
             <span className="nav-short">{short}</span>
@@ -64,6 +66,8 @@ export default function App() {
           <Route path="/kaynaklar" element={<Resources />} />
           <Route path="/konular" element={<Topics />} />
           <Route path="/ilerleme" element={<Progress />} />
+          <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
+          <Route path="/ilerleme/ders/:subjectId/konu/:topicId" element={<ProgressTopic />} />
         </Routes>
       </main>
     </PomodoroProvider>

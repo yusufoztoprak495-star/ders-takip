@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { labelIndexes, niceTicks } from '../lib/scale.js';
-import { formatDuration, formatNet, formatShortDate } from '../lib/format.js';
+import { formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
 
 // İlerleme sayfasının grafikleri: Chart.js yerine elle çizilmiş SVG.
 // Ortak kurallar: ince çizgi ve çubuklar, sessiz ızgara, metinler metin renginde,
@@ -307,23 +307,27 @@ export function QuestionStacks({ rows, highlightId, ariaLabel }) {
   );
 }
 
-// Günlük net değişimi: tek seri çizgi. Başlık neyi gösterdiğini söyler, bu yüzden açıklama kutusu yok.
-export function NetLine({ days, ariaLabel }) {
+// Günlük değişim çizgisi: tek seri. Başlık neyi gösterdiğini söyler, bu yüzden açıklama kutusu yok.
+// valueOf: bir günden çizilecek değeri alır; format: değerin yazısı; label: balondaki ad;
+// domain: eksen sınırları sabitse ([0, 100] gibi), verilmezse veriye göre hesaplanır.
+function TrendLine({ days, valueOf, format, label, domain, ariaLabel }) {
   const [ref, width] = useWidth();
   const [hover, setHover] = useState(null);
 
-  const nets = days.map((d) => d.net);
-  const lo = Math.min(...nets);
-  const hi = Math.max(...nets);
-  // Net 0'dan başlamak zorunda değil: hep pozitifse eksen verinin biraz altından başlar, negatif varsa onu da kapsar
-  const { min, max, ticks } = niceTicks(hi, { min: lo >= 0 ? Math.floor(lo * 0.8) : lo, count: 4 });
+  const values = days.map(valueOf);
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  // Eksen 0'dan başlamak zorunda değil: hep pozitifse verinin biraz altından başlar, negatif varsa onu da kapsar
+  const { min, max, ticks } = domain
+    ? { min: domain[0], max: domain[1], ticks: niceTicks(domain[1], { min: domain[0], count: 4 }).ticks }
+    : niceTicks(hi, { min: lo >= 0 ? Math.floor(lo * 0.8) : lo, count: 4 });
   const m = { top: 20, right: 16, bottom: 28, left: 40 };
   const plotW = Math.max(width - m.left - m.right, 10);
   const plotH = HEIGHT - m.top - m.bottom;
   const y = (v) => m.top + plotH - ((v - min) / (max - min)) * plotH;
   const x = (i) => (days.length === 1 ? m.left + plotW / 2 : m.left + (plotW * i) / (days.length - 1));
   const labels = days.map((d) => formatShortDate(d.date));
-  const path = days.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(d.net)}`).join(' ');
+  const path = days.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(valueOf(d))}`).join(' ');
 
   function onMove(event) {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -338,14 +342,14 @@ export function NetLine({ days, ariaLabel }) {
     <div ref={ref} className="svg-chart" onMouseLeave={() => setHover(null)}>
       {width > 0 && (
         <svg width={width} height={HEIGHT} role="img" aria-label={ariaLabel}>
-          <ValueGrid ticks={ticks} y={y} left={m.left} right={width - m.right} format={numberTr} />
+          <ValueGrid ticks={ticks} y={y} left={m.left} right={width - m.right} format={(v) => (domain ? format(v) : numberTr(v))} />
           {active && <line x1={x(active.i)} x2={x(active.i)} y1={m.top} y2={m.top + plotH} className="crosshair" />}
           {days.length > 1 && <path d={path} fill="none" stroke="var(--series-1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
           {days.map((d, i) => (
             <circle
               key={d.date}
               cx={x(i)}
-              cy={y(d.net)}
+              cy={y(valueOf(d))}
               r={active?.i === i ? 5 : 4}
               fill="var(--series-1)"
               stroke="var(--bg)"
@@ -353,8 +357,8 @@ export function NetLine({ days, ariaLabel }) {
             />
           ))}
           {!active && (
-            <text x={x(days.length - 1)} y={y(days[days.length - 1].net) - 12} textAnchor="end" className="value-text">
-              {formatNet(days[days.length - 1].net)}
+            <text x={x(days.length - 1)} y={y(valueOf(days[days.length - 1])) - 12} textAnchor="end" className="value-text">
+              {format(valueOf(days[days.length - 1]))}
             </text>
           )}
           <CategoryLabels labels={labels} x={x} baseline={m.top + plotH} maxLabels={Math.floor(plotW / 52)} />
@@ -366,12 +370,33 @@ export function NetLine({ days, ariaLabel }) {
         tip={
           active && {
             x: x(active.i) + 12,
-            y: y(active.day.net),
+            y: y(valueOf(active.day)),
             title: labels[active.i],
-            lines: [{ label: 'Net', text: formatNet(active.day.net) }],
+            lines: [{ label, text: format(valueOf(active.day)) }],
           }
         }
       />
     </div>
+  );
+}
+
+// Günlük net değişimi
+export function NetLine({ days, ariaLabel }) {
+  return (
+    <TrendLine days={days} valueOf={(d) => d.net} format={formatNet} label="Net" ariaLabel={ariaLabel} />
+  );
+}
+
+// Zaman içinde doğruluk oranı (0–100 sabit eksen: yüzdeler birbiriyle kıyaslanabilsin)
+export function AccuracyLine({ days, ariaLabel }) {
+  return (
+    <TrendLine
+      days={days}
+      valueOf={(d) => d.accuracy}
+      format={formatPercent}
+      label="Doğruluk"
+      domain={[0, 100]}
+      ariaLabel={ariaLabel}
+    />
   );
 }

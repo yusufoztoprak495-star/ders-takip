@@ -2,7 +2,15 @@ import { useState } from 'react';
 
 // Bir grafiğin kartı: başlık, açıklama ve grafik/tablo görünümü arasında geçiş.
 // Tablo görünümü her grafiğin eşdeğeridir: renk ya da fare imleciyle okunamayan değerler için.
-export default function ChartCard({ title, subtitle, empty, headers, rows, children }) {
+export default function ChartCard({
+  title,
+  subtitle,
+  empty,
+  emptyText = 'Bu aralıkta kayıt yok.',
+  headers,
+  rows,
+  children,
+}) {
   const [asTable, setAsTable] = useState(false);
 
   return (
@@ -25,7 +33,7 @@ export default function ChartCard({ title, subtitle, empty, headers, rows, child
       </header>
 
       {empty ? (
-        <p className="muted empty">Bu aralıkta kayıt yok.</p>
+        <p className="muted empty">{emptyText}</p>
       ) : asTable ? (
         <div className="table-wrap">
           <table>

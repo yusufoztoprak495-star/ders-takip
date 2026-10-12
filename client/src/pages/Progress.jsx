@@ -2,72 +2,53 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api.js';
 import ChartCard from '../components/ChartCard.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
-import { DurationColumns, NetLine, QuestionStacks, SubjectTimeBars } from '../components/ProgressCharts.jsx';
-import { fillMissingDays, groupByWeek, summarize, weeklyFrom } from '../lib/charts.js';
+import { QuestionStacks, SubjectTimeBars } from '../components/ProgressCharts.jsx';
+import RangeFilter from '../components/RangeFilter.jsx';
+import StatList from '../components/StatList.jsx';
+import TimeSeriesCharts from '../components/TimeSeriesCharts.jsx';
+import { useDailyStats } from '../hooks/useDailyStats.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
-import { formatDate, formatDuration, formatNet, formatShortDate } from '../lib/format.js';
+import { formatDuration, formatNet, formatPercent } from '../lib/format.js';
 
-const RANGES = [7, 14, 30, 90];
+const subjectLabel = (r) => `${r.subjectName} (${r.examType})`;
+const questionTotal = (r) => r.correct + r.wrong + r.blank;
 
+// Ana ilerleme sayfası (1. katman): tüm derslerin özeti. Bir derse tıklayınca ders sayfası açılır.
 export default function Progress() {
   const [subjects, setSubjects] = useState([]);
   const [range, setRange] = useState(14);
   const [subjectId, setSubjectId] = useState('all');
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [bySubject, setBySubject] = useState(null);
+  const [subjectError, setSubjectError] = useState(null);
 
   useEffect(() => {
     apiFetch('/api/subjects')
       .then(setSubjects)
-      .catch((e) => setError(e.message));
+      .catch((e) => setSubjectError(e.message));
   }, []);
 
-  // Filtre değişince veri yeniden çekilir; yeni veri gelene kadar eski grafikler solukça kalır
+  // Zaman grafikleri ve göstergeler, seçili derse (ya da tüm derslere) göre
+  const { view, loading, error } = useDailyStats(range, subjectId === 'all' ? null : Number(subjectId));
+
+  // Ders listesi ve ders karşılaştırma grafikleri her zaman tüm dersleri gösterir
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     const today = new Date();
-    const to = toLocalDateString(today);
-    const rangeFrom = daysAgo(range - 1, today);
-    const weekFrom = weeklyFrom(range, today); // haftalık grafik için daha geriye gider
-    const subjectQuery = subjectId === 'all' ? '' : `&subjectId=${subjectId}`;
-
-    Promise.all([
-      apiFetch(`/api/stats/daily?from=${weekFrom}&to=${to}${subjectQuery}`),
-      apiFetch(`/api/stats/by-subject?from=${rangeFrom}&to=${to}`),
-    ])
-      .then(([daily, bySubject]) => {
-        if (cancelled) return;
-        setData({ daily, bySubject, rangeFrom, weekFrom, to });
-        setError(null);
-      })
-      .catch((e) => !cancelled && setError(e.message))
-      .finally(() => !cancelled && setLoading(false));
-
+    apiFetch(`/api/stats/by-subject?from=${daysAgo(range - 1, today)}&to=${toLocalDateString(today)}`)
+      .then((rows) => !cancelled && setBySubject(rows))
+      .catch((e) => !cancelled && setSubjectError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [range, subjectId]);
+  }, [range]);
 
-  // Ham veriden grafiklerin ihtiyaç duyduğu biçimler
-  const view = useMemo(() => {
-    if (!data) return null;
-    const days = fillMissingDays(data.daily, data.rangeFrom, data.to);
-    const weeks = groupByWeek(fillMissingDays(data.daily, data.weekFrom, data.to));
-    const label = (r) => `${r.subjectName} (${r.examType})`;
+  const rows = useMemo(() => {
+    if (!bySubject) return null;
     return {
-      days,
-      weeks,
-      summary: summarize(days),
-      netDays: days.filter((d) => d.correct + d.wrong + d.blank > 0),
-      timeRows: data.bySubject.filter((r) => r.totalSeconds > 0).sort((a, b) => b.totalSeconds - a.totalSeconds),
-      questionRows: data.bySubject
-        .filter((r) => r.correct + r.wrong + r.blank > 0)
-        .sort((a, b) => b.correct + b.wrong + b.blank - (a.correct + a.wrong + a.blank)),
-      label,
+      time: bySubject.filter((r) => r.totalSeconds > 0).sort((a, b) => b.totalSeconds - a.totalSeconds),
+      questions: bySubject.filter((r) => questionTotal(r) > 0).sort((a, b) => questionTotal(b) - questionTotal(a)),
     };
-  }, [data]);
+  }, [bySubject]);
 
   const highlightId = subjectId === 'all' ? null : Number(subjectId);
   const chosen = subjects.find((s) => String(s.id) === subjectId);
@@ -76,22 +57,10 @@ export default function Progress() {
   return (
     <section>
       <h1>İlerleme</h1>
-      <ErrorBanner message={error} />
+      <ErrorBanner message={error || subjectError} />
 
       <div className="filters">
-        <div role="group" aria-label="Tarih aralığı" className="range-buttons">
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={r === range ? '' : 'secondary'}
-              aria-pressed={r === range}
-              onClick={() => setRange(r)}
-            >
-              Son {r} gün
-            </button>
-          ))}
-        </div>
+        <RangeFilter range={range} onChange={setRange} />
         <label className="subject-filter">
           Ders
           <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
@@ -105,12 +74,10 @@ export default function Progress() {
         </label>
       </div>
       <p className="muted filter-note">
-        Ders seçersen zaman grafikleri o dersi gösterir; ders karşılaştırmalarında seçtiğin ders vurgulanır.
+        Ders seçersen göstergeler ve zaman grafikleri o dersi gösterir; ders karşılaştırmalarında seçtiğin ders vurgulanır.
       </p>
 
-      {!view ? (
-        !error && <p className="muted">Yükleniyor…</p>
-      ) : (
+      {view && (
         <div className={loading ? 'is-loading' : undefined}>
           <div className="kpis">
             <div className="tile">
@@ -125,79 +92,72 @@ export default function Progress() {
               <span className="muted">Net</span>
               <strong>{formatNet(view.summary.net)}</strong>
             </div>
+            <div className="tile">
+              <span className="muted">Doğruluk</span>
+              <strong>{formatPercent(view.summary.accuracy)}</strong>
+            </div>
           </div>
 
+          {bySubject && (
+            <>
+              <h2>Dersler</h2>
+              <p className="muted filter-note">Ayrıntı için bir derse tıkla.</p>
+              <StatList
+                columns={['Ders', 'Süre', 'Çözülen soru', 'Net', 'Doğruluk']}
+                rows={bySubject.map((r) => ({
+                  key: r.subjectId,
+                  to: `/ilerleme/ders/${r.subjectId}`,
+                  name: subjectLabel(r),
+                  cells: [
+                    formatDuration(r.totalSeconds),
+                    String(questionTotal(r)),
+                    formatNet(r.net),
+                    { text: formatPercent(r.accuracy), bar: r.accuracy },
+                  ],
+                }))}
+              />
+            </>
+          )}
+
+          <h2>Grafikler</h2>
           <div className="chart-grid">
-            <ChartCard
-              title="Günlük çalışma süresi (dakika)"
-              subtitle={`Son ${range} gün · ${scope}`}
-              empty={view.summary.totalSeconds === 0}
-              headers={['Tarih', 'Süre']}
-              rows={view.days.map((d) => [formatDate(d.date), formatDuration(d.totalSeconds)])}
-            >
-              <DurationColumns
-                unit="dakika"
-                labels={view.days.map((d) => formatShortDate(d.date))}
-                seconds={view.days.map((d) => d.totalSeconds)}
-                ariaLabel={`Son ${range} günün günlük çalışma süresi`}
-              />
-            </ChartCard>
+            <TimeSeriesCharts view={view} range={range} scope={scope} totalNote={chosen ? '' : ' (toplam)'} />
 
-            <ChartCard
-              title="Haftalık çalışma süresi (saat)"
-              subtitle={`Haftalar Pazartesi başlar · ${scope}`}
-              empty={view.weeks.every((w) => w.totalSeconds === 0)}
-              headers={['Hafta başlangıcı', 'Süre']}
-              rows={view.weeks.map((w) => [formatDate(w.weekStart), formatDuration(w.totalSeconds)])}
-            >
-              <DurationColumns
-                unit="saat"
-                labels={view.weeks.map((w) => formatShortDate(w.weekStart))}
-                seconds={view.weeks.map((w) => w.totalSeconds)}
-                ariaLabel="Haftalık çalışma süresi"
-              />
-            </ChartCard>
+            {rows && (
+              <>
+                <ChartCard
+                  title="Derse göre çalışma süresi (saat)"
+                  subtitle={`Son ${range} gün`}
+                  empty={rows.time.length === 0}
+                  headers={['Ders', 'Süre']}
+                  rows={rows.time.map((r) => [subjectLabel(r), formatDuration(r.totalSeconds)])}
+                >
+                  <SubjectTimeBars
+                    rows={rows.time}
+                    highlightId={highlightId}
+                    ariaLabel={`Son ${range} günde derse göre çalışma süresi`}
+                  />
+                </ChartCard>
 
-            <ChartCard
-              title="Derse göre çalışma süresi (saat)"
-              subtitle={`Son ${range} gün`}
-              empty={view.timeRows.length === 0}
-              headers={['Ders', 'Süre']}
-              rows={view.timeRows.map((r) => [view.label(r), formatDuration(r.totalSeconds)])}
-            >
-              <SubjectTimeBars
-                rows={view.timeRows}
-                highlightId={highlightId}
-                ariaLabel={`Son ${range} günde derse göre çalışma süresi`}
-              />
-            </ChartCard>
-
-            <ChartCard
-              title="Derse göre doğru / yanlış / boş"
-              subtitle={`Son ${range} gün`}
-              empty={view.questionRows.length === 0}
-              headers={['Ders', 'Doğru', 'Yanlış', 'Boş', 'Net']}
-              rows={view.questionRows.map((r) => [view.label(r), r.correct, r.wrong, r.blank, formatNet(r.net)])}
-            >
-              <QuestionStacks
-                rows={view.questionRows}
-                highlightId={highlightId}
-                ariaLabel={`Son ${range} günde derse göre doğru, yanlış ve boş soru sayıları`}
-              />
-            </ChartCard>
-
-            <ChartCard
-              title="Günlük net değişimi"
-              subtitle={`Son ${range} gün · ${scope}${chosen ? '' : ' (toplam)'} · yalnızca soru çözülen günler`}
-              empty={view.netDays.length === 0}
-              headers={['Tarih', 'Doğru', 'Yanlış', 'Boş', 'Net']}
-              rows={view.netDays.map((d) => [formatDate(d.date), d.correct, d.wrong, d.blank, formatNet(d.net)])}
-            >
-              <NetLine days={view.netDays} ariaLabel={`Son ${range} günün günlük net değişimi`} />
-            </ChartCard>
+                <ChartCard
+                  title="Derse göre doğru / yanlış / boş"
+                  subtitle={`Son ${range} gün`}
+                  empty={rows.questions.length === 0}
+                  headers={['Ders', 'Doğru', 'Yanlış', 'Boş', 'Net']}
+                  rows={rows.questions.map((r) => [subjectLabel(r), r.correct, r.wrong, r.blank, formatNet(r.net)])}
+                >
+                  <QuestionStacks
+                    rows={rows.questions}
+                    highlightId={highlightId}
+                    ariaLabel={`Son ${range} günde derse göre doğru, yanlış ve boş soru sayıları`}
+                  />
+                </ChartCard>
+              </>
+            )}
           </div>
         </div>
       )}
+      {!view && !error && <p className="muted">Yükleniyor…</p>}
     </section>
   );
 }
