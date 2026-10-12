@@ -56,15 +56,19 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 
 **Net hesabı:** `net = doğru − yanlış / 4`. Net veritabanında saklanmaz, her seferinde hesaplanır.
 
+## Özellikler
+
+- **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
+
 ## Teknolojiler
 
 Node.js + Express (sunucu), SQLite (veritabanı), React + Vite (arayüz), Vitest + Supertest (test). Grafikler için Chart.js eklenecek.
 
 ## Ayarlar (`.env`)
 
-| Değişken  | Açıklama               | Varsayılan          |
-| --------- | ---------------------- | ------------------- |
-| `PORT`    | Sunucunun portu        | `3000`              |
+| Değişken  | Açıklama                                                      | Varsayılan        |
+| --------- | ------------------------------------------------------------- | ----------------- |
+| `PORT`    | Sunucunun portu                                               | `3000`            |
 | `DB_PATH` | SQLite dosyasının yolu (göreli yol proje köküne göre çözülür) | `data/calisma.db` |
 
 `.env` dosyası Git'e eklenmez; örnek değerler `.env.example` içindedir.
