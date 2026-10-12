@@ -157,3 +157,24 @@ describe("/api/questions", () => {
     expect(second.status).toBe(404);
   });
 });
+
+describe("/api/questions sınır değerleri", () => {
+  it.each([
+    ["doğru 1e300", { correct: 1e300 }],
+    ["yanlış 10001", { wrong: 10001 }],
+    ["boş 10001", { blank: 10001 }],
+    ["1900 tarihi", { date: "1900-01-01" }],
+  ])("%s → 400", async (_, overrides) => {
+    const { app, db } = makeTestApp();
+    const res = await request(app).post("/api/questions").send(valid(fixtures(db), overrides));
+    expect(res.status).toBe(400);
+  });
+
+  it("tam 10000 soru kabul edilir", async () => {
+    const { app, db } = makeTestApp();
+    const res = await request(app)
+      .post("/api/questions")
+      .send(valid(fixtures(db), { correct: 10000, wrong: 0, blank: 0 }));
+    expect(res.status).toBe(201);
+  });
+});

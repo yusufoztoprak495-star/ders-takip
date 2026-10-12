@@ -86,3 +86,19 @@ describe("requireOneOf", () => {
     expect(() => requireOneOf(undefined, "x", ["manual"])).toThrow(HttpError);
   });
 });
+
+describe("sınır değerleri (inceleme bulgusu: üst sınırsız sayılar)", () => {
+  it("güvenli tam sayı sınırını aşan değerleri reddeder", () => {
+    expect(() => requireInt(1e300, "x")).toThrow(HttpError);
+    expect(() => requireInt(Number.MAX_SAFE_INTEGER + 1, "x")).toThrow(HttpError);
+    expect(requireInt(Number.MAX_SAFE_INTEGER, "x")).toBe(Number.MAX_SAFE_INTEGER);
+  });
+
+  it("makul olmayan yılları reddeder (tarih ve zaman)", () => {
+    expect(() => requireDate("1999-12-31", "x")).toThrow(HttpError);
+    expect(() => requireDate("2101-01-01", "x")).toThrow(HttpError);
+    expect(requireDate("2000-01-01", "x")).toBe("2000-01-01");
+    expect(() => requireIsoDateTime("1900-01-01T00:00:00.000Z", "x")).toThrow(HttpError);
+    expect(() => requireIsoDateTime("2200-01-01T00:00:00.000Z", "x")).toThrow(HttpError);
+  });
+});

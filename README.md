@@ -124,6 +124,8 @@ Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla 
 
 **Gün sınırı:** Çalışma kayıtları evrensel saatle (UTC) saklanır, istatistikler ise bilgisayarının yerel saatine göre günlere ayrılır. Gece 00:30'da başlayan çalışma o günün sayılır.
 
+**Sınırlar:** Yazım hatalarının istatistikleri bozmaması için bir çalışma kaydı en fazla 24 saat, soru kaydında doğru/yanlış/boş her biri en fazla 10000, bir kaynak en fazla 100000 birim olabilir. Tarihler 2000–2100 yılları arasında olmalıdır.
+
 ## Yol haritası
 
 - PDF'ten soru üretme (henüz yapılmadı; ileride eklenecek).

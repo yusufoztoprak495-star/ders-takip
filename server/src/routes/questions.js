@@ -11,6 +11,9 @@ import {
   requireInt,
 } from "../validation.js";
 
+// Makul üst sınır: bir kayıtta en fazla 10000 soru (yazım hatasına karşı)
+const MAX_QUESTION_COUNT = 10000;
+
 const COLUMNS =
   "id, date, subject_id, topic_id, correct, wrong, blank, resource_id";
 
@@ -47,9 +50,9 @@ export function questionsRouter(db) {
       throw new HttpError(400, "Kaynak bulunamadı");
     }
 
-    const correct = requireInt(body.correct, "Doğru sayısı", { min: 0 });
-    const wrong = requireInt(body.wrong, "Yanlış sayısı", { min: 0 });
-    const blank = requireInt(body.blank, "Boş sayısı", { min: 0 });
+    const correct = requireInt(body.correct, "Doğru sayısı", { min: 0, max: MAX_QUESTION_COUNT });
+    const wrong = requireInt(body.wrong, "Yanlış sayısı", { min: 0, max: MAX_QUESTION_COUNT });
+    const blank = requireInt(body.blank, "Boş sayısı", { min: 0, max: MAX_QUESTION_COUNT });
     if (correct + wrong + blank === 0) {
       throw new HttpError(400, "En az bir soru girilmeli");
     }

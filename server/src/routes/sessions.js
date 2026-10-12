@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { HttpError } from '../errors.js';
+import { Router } from "express";
+import { HttpError } from "../errors.js";
 import {
   assertSubjectExists,
   assertTopicMatchesSubject,
@@ -10,9 +10,13 @@ import {
   requireInt,
   requireIsoDateTime,
   requireOneOf,
-} from '../validation.js';
+} from "../validation.js";
 
-const COLUMNS = 'id, subject_id, topic_id, started_at, duration_seconds, entry_type';
+// Makul üst sınır: bir kayıt en fazla 24 saat (yazım hatası ve dev sayılar istatistikleri bozmasın)
+const MAX_SESSION_SECONDS = 24 * 60 * 60;
+
+const COLUMNS =
+  "id, subject_id, topic_id, started_at, duration_seconds, entry_type";
 
 const toSession = (row) => ({
   id: row.id,
@@ -26,44 +30,57 @@ const toSession = (row) => ({
 export function sessionsRouter(db) {
   const router = Router();
 
-  const findSession = (id) => db.prepare(`SELECT ${COLUMNS} FROM study_sessions WHERE id = ?`).get(id);
+  const findSession = (id) =>
+    db.prepare(`SELECT ${COLUMNS} FROM study_sessions WHERE id = ?`).get(id);
 
   // POST ve PUT aynı kuralları kullanır
   function parseSessionBody(req) {
     const body = requireBody(req);
-    const subjectId = requireInt(body.subjectId, 'Ders');
-    const topicId = optionalInt(body.topicId, 'Konu');
+    const subjectId = requireInt(body.subjectId, "Ders");
+    const topicId = optionalInt(body.topicId, "Konu");
     assertSubjectExists(db, subjectId);
     assertTopicMatchesSubject(db, topicId, subjectId);
+    // Süre ekranda dakika olarak girilir; üst sınır mesajı saniye değil saat diliyle verilir
+    const durationSeconds = requireInt(body.durationSeconds, "Süre", {
+      min: 1,
+    });
+    if (durationSeconds > MAX_SESSION_SECONDS) {
+      throw new HttpError(400, "Bir çalışma kaydı en fazla 24 saat olabilir");
+    }
     return {
       subjectId,
       topicId,
-      startedAt: requireIsoDateTime(body.startedAt, 'Başlangıç zamanı'),
-      durationSeconds: requireInt(body.durationSeconds, 'Süre', { min: 1 }),
-      entryType: requireOneOf(body.entryType, 'Giriş türü', ['pomodoro', 'manual']),
+      startedAt: requireIsoDateTime(body.startedAt, "Başlangıç zamanı"),
+      durationSeconds,
+      entryType: requireOneOf(body.entryType, "Giriş türü", [
+        "pomodoro",
+        "manual",
+      ]),
     };
   }
 
   // İsteğe bağlı from/to (yerel tarih, uçlar dahil)
-  router.get('/', (req, res) => {
+  router.get("/", (req, res) => {
     const conditions = [];
     const params = [];
     if (req.query.from !== undefined) {
       conditions.push("date(started_at, 'localtime') >= ?");
-      params.push(requireDate(req.query.from, 'Başlangıç tarihi'));
+      params.push(requireDate(req.query.from, "Başlangıç tarihi"));
     }
     if (req.query.to !== undefined) {
       conditions.push("date(started_at, 'localtime') <= ?");
-      params.push(requireDate(req.query.to, 'Bitiş tarihi'));
+      params.push(requireDate(req.query.to, "Bitiş tarihi"));
     }
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const rows = db
-      .prepare(`SELECT ${COLUMNS} FROM study_sessions ${where} ORDER BY started_at DESC`)
+      .prepare(
+        `SELECT ${COLUMNS} FROM study_sessions ${where} ORDER BY started_at DESC`,
+      )
       .all(...params);
     res.json(rows.map(toSession));
   });
 
-  router.post('/', (req, res) => {
+  router.post("/", (req, res) => {
     const s = parseSessionBody(req);
     const { lastInsertRowid } = db
       .prepare(
@@ -74,22 +91,31 @@ export function sessionsRouter(db) {
     res.status(201).json(toSession(findSession(lastInsertRowid)));
   });
 
-  router.put('/:id', (req, res) => {
+  router.put("/:id", (req, res) => {
     const id = parseId(req.params.id);
-    if (!findSession(id)) throw new HttpError(404, 'Bulunamadı');
+    if (!findSession(id)) throw new HttpError(404, "Bulunamadı");
     const s = parseSessionBody(req);
     db.prepare(
       `UPDATE study_sessions
        SET subject_id = ?, topic_id = ?, started_at = ?, duration_seconds = ?, entry_type = ?
        WHERE id = ?`,
-    ).run(s.subjectId, s.topicId, s.startedAt, s.durationSeconds, s.entryType, id);
+    ).run(
+      s.subjectId,
+      s.topicId,
+      s.startedAt,
+      s.durationSeconds,
+      s.entryType,
+      id,
+    );
     res.json(toSession(findSession(id)));
   });
 
-  router.delete('/:id', (req, res) => {
+  router.delete("/:id", (req, res) => {
     const id = parseId(req.params.id);
-    const { changes } = db.prepare('DELETE FROM study_sessions WHERE id = ?').run(id);
-    if (changes === 0) throw new HttpError(404, 'Bulunamadı');
+    const { changes } = db
+      .prepare("DELETE FROM study_sessions WHERE id = ?")
+      .run(id);
+    if (changes === 0) throw new HttpError(404, "Bulunamadı");
     res.status(204).end();
   });
 

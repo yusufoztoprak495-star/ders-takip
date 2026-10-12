@@ -46,3 +46,19 @@ export function saveSettings(settings) {
     // kaydedilemedi: ayar yalnızca bu oturumda geçerli kalır
   }
 }
+
+// Aynı anahtarla başlayan bir iş bitmeden aynı anahtarla ikinci kez çalıştırılmasını engeller.
+// "Tekrar dene" düğmesine çift tıklanınca aynı çalışmanın iki kez kaydedilmesini önlemek için.
+// İş sürerken yapılan ikinci çağrı hiçbir şey yapmaz ve undefined döner.
+export function createSingleFlight() {
+  const running = new Set();
+  return async function run(key, task) {
+    if (running.has(key)) return undefined;
+    running.add(key);
+    try {
+      return await task();
+    } finally {
+      running.delete(key); // iş hatayla bitse bile anahtar serbest kalır
+    }
+  };
+}

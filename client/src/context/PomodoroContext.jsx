@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../api.js';
-import { formatTime, loadSettings, remainingSeconds, saveSettings } from '../lib/pomodoro.js';
+import { createSingleFlight, formatTime, loadSettings, remainingSeconds, saveSettings } from '../lib/pomodoro.js';
 
 // Sayaç durumu sayfada değil uygulama düzeyinde tutulur: Pomodoro çalışırken başka
 // sayfaya geçince sayaç ve kaydedilemeyen çalışmalar kaybolmaz.
@@ -106,17 +106,27 @@ export function PomodoroProvider({ children }) {
     saveSettings(next);
   }, []);
 
-  const retry = useCallback(async (id) => {
-    const item = pending.find((p) => p.id === id);
-    if (!item) return;
-    try {
-      await apiFetch('/api/sessions', { method: 'POST', body: item.payload });
-      setPending((list) => list.filter((p) => p.id !== id));
-      setNotice('Çalışma kaydedildi.');
-    } catch (e) {
-      setPending((list) => list.map((p) => (p.id === id ? { ...p, message: e.message } : p)));
-    }
-  }, [pending]);
+  // Çift tıklamada aynı çalışma iki kez kaydedilmesin: aynı kayıt için tek istek uçuşta olabilir
+  const retryOnce = useRef(createSingleFlight());
+
+  const retry = useCallback(
+    (id) =>
+      retryOnce.current(id, async () => {
+        const item = pending.find((p) => p.id === id);
+        if (!item) return;
+        setPending((list) => list.map((p) => (p.id === id ? { ...p, retrying: true } : p)));
+        try {
+          await apiFetch('/api/sessions', { method: 'POST', body: item.payload });
+          setPending((list) => list.filter((p) => p.id !== id));
+          setNotice('Çalışma kaydedildi.');
+        } catch (e) {
+          setPending((list) =>
+            list.map((p) => (p.id === id ? { ...p, retrying: false, message: e.message } : p)),
+          );
+        }
+      }),
+    [pending],
+  );
 
   const dismissPending = useCallback((id) => {
     setPending((list) => list.filter((p) => p.id !== id));

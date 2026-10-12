@@ -4,7 +4,7 @@ import ErrorBanner from '../components/ErrorBanner.jsx';
 import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
 import { noonOfLocalDate, toLocalDateString } from '../lib/dates.js';
-import { formatDuration } from '../lib/format.js';
+import { addedNotice, formatDuration } from '../lib/format.js';
 
 const timeOf = (iso) =>
   new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
@@ -47,7 +47,7 @@ export default function StudyLog() {
         },
       });
       setMinutes('');
-      setNotice('Kayıt eklendi.');
+      setNotice(addedNotice(date, today));
       await loadSessions();
     } catch (e) {
       // Geçersiz girdiyi sunucu Türkçe mesajla reddeder, aynen gösterilir

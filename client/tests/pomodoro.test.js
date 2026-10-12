@@ -4,6 +4,7 @@ import {
   formatTime,
   loadSettings,
   saveSettings,
+  createSingleFlight,
 } from "../src/lib/pomodoro.js";
 
 describe("remainingSeconds", () => {
@@ -95,5 +96,40 @@ describe("loadSettings / saveSettings", () => {
     expect(() =>
       saveSettings({ workMinutes: 25, breakMinutes: 5 }),
     ).not.toThrow();
+  });
+});
+
+describe("createSingleFlight (tekrar dene çift tıklama koruması)", () => {
+  it("aynı anahtar için eşzamanlı ikinci çağrıyı çalıştırmaz", async () => {
+    const run = createSingleFlight();
+    let calls = 0;
+    let release;
+    const slow = () =>
+      new Promise((resolve) => {
+        calls += 1;
+        release = resolve;
+      });
+    const first = run("a", slow);
+    const second = await run("a", slow); // ilki hâlâ sürerken
+    expect(second).toBeUndefined();
+    expect(calls).toBe(1);
+    release("tamam");
+    expect(await first).toBe("tamam");
+  });
+
+  it("farklı anahtarlar birbirini engellemez", async () => {
+    const run = createSingleFlight();
+    const results = await Promise.all([run("a", async () => 1), run("b", async () => 2)]);
+    expect(results).toEqual([1, 2]);
+  });
+
+  it("iş bitince (hatayla bitse bile) anahtar serbest kalır", async () => {
+    const run = createSingleFlight();
+    await expect(
+      run("a", async () => {
+        throw new Error("başarısız");
+      }),
+    ).rejects.toThrow("başarısız");
+    expect(await run("a", async () => "yeniden")).toBe("yeniden");
   });
 });

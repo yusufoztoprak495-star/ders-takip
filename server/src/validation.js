@@ -12,9 +12,14 @@ export function requireBody(req) {
   return body;
 }
 
-// Yalnızca gerçek tam sayıları kabul eder: "5", 1.5, NaN reddedilir
+// Kabul edilen tarihlerin yıl aralığı: bunun dışı yazım hatasıdır (örn. 1900, 20260)
+const MIN_YEAR = 2000;
+const MAX_YEAR = 2100;
+
+// Yalnızca gerçek tam sayıları kabul eder: "5", 1.5, NaN reddedilir.
+// isSafeInteger: 1e300 gibi "tam sayı" sayılan ama toplamları bozan dev değerler de reddedilir.
 export function requireInt(value, field, { min, max } = {}) {
-  if (!Number.isInteger(value)) {
+  if (!Number.isSafeInteger(value)) {
     throw new HttpError(400, `${field} tam sayı olmalı`);
   }
   if (min !== undefined && value < min) {
@@ -58,11 +63,15 @@ export function parseId(param) {
 
 // 'YYYY-MM-DD' biçiminde, takvimde gerçekten var olan bir gün (örn. 30 Şubat reddedilir)
 export function requireDate(value, field) {
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [y, m, d] = value.split('-').map(Number);
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split("-").map(Number);
     const date = new Date(Date.UTC(y, m - 1, d));
     // Date taşan günleri sonraki aya kaydırır; geri çevirince aynı çıkmıyorsa tarih geçersizdir
-    if (date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d) {
+    const sameDay =
+      date.getUTCFullYear() === y &&
+      date.getUTCMonth() === m - 1 &&
+      date.getUTCDate() === d;
+    if (sameDay && y >= MIN_YEAR && y <= MAX_YEAR) {
       return value;
     }
   }
@@ -71,9 +80,12 @@ export function requireDate(value, field) {
 
 // Saat bilgisi içeren ISO zamanı; her zaman UTC ISO biçimine çevrilerek saklanır
 export function requireIsoDateTime(value, field) {
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
     const time = new Date(value);
-    if (!Number.isNaN(time.getTime())) return time.toISOString();
+    const year = time.getUTCFullYear();
+    if (!Number.isNaN(time.getTime()) && year >= MIN_YEAR && year <= MAX_YEAR) {
+      return time.toISOString();
+    }
   }
   throw new HttpError(400, `${field} geçerli bir zaman olmalı`);
 }
@@ -81,23 +93,28 @@ export function requireIsoDateTime(value, field) {
 // Değer izin verilen listede değilse reddeder
 export function requireOneOf(value, field, allowed) {
   if (!allowed.includes(value)) {
-    throw new HttpError(400, `${field} şunlardan biri olmalı: ${allowed.join(', ')}`);
+    throw new HttpError(
+      400,
+      `${field} şunlardan biri olmalı: ${allowed.join(", ")}`,
+    );
   }
   return value;
 }
 
 export function assertSubjectExists(db, subjectId) {
-  if (!db.prepare('SELECT 1 FROM subjects WHERE id = ?').get(subjectId)) {
-    throw new HttpError(400, 'Ders bulunamadı');
+  if (!db.prepare("SELECT 1 FROM subjects WHERE id = ?").get(subjectId)) {
+    throw new HttpError(400, "Ders bulunamadı");
   }
 }
 
 // Konu seçilmişse var olmalı ve seçilen derse ait olmalı (null = konu seçilmedi)
 export function assertTopicMatchesSubject(db, topicId, subjectId) {
   if (topicId === null) return;
-  const topic = db.prepare('SELECT subject_id FROM topics WHERE id = ?').get(topicId);
-  if (!topic) throw new HttpError(400, 'Konu bulunamadı');
+  const topic = db
+    .prepare("SELECT subject_id FROM topics WHERE id = ?")
+    .get(topicId);
+  if (!topic) throw new HttpError(400, "Konu bulunamadı");
   if (topic.subject_id !== subjectId) {
-    throw new HttpError(400, 'Konu seçilen derse ait değil');
+    throw new HttpError(400, "Konu seçilen derse ait değil");
   }
 }

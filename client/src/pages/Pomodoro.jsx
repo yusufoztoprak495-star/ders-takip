@@ -37,8 +37,8 @@ export default function Pomodoro() {
             Çalışma kaydedilemedi ({Math.round(item.payload.durationSeconds / 60)} dk): {item.message}
           </span>
           <span className="actions">
-            <button type="button" onClick={() => retry(item.id)}>
-              Tekrar dene
+            <button type="button" disabled={item.retrying} onClick={() => retry(item.id)}>
+              {item.retrying ? "Deneniyor…" : "Tekrar dene"}
             </button>
             <button type="button" className="secondary" onClick={() => dismissPending(item.id)}>
               Vazgeç

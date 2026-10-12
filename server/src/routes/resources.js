@@ -9,6 +9,9 @@ import {
   requireString,
 } from "../validation.js";
 
+// Makul üst sınır: bir kaynakta en fazla 100000 birim (sayfa, test ya da video)
+const MAX_TOTAL_UNITS = 100000;
+
 const COLUMNS = "id, name, type, subject_id, total_units, current_unit";
 
 const toResource = (row) => ({
@@ -34,7 +37,7 @@ export function resourcesRouter(db) {
     const body = requireBody(req);
     const subjectId = requireInt(body.subjectId, "Ders");
     assertSubjectExists(db, subjectId);
-    const totalUnits = requireInt(body.totalUnits, "Toplam birim", { min: 1 });
+    const totalUnits = requireInt(body.totalUnits, "Toplam birim", { min: 1, max: MAX_TOTAL_UNITS });
     const currentUnit = requireInt(
       body.currentUnit ?? fallbackCurrent,
       "Kaldığım yer",

@@ -147,3 +147,21 @@ describe("/api/sessions", () => {
     expect(second.status).toBe(404);
   });
 });
+
+describe("/api/sessions sınır değerleri", () => {
+  it.each([
+    ["1e300 saniye", { durationSeconds: 1e300 }],
+    ["24 saatten uzun (86401 sn)", { durationSeconds: 86401 }],
+    ["1900 yılı", { startedAt: "1900-01-01T10:00:00.000Z" }],
+  ])("%s → 400", async (_, overrides) => {
+    const { app, db } = makeTestApp();
+    const res = await request(app).post("/api/sessions").send(valid(fixtures(db), overrides));
+    expect(res.status).toBe(400);
+  });
+
+  it("tam 24 saat (86400 sn) kabul edilir", async () => {
+    const { app, db } = makeTestApp();
+    const res = await request(app).post("/api/sessions").send(valid(fixtures(db), { durationSeconds: 86400 }));
+    expect(res.status).toBe(201);
+  });
+});

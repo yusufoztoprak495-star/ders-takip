@@ -110,3 +110,20 @@ describe("/api/resources", () => {
     expect(second.status).toBe(404);
   });
 });
+
+describe("/api/resources sınır değerleri", () => {
+  it.each([
+    ["totalUnits 1e300", { totalUnits: 1e300, currentUnit: 0 }],
+    ["totalUnits 100001", { totalUnits: 100001, currentUnit: 0 }],
+  ])("%s → 400", async (_, overrides) => {
+    const { app } = makeTestApp();
+    const res = await request(app).post("/api/resources").send(valid(overrides));
+    expect(res.status).toBe(400);
+  });
+
+  it("tam 100000 birim kabul edilir", async () => {
+    const { app } = makeTestApp();
+    const res = await request(app).post("/api/resources").send(valid({ totalUnits: 100000, currentUnit: 0 }));
+    expect(res.status).toBe(201);
+  });
+});

@@ -23,3 +23,10 @@ export function formatDate(dateString) {
 export function formatShortDate(dateString) {
   return formatDate(dateString).slice(0, 5);
 }
+
+// Çalışma günlüğüne kayıt eklenince gösterilen bildirim. Başka bir güne eklendiyse hangi güne
+// gittiğini söyler: liste yalnızca bugünü gösterdiği için kayıt aksi halde "kaybolmuş" görünür.
+export function addedNotice(date, today) {
+  if (date === today) return 'Kayıt eklendi.';
+  return `Kayıt eklendi (${formatDate(date)}). Bugün listesinde görünmez.`;
+}
