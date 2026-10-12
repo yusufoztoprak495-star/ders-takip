@@ -1,203 +1,377 @@
-import {
-  BarElement,
-  CategoryScale,
-  Chart as ChartJS,
-  Legend,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Tooltip,
-} from 'chart.js';
-import { Bar, Line } from 'react-chartjs-2';
+import { useEffect, useRef, useState } from 'react';
+import { labelIndexes, niceTicks } from '../lib/scale.js';
 import { formatDuration, formatNet, formatShortDate } from '../lib/format.js';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend);
+// İlerleme sayfasının grafikleri: Chart.js yerine elle çizilmiş SVG.
+// Ortak kurallar: ince çizgi ve çubuklar, sessiz ızgara, metinler metin renginde,
+// veri ucu yuvarlak, parçalar arasında 2px boşluk, üzerine gelince ayrıntı balonu.
 
-const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
-const BAR_MAX_THICKNESS = 24; // çubuklar kalın olmasın, aralarında hava kalsın
-
-// '#2a78d6' + 0.35 -> '#2a78d659' (vurgu dışı kalan işaretleri soluklaştırmak için)
-const withAlpha = (hex, alpha) => hex + Math.round(alpha * 255).toString(16).padStart(2, '0');
-
+const HEIGHT = 280;
 const numberTr = (n) => n.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
 
-// Tüm grafiklerin ortak görünümü: ince, sessiz ızgara; metinler metin renginde, veri renginde değil
-function baseOptions(theme, { horizontal = false, stacked = false, legend = false, tooltipLabel }) {
-  const tickStyle = { color: theme.muted, font: { family: FONT, size: 12 } };
-  const valueAxis = {
-    beginAtZero: true,
-    stacked,
-    grid: { color: theme.grid, lineWidth: 1 },
-    border: { display: false },
-    ticks: { ...tickStyle, callback: (v) => numberTr(Number(v)), maxTicksLimit: 6 },
-  };
-  const categoryAxis = {
-    stacked,
-    grid: { display: false },
-    border: { color: theme.axis },
-    ticks: { ...tickStyle, autoSkip: true, maxRotation: 0, maxTicksLimit: horizontal ? undefined : 10 },
-  };
+// Kapsayıcının genişliğini izler: SVG her zaman tam genişlikte, bozulmadan çizilir
+function useWidth() {
+  const ref = useRef(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    setWidth(el.clientWidth);
+    const observer = new ResizeObserver(() => setWidth(el.clientWidth));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return [ref, width];
+}
 
+// Üstü yuvarlak, tabanı düz dikey çubuk
+function columnPath(x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h);
+  return `M${x},${y + h} V${y + radius} Q${x},${y} ${x + radius},${y} H${x + w - radius} Q${x + w},${y} ${x + w},${y + radius} V${y + h} Z`;
+}
+
+// Sağ ucu yuvarlak, tabanı düz yatay çubuk
+function rowPath(x, y, w, h, r) {
+  const radius = Math.min(r, h / 2, w);
+  return `M${x},${y} H${x + w - radius} Q${x + w},${y} ${x + w},${y + radius} V${y + h - radius} Q${x + w},${y + h} ${x + w - radius},${y + h} H${x} Z`;
+}
+
+// Üzerine gelince çıkan ayrıntı balonu (HTML: metin düzgün sarılır, SVG'den bağımsız)
+function Tip({ tip, width }) {
+  if (!tip) return null;
+  const left = Math.min(Math.max(tip.x, 8), Math.max(width - 168, 8));
+  return (
+    <div className="chart-tip" style={{ left, top: Math.max(tip.y - 8, 0) }} role="presentation">
+      <span className="chart-tip-title">{tip.title}</span>
+      {tip.lines.map((line) => (
+        <span key={line.label ?? line.text} className="chart-tip-line">
+          {line.color && <i style={{ background: line.color }} />}
+          {line.label ? `${line.label}: ` : ''}
+          <b>{line.text}</b>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// Yatay ızgara çizgileri ve sol eksen yazıları (dikey çubuk ve çizgi grafikleri için)
+function ValueGrid({ ticks, y, left, right, format }) {
+  return ticks.map((t) => (
+    <g key={t}>
+      <line x1={left} x2={right} y1={y(t)} y2={y(t)} className={t === ticks[0] ? 'axis-line' : 'grid-line'} />
+      <text x={left - 8} y={y(t) + 4} textAnchor="end" className="axis-text">
+        {format(t)}
+      </text>
+    </g>
+  ));
+}
+
+function CategoryLabels({ labels, x, baseline, maxLabels }) {
+  return labelIndexes(labels.length, maxLabels).map((i) => (
+    <text key={i} x={x(i)} y={baseline + 18} textAnchor="middle" className="axis-text">
+      {labels[i]}
+    </text>
+  ));
+}
+
+// Süre sütunları: Günlük (dakika) ve Haftalık (saat). `seconds` saniyedir.
+export function DurationColumns({ labels, seconds, unit, ariaLabel }) {
+  const [ref, width] = useWidth();
+  const [tip, setTip] = useState(null);
+  const [hover, setHover] = useState(null);
+
+  const divisor = unit === 'saat' ? 3600 : 60;
+  const values = seconds.map((s) => s / divisor);
+  const { max, ticks } = niceTicks(Math.max(...values, 0), { count: 4 });
+  const m = { top: 20, right: 8, bottom: 28, left: 36 };
+  const plotW = Math.max(width - m.left - m.right, 10);
+  const plotH = HEIGHT - m.top - m.bottom;
+  const band = plotW / values.length;
+  const barW = Math.min(Math.max(band * 0.42, 3), 12);
+  const y = (v) => m.top + plotH - (v / max) * plotH;
+  const x = (i) => m.left + band * i + band / 2;
+  const peak = values.indexOf(Math.max(...values));
+
+  return (
+    <div ref={ref} className="svg-chart" onMouseLeave={() => (setTip(null), setHover(null))}>
+      {width > 0 && (
+        <svg width={width} height={HEIGHT} role="img" aria-label={ariaLabel}>
+          <ValueGrid ticks={ticks} y={y} left={m.left} right={width - m.right} format={numberTr} />
+          {values.map((v, i) => {
+            const h = Math.max(plotH - (y(v) - m.top), 0);
+            return (
+              <g key={i}>
+                {v > 0 && (
+                  <path
+                    d={columnPath(x(i) - barW / 2, y(v), barW, h, 3)}
+                    className={hover === i ? 'mark mark-hover' : 'mark'}
+                    fill="var(--series-1)"
+                  />
+                )}
+                <rect
+                  x={m.left + band * i}
+                  y={m.top}
+                  width={band}
+                  height={plotH}
+                  fill="transparent"
+                  onMouseEnter={() => {
+                    setHover(i);
+                    setTip({
+                      x: x(i) + 10,
+                      y: Math.max(y(v), m.top + 64), // uzun çubukta balon grafik alanında kalsın
+                      title: labels[i],
+                      lines: [{ text: formatDuration(seconds[i]) }],
+                    });
+                  }}
+                />
+              </g>
+            );
+          })}
+          {values[peak] > 0 && hover === null && (
+            <text x={x(peak)} y={y(values[peak]) - 7} textAnchor="middle" className="value-text">
+              {formatDuration(seconds[peak])}
+            </text>
+          )}
+          <CategoryLabels labels={labels} x={x} baseline={m.top + plotH} maxLabels={Math.floor(plotW / 52)} />
+        </svg>
+      )}
+      <Tip tip={tip} width={width} />
+    </div>
+  );
+}
+
+// Yatay çubuk satırları için ortak yerleşim: sol tarafta ders adları, sağda değer
+function useRows(count, width) {
+  const rowH = 34;
+  const labelW = width < 460 ? 108 : 150;
   return {
-    responsive: true,
-    maintainAspectRatio: false,
-    indexAxis: horizontal ? 'y' : 'x',
-    // Fare, işaretin tam üstünde olmasa da en yakın konumu bulur (büyük tıklama alanı)
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: legend
-        ? {
-            position: 'top',
-            align: 'start',
-            labels: { color: theme.ink, font: { family: FONT, size: 12 }, usePointStyle: true, pointStyle: 'rect', boxWidth: 10, boxHeight: 10 },
-          }
-        : { display: false },
-      tooltip: {
-        backgroundColor: theme.surface,
-        titleColor: theme.muted,
-        bodyColor: theme.ink,
-        borderColor: theme.axis,
-        borderWidth: 1,
-        padding: 10,
-        boxPadding: 4,
-        usePointStyle: true,
-        titleFont: { family: FONT, size: 12, weight: 'normal' },
-        bodyFont: { family: FONT, size: 13, weight: 'bold' },
-        callbacks: tooltipLabel ? { label: tooltipLabel } : {},
-      },
-    },
-    scales: horizontal ? { y: categoryAxis, x: valueAxis } : { x: categoryAxis, y: valueAxis },
+    rowH,
+    labelW,
+    height: Math.max(count * rowH + 8, 60),
+    plotLeft: labelW + 8,
+    plotRight: Math.max(width - 64, labelW + 40),
   };
 }
 
-// Dikey bar için veri ucu 4px yuvarlak, taban düz
-const COLUMN_RADIUS = { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 };
-const ROW_RADIUS = { topLeft: 0, topRight: 4, bottomLeft: 0, bottomRight: 4 };
-
-// Süre sütunları: Günlük (dakika) ve Haftalık (saat). `values` saniyedir.
-export function DurationColumns({ theme, labels, seconds, unit, ariaLabel }) {
-  const divisor = unit === 'saat' ? 3600 : 60;
-  const options = baseOptions(theme, {
-    tooltipLabel: (ctx) => ` ${formatDuration(seconds[ctx.dataIndex])}`,
-  });
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'Çalışma süresi',
-        data: seconds.map((s) => Math.round((s / divisor) * 10) / 10),
-        backgroundColor: theme.series[0],
-        hoverBorderColor: theme.ink,
-        hoverBorderWidth: 2,
-        borderRadius: COLUMN_RADIUS,
-        borderSkipped: 'bottom',
-        maxBarThickness: BAR_MAX_THICKNESS,
-      },
-    ],
-  };
-  return <Bar role="img" aria-label={ariaLabel} data={data} options={options} />;
+function RowLabel({ text, y, labelW, dim }) {
+  // Uzun ders adları sığmazsa kısaltılır (tam adı balonda ve tabloda var)
+  const max = Math.floor(labelW / 7);
+  const shown = text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  return (
+    <text x={labelW} y={y} textAnchor="end" className={dim ? 'axis-text dim' : 'row-text'}>
+      {shown}
+    </text>
+  );
 }
 
 // Ders bazında süre: 8 ders olduğu için halka yerine yatay çubuk. Seçili ders varsa o vurgulanır.
-export function SubjectTimeBars({ theme, rows, highlightId, ariaLabel }) {
-  const options = baseOptions(theme, {
-    horizontal: true,
-    tooltipLabel: (ctx) => ` ${formatDuration(rows[ctx.dataIndex].totalSeconds)}`,
-  });
-  const color = (row) => (highlightId && row.subjectId !== highlightId ? theme.dim : theme.series[0]);
-  const data = {
-    labels: rows.map((r) => `${r.subjectName} (${r.examType})`),
-    datasets: [
-      {
-        label: 'Çalışma süresi',
-        data: rows.map((r) => Math.round((r.totalSeconds / 3600) * 10) / 10),
-        backgroundColor: rows.map(color),
-        hoverBorderColor: theme.ink,
-        hoverBorderWidth: 2,
-        borderRadius: ROW_RADIUS,
-        borderSkipped: 'start',
-        maxBarThickness: BAR_MAX_THICKNESS,
-      },
-    ],
-  };
-  return <Bar role="img" aria-label={ariaLabel} data={data} options={options} />;
+export function SubjectTimeBars({ rows, highlightId, ariaLabel }) {
+  const [ref, width] = useWidth();
+  const [tip, setTip] = useState(null);
+  const [hover, setHover] = useState(null);
+  const layout = useRows(rows.length, width);
+  const maxSeconds = Math.max(...rows.map((r) => r.totalSeconds), 1);
+  const plotW = layout.plotRight - layout.plotLeft;
+
+  return (
+    <div ref={ref} className="svg-chart" onMouseLeave={() => (setTip(null), setHover(null))}>
+      {width > 0 && (
+        <svg width={width} height={layout.height} role="img" aria-label={ariaLabel}>
+          {rows.map((r, i) => {
+            const cy = i * layout.rowH + layout.rowH / 2 + 4;
+            const w = Math.max((r.totalSeconds / maxSeconds) * plotW, 2);
+            const faded = highlightId && r.subjectId !== highlightId;
+            const name = `${r.subjectName} (${r.examType})`;
+            return (
+              <g key={r.subjectId}>
+                <RowLabel text={name} y={cy + 4} labelW={layout.labelW} dim={faded} />
+                <path
+                  d={rowPath(layout.plotLeft, cy - 4, w, 8, 4)}
+                  fill={faded ? 'var(--series-dim)' : 'var(--series-1)'}
+                  className={hover === i ? 'mark mark-hover' : 'mark'}
+                />
+                <text x={layout.plotLeft + w + 8} y={cy + 4} className="value-text">
+                  {formatDuration(r.totalSeconds)}
+                </text>
+                <rect
+                  x="0"
+                  y={i * layout.rowH + 4}
+                  width={width}
+                  height={layout.rowH}
+                  fill="transparent"
+                  onMouseEnter={() => {
+                    setHover(i);
+                    setTip({
+                      x: layout.plotLeft + w + 12,
+                      y: cy,
+                      title: name,
+                      lines: [{ text: formatDuration(r.totalSeconds) }],
+                    });
+                  }}
+                />
+              </g>
+            );
+          })}
+        </svg>
+      )}
+      <Tip tip={tip} width={width} />
+    </div>
+  );
 }
 
-// Ders bazında doğru / yanlış / boş: yığılmış yatay çubuk, 3 seri (legend var)
-export function QuestionStacks({ theme, rows, highlightId, ariaLabel }) {
-  const options = baseOptions(theme, {
-    horizontal: true,
-    stacked: true,
-    legend: true,
-    tooltipLabel: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.x}`,
-  });
-  const series = [
-    { label: 'Doğru', key: 'correct', color: theme.series[0] },
-    { label: 'Yanlış', key: 'wrong', color: theme.series[1] },
-    { label: 'Boş', key: 'blank', color: theme.series[2] },
-  ];
-  const data = {
-    labels: rows.map((r) => `${r.subjectName} (${r.examType})`),
-    datasets: series.map((s) => ({
-      label: s.label,
-      data: rows.map((r) => r[s.key]),
-      // Seçili ders varsa diğerleri soluklaşır (vurgu); renk her zaman aynı seriye aittir
-      backgroundColor: rows.map((r) => (highlightId && r.subjectId !== highlightId ? withAlpha(s.color, 0.3) : s.color)),
-      // Parçalar arasında 2px yüzey rengi boşluk
-      borderColor: theme.surface,
-      borderWidth: 2,
-      hoverBorderColor: theme.ink,
-      maxBarThickness: BAR_MAX_THICKNESS,
-    })),
-  };
-  return <Bar role="img" aria-label={ariaLabel} data={data} options={options} />;
+// Doğru / yanlış / boş: "boş" bilinçli olarak nötr gri, çünkü bir sonuç değil, bir eksik
+const QUESTION_SERIES = [
+  { label: 'Doğru', key: 'correct', color: 'var(--series-2)' },
+  { label: 'Yanlış', key: 'wrong', color: 'var(--series-3)' },
+  { label: 'Boş', key: 'blank', color: 'var(--series-blank)' },
+];
+
+// Ders bazında doğru / yanlış / boş: yığılmış yatay çubuk, parçalar arasında 2px boşluk
+export function QuestionStacks({ rows, highlightId, ariaLabel }) {
+  const [ref, width] = useWidth();
+  const [tip, setTip] = useState(null);
+  const [hover, setHover] = useState(null);
+  const layout = useRows(rows.length, width);
+  const maxTotal = Math.max(...rows.map((r) => r.correct + r.wrong + r.blank), 1);
+  const plotW = layout.plotRight - layout.plotLeft;
+
+  return (
+    <div ref={ref} className="svg-chart" onMouseLeave={() => (setTip(null), setHover(null))}>
+      <ul className="chart-legend">
+        {QUESTION_SERIES.map((s) => (
+          <li key={s.key}>
+            <i style={{ background: s.color }} />
+            {s.label}
+          </li>
+        ))}
+      </ul>
+      {width > 0 && (
+        <svg width={width} height={layout.height} role="img" aria-label={ariaLabel}>
+          {rows.map((r, i) => {
+            const cy = i * layout.rowH + layout.rowH / 2 + 4;
+            const total = r.correct + r.wrong + r.blank;
+            const faded = highlightId && r.subjectId !== highlightId;
+            const name = `${r.subjectName} (${r.examType})`;
+            let cursor = layout.plotLeft;
+            return (
+              <g key={r.subjectId} opacity={faded ? 0.35 : 1}>
+                <RowLabel text={name} y={cy + 4} labelW={layout.labelW} />
+                {QUESTION_SERIES.map((s) => {
+                  const w = (r[s.key] / maxTotal) * plotW;
+                  const x = cursor;
+                  cursor += w;
+                  // 2px boşluk: her parça yüzey renginde 2px çizgiyle ayrılır
+                  return w > 0 ? (
+                    <rect
+                      key={s.key}
+                      x={x}
+                      y={cy - 5}
+                      width={w}
+                      height={10}
+                      fill={s.color}
+                      stroke="var(--bg)"
+                      strokeWidth="2"
+                      className={hover === i ? 'mark mark-hover' : 'mark'}
+                    />
+                  ) : null;
+                })}
+                <text x={cursor + 8} y={cy + 4} className="value-text">
+                  {total}
+                </text>
+                <rect
+                  x="0"
+                  y={i * layout.rowH + 4}
+                  width={width}
+                  height={layout.rowH}
+                  fill="transparent"
+                  onMouseEnter={() => {
+                    setHover(i);
+                    setTip({
+                      x: cursor + 12,
+                      y: cy,
+                      title: name,
+                      lines: [
+                        ...QUESTION_SERIES.map((s) => ({ label: s.label, text: String(r[s.key]), color: s.color })),
+                        { label: 'Net', text: formatNet(r.net) },
+                      ],
+                    });
+                  }}
+                />
+              </g>
+            );
+          })}
+        </svg>
+      )}
+      <Tip tip={tip} width={width} />
+    </div>
+  );
 }
 
-// Dikey işaretçi: fare bir tarihin üstündeyken o konumda ince bir çizgi çizer
-const crosshair = {
-  id: 'crosshair',
-  afterDatasetsDraw(chart, _args, options) {
-    const active = chart.tooltip?.getActiveElements?.() ?? [];
-    if (active.length === 0) return;
-    const { top, bottom } = chart.chartArea;
-    const { ctx } = chart;
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(active[0].element.x, top);
-    ctx.lineTo(active[0].element.x, bottom);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = options.color;
-    ctx.stroke();
-    ctx.restore();
-  },
-};
+// Günlük net değişimi: tek seri çizgi. Başlık neyi gösterdiğini söyler, bu yüzden açıklama kutusu yok.
+export function NetLine({ days, ariaLabel }) {
+  const [ref, width] = useWidth();
+  const [hover, setHover] = useState(null);
 
-// Günlük net değişimi: tek seri çizgi (legend yok, başlık neyi gösterdiğini söyler)
-export function NetLine({ theme, days, ariaLabel }) {
-  const options = baseOptions(theme, { tooltipLabel: (ctx) => ` Net: ${formatNet(ctx.parsed.y)}` });
-  options.scales.y.beginAtZero = false;
-  options.plugins.crosshair = { color: theme.axis };
-  options.interaction = { mode: 'index', intersect: false, axis: 'x' };
-  const data = {
-    labels: days.map((d) => formatShortDate(d.date)),
-    datasets: [
-      {
-        label: 'Net',
-        data: days.map((d) => d.net),
-        borderColor: theme.series[0],
-        borderWidth: 2,
-        borderJoinStyle: 'round',
-        borderCapStyle: 'round',
-        pointRadius: 4, // 8px nokta
-        pointHoverRadius: 6,
-        pointHitRadius: 12, // tıklama alanı noktadan büyük
-        pointBackgroundColor: theme.series[0],
-        pointBorderColor: theme.surface, // 2px yüzey halkası
-        pointBorderWidth: 2,
-        tension: 0,
-        spanGaps: true,
-      },
-    ],
-  };
-  return <Line role="img" aria-label={ariaLabel} data={data} options={options} plugins={[crosshair]} />;
+  const nets = days.map((d) => d.net);
+  const lo = Math.min(...nets);
+  const hi = Math.max(...nets);
+  // Net 0'dan başlamak zorunda değil: hep pozitifse eksen verinin biraz altından başlar, negatif varsa onu da kapsar
+  const { min, max, ticks } = niceTicks(hi, { min: lo >= 0 ? Math.floor(lo * 0.8) : lo, count: 4 });
+  const m = { top: 20, right: 16, bottom: 28, left: 40 };
+  const plotW = Math.max(width - m.left - m.right, 10);
+  const plotH = HEIGHT - m.top - m.bottom;
+  const y = (v) => m.top + plotH - ((v - min) / (max - min)) * plotH;
+  const x = (i) => (days.length === 1 ? m.left + plotW / 2 : m.left + (plotW * i) / (days.length - 1));
+  const labels = days.map((d) => formatShortDate(d.date));
+  const path = days.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(d.net)}`).join(' ');
+
+  function onMove(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const px = event.clientX - rect.left;
+    const i = Math.round(((px - m.left) / plotW) * (days.length - 1));
+    setHover(Math.min(Math.max(days.length === 1 ? 0 : i, 0), days.length - 1));
+  }
+
+  const active = hover === null ? null : { i: hover, day: days[hover] };
+
+  return (
+    <div ref={ref} className="svg-chart" onMouseLeave={() => setHover(null)}>
+      {width > 0 && (
+        <svg width={width} height={HEIGHT} role="img" aria-label={ariaLabel}>
+          <ValueGrid ticks={ticks} y={y} left={m.left} right={width - m.right} format={numberTr} />
+          {active && <line x1={x(active.i)} x2={x(active.i)} y1={m.top} y2={m.top + plotH} className="crosshair" />}
+          {days.length > 1 && <path d={path} fill="none" stroke="var(--series-1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
+          {days.map((d, i) => (
+            <circle
+              key={d.date}
+              cx={x(i)}
+              cy={y(d.net)}
+              r={active?.i === i ? 5 : 4}
+              fill="var(--series-1)"
+              stroke="var(--bg)"
+              strokeWidth="2"
+            />
+          ))}
+          {!active && (
+            <text x={x(days.length - 1)} y={y(days[days.length - 1].net) - 12} textAnchor="end" className="value-text">
+              {formatNet(days[days.length - 1].net)}
+            </text>
+          )}
+          <CategoryLabels labels={labels} x={x} baseline={m.top + plotH} maxLabels={Math.floor(plotW / 52)} />
+          <rect x={m.left} y={m.top} width={plotW} height={plotH} fill="transparent" onMouseMove={onMove} />
+        </svg>
+      )}
+      <Tip
+        width={width}
+        tip={
+          active && {
+            x: x(active.i) + 12,
+            y: y(active.day.net),
+            title: labels[active.i],
+            lines: [{ label: 'Net', text: formatNet(active.day.net) }],
+          }
+        }
+      />
+    </div>
+  );
 }

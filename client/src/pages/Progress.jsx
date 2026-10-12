@@ -3,7 +3,6 @@ import { apiFetch } from '../api.js';
 import ChartCard from '../components/ChartCard.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import { DurationColumns, NetLine, QuestionStacks, SubjectTimeBars } from '../components/ProgressCharts.jsx';
-import { useChartTheme } from '../hooks/useChartTheme.js';
 import { fillMissingDays, groupByWeek, summarize, weeklyFrom } from '../lib/charts.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDate, formatDuration, formatNet, formatShortDate } from '../lib/format.js';
@@ -11,7 +10,6 @@ import { formatDate, formatDuration, formatNet, formatShortDate } from '../lib/f
 const RANGES = [7, 14, 30, 90];
 
 export default function Progress() {
-  const theme = useChartTheme();
   const [subjects, setSubjects] = useState([]);
   const [range, setRange] = useState(14);
   const [subjectId, setSubjectId] = useState('all');
@@ -138,7 +136,6 @@ export default function Progress() {
               rows={view.days.map((d) => [formatDate(d.date), formatDuration(d.totalSeconds)])}
             >
               <DurationColumns
-                theme={theme}
                 unit="dakika"
                 labels={view.days.map((d) => formatShortDate(d.date))}
                 seconds={view.days.map((d) => d.totalSeconds)}
@@ -154,7 +151,6 @@ export default function Progress() {
               rows={view.weeks.map((w) => [formatDate(w.weekStart), formatDuration(w.totalSeconds)])}
             >
               <DurationColumns
-                theme={theme}
                 unit="saat"
                 labels={view.weeks.map((w) => formatShortDate(w.weekStart))}
                 seconds={view.weeks.map((w) => w.totalSeconds)}
@@ -170,7 +166,6 @@ export default function Progress() {
               rows={view.timeRows.map((r) => [view.label(r), formatDuration(r.totalSeconds)])}
             >
               <SubjectTimeBars
-                theme={theme}
                 rows={view.timeRows}
                 highlightId={highlightId}
                 ariaLabel={`Son ${range} günde derse göre çalışma süresi`}
@@ -185,7 +180,6 @@ export default function Progress() {
               rows={view.questionRows.map((r) => [view.label(r), r.correct, r.wrong, r.blank, formatNet(r.net)])}
             >
               <QuestionStacks
-                theme={theme}
                 rows={view.questionRows}
                 highlightId={highlightId}
                 ariaLabel={`Son ${range} günde derse göre doğru, yanlış ve boş soru sayıları`}
@@ -199,7 +193,7 @@ export default function Progress() {
               headers={['Tarih', 'Doğru', 'Yanlış', 'Boş', 'Net']}
               rows={view.netDays.map((d) => [formatDate(d.date), d.correct, d.wrong, d.blank, formatNet(d.net)])}
             >
-              <NetLine theme={theme} days={view.netDays} ariaLabel={`Son ${range} günün günlük net değişimi`} />
+              <NetLine days={view.netDays} ariaLabel={`Son ${range} günün günlük net değişimi`} />
             </ChartCard>
           </div>
         </div>
