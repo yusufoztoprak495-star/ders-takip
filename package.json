@@ -2,6 +2,9 @@
   "name": "ders-takip",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "description": "YKS hazırlığı için kişisel ders çalışma takip uygulaması",
   "workspaces": [
     "server",

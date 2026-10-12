@@ -6,7 +6,7 @@
 
 **Architecture:** React + Vite arayüzü, Express API'si ve tek bir SQLite dosyası. Sunucu istekleri doğrular, istatistikleri hesaplar ve derlenmiş arayüzü de servis eder. Sunucu `createApp(db)` fabrikasıyla kurulur, böylece testler bellek içi veritabanıyla çalışır.
 
-**Tech Stack:** Node.js 20+, Express, better-sqlite3, dotenv, React, Vite, react-router-dom (HashRouter), Chart.js + react-chartjs-2, Vitest, Supertest.
+**Tech Stack:** Node.js 22+, Express, better-sqlite3, dotenv, React, Vite, react-router-dom (HashRouter), Chart.js + react-chartjs-2, Vitest, Supertest.
 
 **Spec:** `docs/superpowers/specs/2026-10-12-ders-takip-design.md`
 

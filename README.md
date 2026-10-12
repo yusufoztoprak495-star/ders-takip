@@ -23,7 +23,7 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 
 ## Gereksinimler
 
-- [Node.js](https://nodejs.org) 20 veya üstü
+- [Node.js](https://nodejs.org) 22 veya üstü
 
 ## Kurulum ve çalıştırma
 
@@ -46,6 +46,10 @@ npm start
 | `DB_PATH` | SQLite dosyasının yolu (göreli yol proje köküne göre çözülür) | `data/calisma.db` |
 
 `.env` dosyası Git'e eklenmez; örnek değerler `.env.example` içindedir.
+
+### Kurulum sorun giderme
+
+Projede bir `.npmrc` dosyası var ve `npm install` sırasında paketlerin kurulum betiklerini kapatıyor. Sebep: `better-sqlite3` derlenmiş dosyaları paketin içinde getirir, ama npm yine de C++ ile derlemeyi denerse (derleme araçları olmayan bilgisayarlarda) kurulum hata verir. Bu dosya sayesinde ek bir araç kurmana gerek kalmaz.
 
 ### Veriler ve yedekleme
 
