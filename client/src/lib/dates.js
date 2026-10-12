@@ -6,3 +6,16 @@ export function toLocalDateString(date) {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
+
+// 'YYYY-AA-GG' yerel gününün saat 12:00'sini UTC ISO metni olarak verir.
+// Geçersiz ya da boş tarihte null döner (sunucu bunu kendi mesajıyla reddeder).
+// Öğlen seçilir ki saat dilimi farkı kaydı yan güne kaydırmasın.
+export function noonOfLocalDate(dateString) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString ?? '');
+  if (!match) return null;
+  const [y, m, d] = match.slice(1).map(Number);
+  const date = new Date(y, m - 1, d, 12);
+  // 30 Şubat gibi tarihler Date tarafından sonraki aya kaydırılır; öyleyse geçersizdir
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return null;
+  return date.toISOString();
+}

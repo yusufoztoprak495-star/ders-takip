@@ -186,3 +186,27 @@ button.secondary {
   display: flex;
   gap: 8px;
 }
+
+h2 {
+  margin: 28px 0 8px;
+  font-size: 1.15rem;
+}
+
+.list {
+  max-width: 640px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}

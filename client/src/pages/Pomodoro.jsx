@@ -1,27 +1,15 @@
-import { useEffect, useState } from 'react';
-import { apiFetch } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
+import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { usePomodoro } from '../context/PomodoroContext.jsx';
+import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
 import { formatTime } from '../lib/pomodoro.js';
 
 export default function Pomodoro() {
   const { settings, updateSettings, phase, remaining, pending, notice, start, cancel, retry, dismissPending } =
     usePomodoro();
-  const [subjects, setSubjects] = useState([]);
-  const [subjectId, setSubjectId] = useState('');
-  const [topicId, setTopicId] = useState('');
-  const [error, setError] = useState(null);
+  const selection = useSubjectSelection();
+  const { subjects, subject, topicId } = selection;
 
-  useEffect(() => {
-    apiFetch('/api/subjects')
-      .then((list) => {
-        setSubjects(list);
-        setSubjectId((current) => current || String(list[0]?.id ?? ''));
-      })
-      .catch((e) => setError(e.message));
-  }, []);
-
-  const subject = subjects.find((s) => String(s.id) === subjectId);
   const runningSubject = phase && subjects.find((s) => s.id === phase.subjectId);
 
   function handleStart(event) {
@@ -41,7 +29,7 @@ export default function Pomodoro() {
   return (
     <section>
       <h1>Pomodoro</h1>
-      <ErrorBanner message={error} />
+      <ErrorBanner message={selection.error} />
 
       {pending.map((item) => (
         <div key={item.id} className="error-banner pending" role="alert">
@@ -75,33 +63,7 @@ export default function Pomodoro() {
         </div>
       ) : (
         <form className="card" onSubmit={handleStart}>
-          <label>
-            Ders
-            <select
-              value={subjectId}
-              onChange={(e) => {
-                setSubjectId(e.target.value);
-                setTopicId('');
-              }}
-            >
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.examType})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Konu (isteğe bağlı)
-            <select value={topicId} onChange={(e) => setTopicId(e.target.value)}>
-              <option value="">Konu seçme</option>
-              {subject?.topics.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <SubjectTopicFields selection={selection} />
           <div className="row">
             <label>
               Çalışma (dk)
