@@ -16,7 +16,9 @@ cp .env.example .env   # ayarları istersen değiştir
 npm start
 ```
 
-Sunucu varsayılan olarak `http://localhost:3000` adresinde çalışır. Çalıştığını görmek için: `http://localhost:3000/api/health`
+`npm start` arayüzü derler ve sunucuyu başlatır. Uygulama varsayılan olarak `http://localhost:3000` adresinde açılır.
+
+**Geliştirme modu:** `npm run dev` sunucuyu ve arayüzü birlikte başlatır; arayüz `http://localhost:5173` adresinde açılır ve kodu değiştirdikçe kendiliğinden yenilenir. İki mod da aynı veritabanı dosyasını kullanır.
 
 ## Testler
 
@@ -56,13 +58,13 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 
 ## Teknolojiler
 
-Node.js + Express (sunucu), SQLite (veritabanı), Vitest + Supertest (test). Arayüz için React + Vite ve grafikler için Chart.js eklenecek.
+Node.js + Express (sunucu), SQLite (veritabanı), React + Vite (arayüz), Vitest + Supertest (test). Grafikler için Chart.js eklenecek.
 
 ## Ayarlar (`.env`)
 
 | Değişken  | Açıklama               | Varsayılan          |
 | --------- | ---------------------- | ------------------- |
 | `PORT`    | Sunucunun portu        | `3000`              |
-| `DB_PATH` | SQLite dosyasının yolu | `./data/calisma.db` |
+| `DB_PATH` | SQLite dosyasının yolu (göreli yol proje köküne göre çözülür) | `data/calisma.db` |
 
 `.env` dosyası Git'e eklenmez; örnek değerler `.env.example` içindedir.

@@ -3,9 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "description": "YKS hazırlığı için kişisel ders çalışma takip uygulaması",
-  "workspaces": ["server"],
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "scripts": {
-    "start": "node server/src/server.js",
+    "build": "npm run build -w client",
+    "start": "npm run build && node server/src/server.js",
+    "dev": "concurrently -n sunucu,arayuz \"npm run dev -w server\" \"npm run dev -w client\"",
     "test": "npm test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
   }
 }

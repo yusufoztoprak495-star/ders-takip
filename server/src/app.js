@@ -7,7 +7,8 @@ import { resourcesRouter } from "./routes/resources.js";
 import { questionsRouter } from "./routes/questions.js";
 import { statsRouter } from "./routes/stats.js";
 
-export function createApp(db) {
+// clientDist: derlenmiş arayüz klasörü. Verilirse sunucu arayüzü de servis eder.
+export function createApp(db, { clientDist } = {}) {
   const app = express();
   app.use(express.json());
 
@@ -20,6 +21,7 @@ export function createApp(db) {
   app.use("/api/resources", resourcesRouter(db));
   app.use("/api/questions", questionsRouter(db));
   app.use("/api/stats", statsRouter(db));
+  if (clientDist) app.use(express.static(clientDist));
 
   // Sıra önemli: önce rotalar, sonra 404, en sonda hata yakalayıcı
   app.use("/api", notFoundHandler);
