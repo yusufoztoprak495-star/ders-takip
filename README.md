@@ -24,6 +24,20 @@ Sunucu varsayılan olarak `http://localhost:3000` adresinde çalışır. Çalı�
 npm test
 ```
 
+## Veritabanı
+
+Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalıştırmada kendiliğinden oluşur. Yedeklemek için bu dosyayı kopyalamak yeterli. İlk kurulumda TYT/AYT ders ve konu listesi otomatik yüklenir.
+
+## API (şimdilik)
+
+| Uç                       | Açıklama                             |
+| ------------------------ | ------------------------------------ |
+| `GET /api/health`        | Sunucu çalışıyor mu                  |
+| `GET /api/subjects`      | Dersler, konularıyla birlikte        |
+| `POST /api/topics`       | Konu ekle (`{ subjectId, name }`)    |
+| `PUT /api/topics/:id`    | Konuyu yeniden adlandır (`{ name }`) |
+| `DELETE /api/topics/:id` | Konuyu sil                           |
+
 ## Teknolojiler
 
 Node.js + Express (sunucu), SQLite (veritabanı), Vitest + Supertest (test). Arayüz için React + Vite ve grafikler için Chart.js eklenecek.
