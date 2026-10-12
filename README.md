@@ -132,7 +132,9 @@ Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla 
 | `PUT /api/questions/:id`                    | Kaydı güncelle                                                                               |
 | `DELETE /api/questions/:id`                 | Kaydı sil                                                                                    |
 | `GET /api/stats/daily?from=&to=&subjectId=` | Gün gün çalışma süresi, soru sayıları ve net (`from`/`to` zorunlu, `subjectId` isteğe bağlı) |
-| `GET /api/stats/by-subject?from=&to=`       | Ders bazında toplamlar (8 dersin hepsi, verisiz olanlar sıfırla)                             |
+| `GET /api/stats/by-subject?from=&to=`       | Ders bazında toplamlar ve doğruluk (8 dersin hepsi, verisiz olanlar sıfırla)                 |
+| `GET /api/stats/by-topic?subjectId=&from=&to=` | Bir dersin konu bazında toplamları ve doğruluğu (verisiz konular sıfırla)                 |
+| `GET /api/stats/topic/:id`                  | Konunun tüm zamanlardaki özeti: toplamlar, son çalışma günü, kitap kırılımı, günlük doğruluk |
 
 **Net hesabı:** `net = doğru − yanlış / 4`. Net veritabanında saklanmaz, her seferinde hesaplanır.
 
