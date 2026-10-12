@@ -282,3 +282,28 @@ h2 {
 .resume label {
   flex: 1;
 }
+
+.subject-section {
+  max-width: 640px;
+}
+
+.list.topics li {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+
+.inline-form {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.list .inline-form {
+  margin: 0;
+}
+
+.inline-form input {
+  flex: 1;
+  min-width: 0;
+}
