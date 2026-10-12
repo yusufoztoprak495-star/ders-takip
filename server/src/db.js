@@ -16,13 +16,15 @@ const SCHEMA = `
     name TEXT NOT NULL
   );
 
+  -- Kaynaklar yalnızca test kitaplarıdır
   CREATE TABLE IF NOT EXISTS resources (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('kitap', 'video')),
+    publisher TEXT NOT NULL DEFAULT '',
     subject_id INTEGER NOT NULL REFERENCES subjects(id),
-    total_units INTEGER NOT NULL CHECK (total_units > 0),
-    current_unit INTEGER NOT NULL DEFAULT 0 CHECK (current_unit >= 0)
+    status TEXT NOT NULL DEFAULT 'elimde' CHECK (status IN ('elimde', 'bitirdim')),
+    total_tests INTEGER NOT NULL CHECK (total_tests > 0),
+    solved_tests INTEGER NOT NULL DEFAULT 0 CHECK (solved_tests >= 0)
   );
 
   CREATE TABLE IF NOT EXISTS study_sessions (
@@ -46,6 +48,56 @@ const SCHEMA = `
   );
 `;
 
+// Şema sürümü (PRAGMA user_version). 1: kaynaklar yalnızca test kitabı (video kalktı).
+const SCHEMA_VERSION = 1;
+
+// Eski şemada resources tablosunda 'type' sütunu vardı
+function hasLegacyResources(db) {
+  return db.prepare("PRAGMA table_info(resources)").all().some((c) => c.name === "type");
+}
+
+// Eski kaynaklar tablosunu yeni şemaya çevirir; veri kaybolmasın diye önce dosyanın yedeği alınır.
+// Kitaplar korunur (id'leri aynı kalır, soru kayıtlarının kitap bağlantısı bozulmaz), videolar silinir
+// ve onlara bağlı soru kayıtları kalır, yalnızca bağlantıları boşalır.
+function migrateResources(db, filePath) {
+  if (filePath !== ":memory:") {
+    const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+    fs.copyFileSync(filePath, `${filePath}.yedek-${stamp.slice(0, 8)}-${stamp.slice(8)}`);
+  }
+  // Tabloyu silip yeniden kurarken ON DELETE SET NULL tetiklenip soru kayıtlarının kitap
+  // bağlantısını silmesin diye yabancı anahtar kontrolü geçişin süresince kapatılır.
+  db.pragma("foreign_keys = OFF");
+  try {
+    db.transaction(() => {
+      db.exec(`
+        CREATE TABLE resources_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          publisher TEXT NOT NULL DEFAULT '',
+          subject_id INTEGER NOT NULL REFERENCES subjects(id),
+          status TEXT NOT NULL DEFAULT 'elimde' CHECK (status IN ('elimde', 'bitirdim')),
+          total_tests INTEGER NOT NULL CHECK (total_tests > 0),
+          solved_tests INTEGER NOT NULL DEFAULT 0 CHECK (solved_tests >= 0)
+        );
+        INSERT INTO resources_new (id, name, subject_id, status, total_tests, solved_tests)
+          SELECT id, name, subject_id,
+                 CASE WHEN current_unit >= total_units THEN 'bitirdim' ELSE 'elimde' END,
+                 total_units, current_unit
+          FROM resources WHERE type = 'kitap';
+        UPDATE question_logs SET resource_id = NULL
+          WHERE resource_id IS NOT NULL AND resource_id NOT IN (SELECT id FROM resources_new);
+        DROP TABLE resources;
+        ALTER TABLE resources_new RENAME TO resources;
+      `);
+      if (db.pragma("foreign_key_check").length > 0) {
+        throw new Error("Geçiş sonrası yabancı anahtar hatası");
+      }
+    })();
+  } finally {
+    db.pragma("foreign_keys = ON");
+  }
+}
+
 // SQLite dosyasını açar (':memory:' bellek içi veritabanı verir) ve şemayı kurar
 export function openDb(filePath) {
   if (filePath !== ":memory:") {
@@ -55,6 +107,8 @@ export function openDb(filePath) {
   const db = new Database(filePath);
   // SQLite'ta yabancı anahtar kontrolü varsayılan olarak kapalıdır, açıkça açılır
   db.pragma("foreign_keys = ON");
+  if (hasLegacyResources(db)) migrateResources(db, filePath);
   db.exec(SCHEMA);
+  db.pragma(`user_version = ${SCHEMA_VERSION}`);
   return db;
 }

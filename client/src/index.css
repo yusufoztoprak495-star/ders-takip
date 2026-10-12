@@ -835,3 +835,20 @@ form.card .dial {
     font-size: 1.45rem;
   }
 }
+
+/* --- Kitap kartı --- */
+.resource-title {
+  min-width: 0;
+}
+
+.resource-title .muted {
+  overflow-wrap: anywhere;
+}
+
+.list li.resource.is-done {
+  opacity: 0.7;
+}
+
+.list li.resource.is-done progress::-webkit-progress-value {
+  background: var(--series-blank);
+}

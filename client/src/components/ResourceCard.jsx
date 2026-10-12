@@ -1,44 +1,47 @@
 import { useState } from 'react';
 
-// Tek bir kaynak: ilerleme çubuğu, "kaldığım yer" alanı ve silme düğmesi.
-// Kaydetme ve silme işlemleri üst sayfadan gelir (hata gösterimi de orada yapılır).
-export default function ResourceCard({ resource, subjectName, onSave, onDelete }) {
-  const [current, setCurrent] = useState(String(resource.currentUnit));
-
-  const changed = current !== String(resource.currentUnit);
+// Tek bir test kitabı: ilerleme çubuğu, "çözülen test" alanı, durum değiştirme ve silme.
+// Kaydetme, durum değiştirme ve silme işlemleri üst sayfadan gelir (hata gösterimi de orada yapılır).
+export default function ResourceCard({ resource, subjectName, onSave, onToggleStatus, onDelete }) {
+  const [solved, setSolved] = useState(String(resource.solvedTests));
+  const changed = solved !== String(resource.solvedTests);
+  const done = resource.status === 'bitirdim';
 
   return (
-    <li className="resource">
+    <li className={done ? 'resource is-done' : 'resource'}>
       <div className="resource-head">
-        <div>
+        <div className="resource-title">
           <strong>{resource.name}</strong>
-          <span className="badge">{resource.type === 'kitap' ? 'Kitap' : 'Video'}</span>
-          <div className="muted">{subjectName}</div>
+          <div className="muted">{[resource.publisher, subjectName].filter(Boolean).join(' · ')}</div>
         </div>
-        <button type="button" className="secondary" onClick={() => onDelete(resource)}>
-          Sil
-        </button>
+        <span className="actions">
+          <button type="button" className="secondary" onClick={() => onToggleStatus(resource)}>
+            {done ? 'Tekrar elime al' : 'Bitirdim'}
+          </button>
+          <button type="button" className="secondary" onClick={() => onDelete(resource)}>
+            Sil
+          </button>
+        </span>
       </div>
 
       <div className="progress-line">
         <progress max="100" value={resource.progressPercent} aria-label="İlerleme" />
-        <span>%{resource.progressPercent}</span>
+        <span>
+          {resource.solvedTests} / {resource.totalTests} test
+        </span>
       </div>
 
-      <div className="resume">
-        <label>
-          Kaldığım yer ({resource.totalUnits} birimden)
-          <input
-            type="number"
-            step="1"
-            value={current}
-            onChange={(e) => setCurrent(e.target.value)}
-          />
-        </label>
-        <button type="button" disabled={!changed} onClick={() => onSave(resource, current)}>
-          Kaydet
-        </button>
-      </div>
+      {!done && (
+        <div className="resume">
+          <label>
+            Çözülen test ({resource.totalTests} testten)
+            <input type="number" step="1" value={solved} onChange={(e) => setSolved(e.target.value)} />
+          </label>
+          <button type="button" disabled={!changed} onClick={() => onSave(resource, solved)}>
+            Kaydet
+          </button>
+        </div>
+      )}
     </li>
   );
 }

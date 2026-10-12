@@ -4,13 +4,14 @@ import ErrorBanner from '../components/ErrorBanner.jsx';
 import ResourceCard from '../components/ResourceCard.jsx';
 import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
+import { splitByStatus } from '../lib/resources.js';
 
 export default function Resources() {
   const selection = useSubjectSelection();
   const { subjects, subject } = selection;
   const [name, setName] = useState('');
-  const [type, setType] = useState('kitap');
-  const [totalUnits, setTotalUnits] = useState('');
+  const [publisher, setPublisher] = useState('');
+  const [totalTests, setTotalTests] = useState('');
   const [resources, setResources] = useState([]);
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -36,14 +37,15 @@ export default function Resources() {
         method: 'POST',
         body: {
           name,
-          type,
+          publisher,
           subjectId: subject?.id,
-          totalUnits: totalUnits === '' ? null : Number(totalUnits),
+          totalTests: totalTests === '' ? null : Number(totalTests),
         },
       });
       setName('');
-      setTotalUnits('');
-      setNotice('Kaynak eklendi.');
+      setPublisher('');
+      setTotalTests('');
+      setNotice('Kitap eklendi.');
       await loadResources();
     } catch (e) {
       // Geçersiz girdiyi sunucu Türkçe mesajla reddeder, aynen gösterilir
@@ -51,28 +53,43 @@ export default function Resources() {
     }
   }
 
-  // "Kaldığım yer" güncellemesi: sunucu tam gövde ister, diğer alanlar aynen gönderilir
-  async function handleSave(resource, currentText) {
+  // Sunucu tam gövde ister: kitabın mevcut alanları gönderilir, değişenler üzerine yazılır
+  async function update(resource, changes) {
     setError(null);
     setNotice(null);
-    if (currentText === '') {
-      setError('Kaldığım yer boş olamaz');
-      return;
-    }
     try {
       await apiFetch(`/api/resources/${resource.id}`, {
         method: 'PUT',
         body: {
           name: resource.name,
-          type: resource.type,
+          publisher: resource.publisher,
           subjectId: resource.subjectId,
-          totalUnits: resource.totalUnits,
-          currentUnit: Number(currentText),
+          totalTests: resource.totalTests,
+          solvedTests: resource.solvedTests,
+          status: resource.status,
+          ...changes,
         },
       });
       await loadResources();
     } catch (e) {
       setError(e.message);
+    }
+  }
+
+  function handleSave(resource, solvedText) {
+    if (solvedText === '') {
+      setError('Çözülen test sayısı boş olamaz');
+      return;
+    }
+    update(resource, { solvedTests: Number(solvedText) });
+  }
+
+  // Bitirdim'e geçerken çözülen test sayısı toplama tamamlanır; geri alırken sayı korunur
+  function handleToggleStatus(resource) {
+    if (resource.status === 'elimde') {
+      update(resource, { status: 'bitirdim', solvedTests: resource.totalTests });
+    } else {
+      update(resource, { status: 'elimde' });
     }
   }
 
@@ -94,55 +111,56 @@ export default function Resources() {
     return s ? `${s.name} (${s.examType})` : '';
   };
 
+  const { active, done } = splitByStatus(resources);
+  const renderList = (list) => (
+    <ul className="list resources">
+      {list.map((r) => (
+        // key'e çözülen test ve durum eklenir: kayıt güncellenince kart yeni değerle yeniden kurulur
+        <ResourceCard
+          key={`${r.id}-${r.solvedTests}-${r.status}`}
+          resource={r}
+          subjectName={subjectName(r.subjectId)}
+          onSave={handleSave}
+          onToggleStatus={handleToggleStatus}
+          onDelete={handleDelete}
+        />
+      ))}
+    </ul>
+  );
+
   return (
     <section>
       <h1>Kaynaklar</h1>
-      <p className="muted">Kitap ve video setlerini ekle, nerede kaldığını takip et.</p>
+      <p className="muted">Test kitaplarını ekle, kaçıncı teste geldiğini takip et.</p>
       <ErrorBanner message={selection.error || error} />
       {notice && <p className="notice">{notice}</p>}
 
       <form className="card" onSubmit={handleAdd} noValidate>
-        <h2 className="card-title">Yeni kaynak</h2>
+        <h2 className="card-title">Yeni kitap</h2>
         <label>
-          Ad
+          Kitap adı
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <label>
-          Tür
-          <select value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="kitap">Kitap</option>
-            <option value="video">Video seti</option>
-          </select>
+          Yayınevi (isteğe bağlı)
+          <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)} />
         </label>
         <SubjectTopicFields selection={selection} showTopic={false} />
         <label>
-          Toplam birim (sayfa, test ya da video sayısı)
-          <input
-            type="number"
-            step="1"
-            value={totalUnits}
-            onChange={(e) => setTotalUnits(e.target.value)}
-          />
+          Toplam test sayısı
+          <input type="number" step="1" value={totalTests} onChange={(e) => setTotalTests(e.target.value)} />
         </label>
         <button type="submit">Ekle</button>
       </form>
 
-      <h2>Kaynaklarım</h2>
-      {resources.length === 0 ? (
-        <p className="muted">Henüz kaynak yok.</p>
-      ) : (
-        <ul className="list resources">
-          {resources.map((r) => (
-            // key'e currentUnit eklenir: kayıt güncellenince kart yeni değerle yeniden kurulur
-            <ResourceCard
-              key={`${r.id}-${r.currentUnit}`}
-              resource={r}
-              subjectName={subjectName(r.subjectId)}
-              onSave={handleSave}
-              onDelete={handleDelete}
-            />
-          ))}
-        </ul>
+      <h2>Elimde</h2>
+      {active.length === 0 ? <p className="muted">Şu an elinde kitap yok.</p> : renderList(active)}
+
+      {done.length > 0 && (
+        <>
+          <h2>Bitirdim</h2>
+          {renderList(done)}
+        </>
       )}
     </section>
   );

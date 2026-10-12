@@ -5,6 +5,7 @@ import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatNet } from '../lib/format.js';
+import { bookLabel, selectableBooks } from '../lib/resources.js';
 
 // Boş bırakılan sayı alanı 0 sayılır (örn. hiç boş bırakmadıysan "Boş" alanına dokunmana gerek yok)
 const toCount = (value) => (value === '' ? 0 : Number(value));
@@ -39,8 +40,8 @@ export default function Questions() {
       .catch((e) => setError(e.message));
   }, [loadLogs]);
 
-  // Kaynak seçenekleri seçilen derse göre süzülür; ders değişince geçersiz kalan seçim sıfırlanır
-  const subjectResources = resources.filter((r) => String(r.subjectId) === subjectId);
+  // Kitap seçenekleri seçilen dersin elimdeki kitaplarıdır; ders değişince geçersiz kalan seçim sıfırlanır
+  const subjectResources = selectableBooks(resources, subjectId, resourceId);
   const selectedResource = subjectResources.some((r) => String(r.id) === resourceId) ? resourceId : '';
 
   function resetForm() {
@@ -104,7 +105,10 @@ export default function Questions() {
 
   const setCount = (field) => (e) => setCounts((c) => ({ ...c, [field]: e.target.value }));
   const subjectOf = (id) => subjects.find((s) => s.id === id);
-  const resourceName = (id) => resources.find((r) => r.id === id)?.name;
+  const resourceName = (id) => {
+    const book = resources.find((r) => r.id === id);
+    return book && bookLabel(book);
+  };
 
   return (
     <section>
@@ -135,12 +139,12 @@ export default function Questions() {
           </label>
         </div>
         <label>
-          Kaynak (isteğe bağlı)
+          Hangi kitaptan (isteğe bağlı)
           <select value={selectedResource} onChange={(e) => setResourceId(e.target.value)}>
-            <option value="">Kaynak seçme</option>
+            <option value="">Kitap seçme</option>
             {subjectResources.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.name}
+                {bookLabel(r)}
               </option>
             ))}
           </select>

@@ -9,7 +9,7 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal) hazırlığı sıras�
 - Pomodoro zamanlayıcı
 - Günlük çalışma süresi kaydı (ders/konu bazında)
 - Çözülen soru sayısı kaydı (ders, konu, doğru/yanlış/boş)
-- Kaynak ve video takibi (hangi kitap/video seti, nerede kaldım)
+- Kaynak takibi: test kitapları (kitap, yayınevi, ders, çözülen/toplam test, elimde/bitirdim)
 - Grafiklerle ilerleme takibi (günlük, haftalık, ders bazında)
 
 ### Kapsam Dışı (şimdilik YAPILMAYACAK)

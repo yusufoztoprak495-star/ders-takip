@@ -1,6 +1,6 @@
 # Ders Çalışma Takip Uygulaması
 
-YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması: Pomodoro ile çalışma süresini kaydet, çözdüğün soruları gir, kitap ve video setlerinde nerede kaldığını takip et, ilerlemeni grafiklerle gör.
+YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması: Pomodoro ile çalışma süresini kaydet, çözdüğün soruları gir, test kitaplarında kaçıncı teste geldiğini takip et, ilerlemeni grafiklerle gör.
 
 Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan bir proje. Uygulama mağazalarında yayınlanmaz; indirip kendi bilgisayarında çalıştırabilirsin. Veriler yalnızca senin bilgisayarındaki tek bir dosyada durur.
 
@@ -10,8 +10,8 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 
 - **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Sayaç, saat çerçevesi gibi 60 çentikli bir kadrandır: süre aktıkça çentikler söner (çalışmada turuncu, molada turkuaz). Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
 - **Çalışma günlüğü:** Pomodoro kullanmadığın çalışmaları ders, konu, tarih ve dakika girerek elle eklersin. Bugünün kayıtları (Pomodoro ve elle girilenler) toplam süreyle listelenir, istediğini silebilirsin.
-- **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı kaynak seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
-- **Kaynaklar:** Kitap ve video setlerini ders ve toplam birim sayısıyla (sayfa, test ya da video) eklersin. Her kaynakta ilerleme çubuğu ve "kaldığım yer" alanı vardır; sayıyı güncelledikçe yüzde hesaplanır. Silerken onay istenir; kaynağı silsen de ona bağlı soru kayıtların kaybolmaz.
+- **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı olarak hangi kitaptan çözdüğünü seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
+- **Kaynaklar:** Yalnızca test kitapları: kitap adı, yayınevi, ders ve toplam test sayısıyla eklersin. Her kitapta ilerleme çubuğu ve "çözülen test" alanı vardır. Kitap "Elimde" ya da "Bitirdim" durumunda olur; "Bitirdim" dediğinde çözülen test sayısı toplama tamamlanır. Silerken onay istenir; kitabı silsen de ona bağlı soru kayıtların kaybolmaz.
 - **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
 - **İlerleme:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru ve net özetini görürsün. Beş grafik var: günlük ve haftalık çalışma süresi, derse göre çalışma süresi, derse göre doğru/yanlış/boş ve günlük net değişimi. Bir ders seçersen zaman grafikleri o dersi gösterir, ders karşılaştırmalarında seçtiğin ders vurgulanır. Grafiklerin üzerine gelince ayrıntı balonu çıkar; her grafiğin tablo görünümü de vardır.
 - **Ana sayfa:** Bugünün çalışma süresi, çözülen soru sayısı ve neti ile son 7 günün çalışma ritmi.
@@ -54,7 +54,7 @@ Projede bir `.npmrc` dosyası var ve `npm install` sırasında paketlerin kurulu
 
 ### Veriler ve yedekleme
 
-Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalıştırmada kendiliğinden oluşur ve Git'e eklenmez. Yedeklemek için bu dosyayı kopyalamak yeterli. İlk kurulumda TYT/AYT ders ve konu listesi otomatik yüklenir.
+Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalıştırmada kendiliğinden oluşur ve Git'e eklenmez. Yedeklemek için bu dosyayı kopyalamak yeterli. Veritabanı şeması değiştiğinde (örneğin eski sürümden yükseltirken) uygulama, dosyayı değiştirmeden önce yanına `calisma.db.yedek-TARİH-SAAT` adıyla otomatik bir yedek kopya bırakır. İlk kurulumda TYT/AYT ders ve konu listesi otomatik yüklenir.
 
 ## Testler
 
@@ -115,9 +115,9 @@ Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla 
 | `POST /api/sessions`                        | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`)         |
 | `PUT /api/sessions/:id`                     | Kaydı güncelle (tüm alanlar gönderilir)                                                      |
 | `DELETE /api/sessions/:id`                  | Kaydı sil                                                                                    |
-| `GET /api/resources`                        | Kitap/video kaynakları (ilerleme yüzdesiyle)                                                 |
-| `POST /api/resources`                       | Kaynak ekle (`{ name, type, subjectId, totalUnits, currentUnit? }`)                          |
-| `PUT /api/resources/:id`                    | Kaynağı güncelle (`currentUnit` verilmezse mevcut değer korunur)                             |
+| `GET /api/resources`                        | Test kitapları (ilerleme yüzdesiyle)                                                         |
+| `POST /api/resources`                       | Kitap ekle (`{ name, publisher?, subjectId, totalTests, solvedTests?, status? }`)            |
+| `PUT /api/resources/:id`                    | Kitabı güncelle (`solvedTests` verilmezse mevcut değer korunur; `status`: elimde/bitirdim)   |
 | `DELETE /api/resources/:id`                 | Kaynağı sil                                                                                  |
 | `GET /api/questions?from=&to=`              | Soru kayıtları, net ile birlikte (tarih aralığı isteğe bağlı)                                |
 | `POST /api/questions`                       | Soru kaydı ekle (`{ date, subjectId, topicId?, correct, wrong, blank, resourceId? }`)        |
@@ -130,7 +130,7 @@ Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla 
 
 **Gün sınırı:** Çalışma kayıtları evrensel saatle (UTC) saklanır, istatistikler ise bilgisayarının yerel saatine göre günlere ayrılır. Gece 00:30'da başlayan çalışma o günün sayılır.
 
-**Sınırlar:** Yazım hatalarının istatistikleri bozmaması için bir çalışma kaydı en fazla 24 saat, soru kaydında doğru/yanlış/boş her biri en fazla 10000, bir kaynak en fazla 100000 birim olabilir. Tarihler 2000–2100 yılları arasında olmalıdır.
+**Sınırlar:** Yazım hatalarının istatistikleri bozmaması için bir çalışma kaydı en fazla 24 saat, soru kaydında doğru/yanlış/boş her biri en fazla 10000, bir kitap en fazla 10000 test olabilir. Tarihler 2000–2100 yılları arasında olmalıdır.
 
 ## Yol haritası
 
