@@ -63,10 +63,11 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 - **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı kaynak seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
 - **Kaynaklar:** Kitap ve video setlerini ders ve toplam birim sayısıyla (sayfa, test ya da video) eklersin. Her kaynakta ilerleme çubuğu ve "kaldığım yer" alanı vardır; sayıyı güncelledikçe yüzde hesaplanır. Silerken onay istenir; kaynağı silsen de ona bağlı soru kayıtların kaybolmaz.
 - **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
+- **İlerleme:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru ve net özetini görürsün. Beş grafik var: günlük ve haftalık çalışma süresi, derse göre çalışma süresi, derse göre doğru/yanlış/boş ve günlük net değişimi. Bir ders seçersen zaman grafikleri o dersi gösterir, ders karşılaştırmalarında seçtiğin ders vurgulanır. Her grafiğin tablo görünümü vardır; açık ve koyu modu destekler.
 
 ## Teknolojiler
 
-Node.js + Express (sunucu), SQLite (veritabanı), React + Vite (arayüz), Vitest + Supertest (test). Grafikler için Chart.js eklenecek.
+Node.js + Express (sunucu), SQLite (veritabanı), React + Vite (arayüz), Chart.js (grafikler), Vitest + Supertest (test).
 
 ## Ayarlar (`.env`)
 

@@ -12,3 +12,14 @@ export function formatDuration(totalSeconds) {
 export function formatNet(net) {
   return net.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
 }
+
+// '2026-10-12' -> '12.10.2026'
+export function formatDate(dateString) {
+  const [y, m, d] = dateString.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+// '2026-10-12' -> '12.10' (grafik eksenlerinde yer kazanmak için yılsız)
+export function formatShortDate(dateString) {
+  return formatDate(dateString).slice(0, 5);
+}

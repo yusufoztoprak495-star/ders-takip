@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatDuration, formatNet } from "../src/lib/format.js";
+import { formatDuration, formatNet, formatDate, formatShortDate } from "../src/lib/format.js";
 
 describe("formatDuration", () => {
   it.each([
@@ -29,5 +29,16 @@ describe("formatNet", () => {
     [12.5, "12,5"],
   ])("%f → %s (Türkçe ondalık virgülü)", (net, text) => {
     expect(formatNet(net)).toBe(text);
+  });
+});
+
+describe("formatDate / formatShortDate", () => {
+  it("YYYY-AA-GG metnini GG.AA.YYYY yapar", () => {
+    expect(formatDate("2026-10-12")).toBe("12.10.2026");
+    expect(formatDate("2026-01-05")).toBe("05.01.2026");
+  });
+
+  it("kısa biçim yıl içermez (grafik ekseni için)", () => {
+    expect(formatShortDate("2026-10-12")).toBe("12.10");
   });
 });

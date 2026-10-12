@@ -7,6 +7,7 @@ import StudyLog from './pages/StudyLog.jsx';
 import Questions from './pages/Questions.jsx';
 import Resources from './pages/Resources.jsx';
 import Topics from './pages/Topics.jsx';
+import Progress from './pages/Progress.jsx';
 
 // Menü öğeleri: her yeni sayfa eklendiğinde buraya bir satır ve aşağıya bir <Route> eklenir
 const NAV_ITEMS = [
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/sorular', label: 'Soru Kaydı' },
   { to: '/kaynaklar', label: 'Kaynaklar' },
   { to: '/konular', label: 'Konular' },
+  { to: '/ilerleme', label: 'İlerleme' },
 ];
 
 // Sayaç çalışırken başka sayfadayken de kalan süreyi menüde gösterir
@@ -48,6 +50,7 @@ export default function App() {
           <Route path="/sorular" element={<Questions />} />
           <Route path="/kaynaklar" element={<Resources />} />
           <Route path="/konular" element={<Topics />} />
+          <Route path="/ilerleme" element={<Progress />} />
         </Routes>
       </main>
     </PomodoroProvider>
