@@ -1,5 +1,6 @@
 // Ders ve (isteğe bağlı) konu seçim alanları. Durum useSubjectSelection kancasından gelir.
-export default function SubjectTopicFields({ selection }) {
+// showTopic={false} ile yalnızca ders seçilir (örn. kaynaklar derse bağlıdır, konuya değil).
+export default function SubjectTopicFields({ selection, showTopic = true }) {
   const { subjects, subject, subjectId, topicId, selectSubject, selectTopic } = selection;
   return (
     <>
@@ -13,17 +14,19 @@ export default function SubjectTopicFields({ selection }) {
           ))}
         </select>
       </label>
-      <label>
-        Konu (isteğe bağlı)
-        <select value={topicId} onChange={(e) => selectTopic(e.target.value)}>
-          <option value="">Konu seçme</option>
-          {subject?.topics.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      {showTopic && (
+        <label>
+          Konu (isteğe bağlı)
+          <select value={topicId} onChange={(e) => selectTopic(e.target.value)}>
+            <option value="">Konu seçme</option>
+            {subject?.topics.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
     </>
   );
 }

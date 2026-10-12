@@ -229,3 +229,56 @@ h2 {
   width: 100%;
   min-width: 0;
 }
+
+.resources {
+  max-width: 640px;
+}
+
+.list li.resource {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.resource-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.progress-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-line progress {
+  flex: 1;
+  height: 10px;
+  accent-color: var(--accent);
+}
+
+.progress-line span {
+  min-width: 3.2em;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.resume {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.resume label {
+  flex: 1;
+}
