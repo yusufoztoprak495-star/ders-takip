@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatDuration } from "../src/lib/format.js";
+import { formatDuration, formatNet } from "../src/lib/format.js";
 
 describe("formatDuration", () => {
   it.each([
@@ -17,5 +17,17 @@ describe("formatDuration", () => {
   it("dakikanın altındaki farkı dakikaya yuvarlar", () => {
     expect(formatDuration(1529)).toBe("25 dk");
     expect(formatDuration(1531)).toBe("26 dk");
+  });
+});
+
+describe("formatNet", () => {
+  it.each([
+    [9, "9"],
+    [0, "0"],
+    [2.75, "2,75"],
+    [-0.25, "-0,25"],
+    [12.5, "12,5"],
+  ])("%f → %s (Türkçe ondalık virgülü)", (net, text) => {
+    expect(formatNet(net)).toBe(text);
   });
 });

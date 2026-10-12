@@ -7,3 +7,8 @@ export function formatDuration(totalSeconds) {
   const minutes = totalMinutes % 60;
   return minutes ? `${hours} sa ${minutes} dk` : `${hours} sa`;
 }
+
+// Neti Türkçe ondalık virgülüyle gösterir: 2.75 -> '2,75', 9 -> '9'
+export function formatNet(net) {
+  return net.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
+}

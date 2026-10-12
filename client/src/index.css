@@ -210,3 +210,22 @@ h2 {
   border: 1px solid var(--border);
   border-radius: 10px;
 }
+
+.card-title {
+  margin: 0;
+}
+
+.net {
+  color: var(--text);
+}
+
+
+/* Yan yana alanlar (örn. Doğru/Yanlış/Boş) daralabilsin ve tek satırda kalsın */
+.row label {
+  min-width: 0;
+}
+
+.row input {
+  width: 100%;
+  min-width: 0;
+}

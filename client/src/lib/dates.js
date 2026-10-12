@@ -19,3 +19,11 @@ export function noonOfLocalDate(dateString) {
   if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return null;
   return date.toISOString();
 }
+
+// `from` gününden n gün öncesinin yerel tarihi (varsayılan: bugün). `from` değiştirilmez.
+export function daysAgo(n, from = new Date()) {
+  const date = new Date(from);
+  // setDate ay/yıl sınırlarını ve yaz saati geçişlerini kendisi doğru yönetir
+  date.setDate(date.getDate() - n);
+  return toLocalDateString(date);
+}

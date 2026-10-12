@@ -4,12 +4,14 @@ import { formatTime } from './lib/pomodoro.js';
 import Home from './pages/Home.jsx';
 import Pomodoro from './pages/Pomodoro.jsx';
 import StudyLog from './pages/StudyLog.jsx';
+import Questions from './pages/Questions.jsx';
 
 // Menü öğeleri: her yeni sayfa eklendiğinde buraya bir satır ve aşağıya bir <Route> eklenir
 const NAV_ITEMS = [
   { to: '/', label: 'Ana Sayfa' },
   { to: '/pomodoro', label: 'Pomodoro' },
   { to: '/gunluk', label: 'Çalışma Günlüğü' },
+  { to: '/sorular', label: 'Soru Kaydı' },
 ];
 
 // Sayaç çalışırken başka sayfadayken de kalan süreyi menüde gösterir
@@ -39,6 +41,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/pomodoro" element={<Pomodoro />} />
           <Route path="/gunluk" element={<StudyLog />} />
+          <Route path="/sorular" element={<Questions />} />
         </Routes>
       </main>
     </PomodoroProvider>
