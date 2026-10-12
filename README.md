@@ -30,13 +30,17 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 
 ## API (şimdilik)
 
-| Uç                       | Açıklama                             |
-| ------------------------ | ------------------------------------ |
-| `GET /api/health`        | Sunucu çalışıyor mu                  |
-| `GET /api/subjects`      | Dersler, konularıyla birlikte        |
-| `POST /api/topics`       | Konu ekle (`{ subjectId, name }`)    |
-| `PUT /api/topics/:id`    | Konuyu yeniden adlandır (`{ name }`) |
-| `DELETE /api/topics/:id` | Konuyu sil                           |
+| Uç                            | Açıklama                                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| `GET /api/health`             | Sunucu çalışıyor mu                                                                  |
+| `GET /api/subjects`           | Dersler, konularıyla birlikte                                                        |
+| `POST /api/topics`            | Konu ekle (`{ subjectId, name }`)                                                    |
+| `PUT /api/topics/:id`         | Konuyu yeniden adlandır (`{ name }`)                                                 |
+| `DELETE /api/topics/:id`      | Konuyu sil                                                                           |
+| `GET /api/sessions?from=&to=` | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre)                    |
+| `POST /api/sessions`          | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`) |
+| `PUT /api/sessions/:id`       | Kaydı güncelle (tüm alanlar gönderilir)                                              |
+| `DELETE /api/sessions/:id`    | Kaydı sil                                                                            |
 
 ## Teknolojiler
 
