@@ -5,6 +5,7 @@ import { topicsRouter } from "./routes/topics.js";
 import { sessionsRouter } from "./routes/sessions.js";
 import { resourcesRouter } from "./routes/resources.js";
 import { questionsRouter } from "./routes/questions.js";
+import { statsRouter } from "./routes/stats.js";
 
 export function createApp(db) {
   const app = express();
@@ -18,6 +19,7 @@ export function createApp(db) {
   app.use("/api/sessions", sessionsRouter(db));
   app.use("/api/resources", resourcesRouter(db));
   app.use("/api/questions", questionsRouter(db));
+  app.use("/api/stats", statsRouter(db));
 
   // Sıra önemli: önce rotalar, sonra 404, en sonda hata yakalayıcı
   app.use("/api", notFoundHandler);
