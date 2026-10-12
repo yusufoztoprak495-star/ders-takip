@@ -9,15 +9,25 @@ import Resources from './pages/Resources.jsx';
 import Topics from './pages/Topics.jsx';
 import Progress from './pages/Progress.jsx';
 
+import {
+  HomeIcon,
+  LogIcon,
+  ProgressIcon,
+  QuestionsIcon,
+  ResourcesIcon,
+  TimerIcon,
+  TopicsIcon,
+} from './components/Icons.jsx';
+
 // Menü öğeleri: her yeni sayfa eklendiğinde buraya bir satır ve aşağıya bir <Route> eklenir
 const NAV_ITEMS = [
-  { to: '/', label: 'Ana Sayfa' },
-  { to: '/pomodoro', label: 'Pomodoro' },
-  { to: '/gunluk', label: 'Çalışma Günlüğü' },
-  { to: '/sorular', label: 'Soru Kaydı' },
-  { to: '/kaynaklar', label: 'Kaynaklar' },
-  { to: '/konular', label: 'Konular' },
-  { to: '/ilerleme', label: 'İlerleme' },
+  { to: '/', label: 'Ana Sayfa', short: 'Ana', Icon: HomeIcon },
+  { to: '/pomodoro', label: 'Pomodoro', short: 'Pomodoro', Icon: TimerIcon },
+  { to: '/gunluk', label: 'Çalışma Günlüğü', short: 'Günlük', Icon: LogIcon },
+  { to: '/sorular', label: 'Soru Kaydı', short: 'Soru', Icon: QuestionsIcon },
+  { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon },
+  { to: '/konular', label: 'Konular', short: 'Konu', Icon: TopicsIcon },
+  { to: '/ilerleme', label: 'İlerleme', short: 'İlerleme', Icon: ProgressIcon },
 ];
 
 // Sayaç çalışırken başka sayfadayken de kalan süreyi menüde gösterir
@@ -34,10 +44,13 @@ function NavTimer() {
 export default function App() {
   return (
     <PomodoroProvider>
-      <nav className="nav">
-        {NAV_ITEMS.map((item) => (
-          <NavLink key={item.to} to={item.to} end>
-            {item.label}
+      <nav className="nav" aria-label="Ana menü">
+        <span className="brand">Ders Takip</span>
+        {NAV_ITEMS.map(({ to, label, short, Icon }) => (
+          <NavLink key={to} to={to} end title={label}>
+            <Icon />
+            <span className="nav-label">{label}</span>
+            <span className="nav-short">{short}</span>
           </NavLink>
         ))}
         <NavTimer />
