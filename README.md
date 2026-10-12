@@ -8,12 +8,13 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 
 ## Özellikler
 
-- **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
+- **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Sayaç, saat çerçevesi gibi 60 çentikli bir kadrandır: süre aktıkça çentikler söner (çalışmada turuncu, molada turkuaz). Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
 - **Çalışma günlüğü:** Pomodoro kullanmadığın çalışmaları ders, konu, tarih ve dakika girerek elle eklersin. Bugünün kayıtları (Pomodoro ve elle girilenler) toplam süreyle listelenir, istediğini silebilirsin.
 - **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı kaynak seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
 - **Kaynaklar:** Kitap ve video setlerini ders ve toplam birim sayısıyla (sayfa, test ya da video) eklersin. Her kaynakta ilerleme çubuğu ve "kaldığım yer" alanı vardır; sayıyı güncelledikçe yüzde hesaplanır. Silerken onay istenir; kaynağı silsen de ona bağlı soru kayıtların kaybolmaz.
 - **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
-- **İlerleme:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru ve net özetini görürsün. Beş grafik var: günlük ve haftalık çalışma süresi, derse göre çalışma süresi, derse göre doğru/yanlış/boş ve günlük net değişimi. Bir ders seçersen zaman grafikleri o dersi gösterir, ders karşılaştırmalarında seçtiğin ders vurgulanır. Her grafiğin tablo görünümü vardır; açık ve koyu modu destekler.
+- **İlerleme:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru ve net özetini görürsün. Beş grafik var: günlük ve haftalık çalışma süresi, derse göre çalışma süresi, derse göre doğru/yanlış/boş ve günlük net değişimi. Bir ders seçersen zaman grafikleri o dersi gösterir, ders karşılaştırmalarında seçtiğin ders vurgulanır. Grafiklerin üzerine gelince ayrıntı balonu çıkar; her grafiğin tablo görünümü de vardır.
+- **Ana sayfa:** Bugünün çalışma süresi, çözülen soru sayısı ve neti ile son 7 günün çalışma ritmi.
 
 | Pomodoro                                                  | Kaynaklar                                                               |
 | --------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -61,7 +62,11 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 npm test
 ```
 
-Sunucu testleri (Vitest + Supertest) her uç için başarılı ve başarısız durumları, gün sınırı gibi riskli yerleri ve net/istatistik hesaplarını kapsar. Arayüz testleri (Vitest) hesap yapan küçük parçaları sınar: Pomodoro süre hesabı, tarih ve süre biçimlendirme, grafik verisi.
+Sunucu testleri (Vitest + Supertest) her uç için başarılı ve başarısız durumları, gün sınırı gibi riskli yerleri ve net/istatistik hesaplarını kapsar. Arayüz testleri (Vitest) hesap yapan küçük parçaları sınar: Pomodoro süre hesabı ve kadran çentikleri, tarih ve süre biçimlendirme, grafik verisi ve eksen hesapları.
+
+## Tasarım
+
+Koyu tema (grafit zemin, kırık beyaz yazı) ve iki vurgu rengi: turuncu çalışmayı, turkuaz molayı ve doğru cevapları gösterir. Hazır ikon paketi ya da grafik kütüphanesi kullanılmadı: menü ikonları, Pomodoro kadranı ve tüm grafikler bu projeye özel SVG olarak çizildi. Grafik renkleri, renk körlüğü ve karşıtlık kontrollerinden geçirilerek seçildi. Masaüstünde sol menü, telefonda alt sekme çubuğu kullanılır.
 
 ## Teknolojiler
 
@@ -70,7 +75,8 @@ Sunucu testleri (Vitest + Supertest) her uç için başarılı ve başarısız d
 | Sunucu     | Node.js + Express                                                     |
 | Veritabanı | SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3)) |
 | Arayüz     | React + Vite (React Router, `HashRouter`)                             |
-| Grafikler  | Chart.js (react-chartjs-2)                                            |
+| Grafikler  | Elle çizilmiş SVG (kütüphanesiz)                                      |
+| Yazı tipi  | Newsreader, Hanken Grotesk (`@fontsource`, projeye gömülü)            |
 | Test       | Vitest, Supertest                                                     |
 
 ## Proje yapısı
@@ -87,9 +93,9 @@ server/
 client/
   src/
     pages/                Pomodoro, Çalışma Günlüğü, Soru Kaydı, Kaynaklar, Konular, İlerleme
-    components/, hooks/   ortak parçalar ve grafik bileşenleri
+    components/, hooks/   ortak parçalar, ikonlar, Pomodoro kadranı, SVG grafikler
     context/              Pomodoro sayacının durumu
-    lib/                  saf yardımcı fonksiyonlar (tarih, süre, grafik verisi)
+    lib/                  saf yardımcı fonksiyonlar (tarih, süre, grafik verisi, eksen, kadran)
   tests/
 docs/                     tasarım belgesi, uygulama planı, ekran görüntüleri
 ```
