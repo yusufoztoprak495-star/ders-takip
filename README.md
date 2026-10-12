@@ -30,21 +30,27 @@ Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalı
 
 ## API (şimdilik)
 
-| Uç                            | Açıklama                                                                             |
-| ----------------------------- | ------------------------------------------------------------------------------------ |
-| `GET /api/health`             | Sunucu çalışıyor mu                                                                  |
-| `GET /api/subjects`           | Dersler, konularıyla birlikte                                                        |
-| `POST /api/topics`            | Konu ekle (`{ subjectId, name }`)                                                    |
-| `PUT /api/topics/:id`         | Konuyu yeniden adlandır (`{ name }`)                                                 |
-| `DELETE /api/topics/:id`      | Konuyu sil                                                                           |
-| `GET /api/sessions?from=&to=` | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre)                    |
-| `POST /api/sessions`          | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`) |
-| `PUT /api/sessions/:id`       | Kaydı güncelle (tüm alanlar gönderilir)                                              |
-| `DELETE /api/sessions/:id`    | Kaydı sil                                                                            |
-| `GET /api/resources`          | Kitap/video kaynakları (ilerleme yüzdesiyle)                                         |
-| `POST /api/resources`         | Kaynak ekle (`{ name, type, subjectId, totalUnits, currentUnit? }`)                  |
-| `PUT /api/resources/:id`      | Kaynağı güncelle (`currentUnit` verilmezse mevcut değer korunur)                     |
-| `DELETE /api/resources/:id`   | Kaynağı sil                                                                          |
+| Uç                             | Açıklama                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `GET /api/health`              | Sunucu çalışıyor mu                                                                   |
+| `GET /api/subjects`            | Dersler, konularıyla birlikte                                                         |
+| `POST /api/topics`             | Konu ekle (`{ subjectId, name }`)                                                     |
+| `PUT /api/topics/:id`          | Konuyu yeniden adlandır (`{ name }`)                                                  |
+| `DELETE /api/topics/:id`       | Konuyu sil                                                                            |
+| `GET /api/sessions?from=&to=`  | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre)                     |
+| `POST /api/sessions`           | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`)  |
+| `PUT /api/sessions/:id`        | Kaydı güncelle (tüm alanlar gönderilir)                                               |
+| `DELETE /api/sessions/:id`     | Kaydı sil                                                                             |
+| `GET /api/resources`           | Kitap/video kaynakları (ilerleme yüzdesiyle)                                          |
+| `POST /api/resources`          | Kaynak ekle (`{ name, type, subjectId, totalUnits, currentUnit? }`)                   |
+| `PUT /api/resources/:id`       | Kaynağı güncelle (`currentUnit` verilmezse mevcut değer korunur)                      |
+| `DELETE /api/resources/:id`    | Kaynağı sil                                                                           |
+| `GET /api/questions?from=&to=` | Soru kayıtları, net ile birlikte (tarih aralığı isteğe bağlı)                         |
+| `POST /api/questions`          | Soru kaydı ekle (`{ date, subjectId, topicId?, correct, wrong, blank, resourceId? }`) |
+| `PUT /api/questions/:id`       | Kaydı güncelle                                                                        |
+| `DELETE /api/questions/:id`    | Kaydı sil                                                                             |
+
+**Net hesabı:** `net = doğru − yanlış / 4`. Net veritabanında saklanmaz, her seferinde hesaplanır.
 
 ## Teknolojiler
 
