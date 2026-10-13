@@ -6,8 +6,8 @@ import {
   requireDate,
   requireIsoDateTime,
   requireOneOf,
-} from "../src/validation.js";
-import { HttpError } from "../src/errors.js";
+} from "../../src/data/validation.js";
+import { HttpError } from "../../src/data/errors.js";
 
 describe("requireInt", () => {
   it("tam sayıyı kabul eder", () => {

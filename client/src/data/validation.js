@@ -4,8 +4,7 @@ import { HttpError } from "./errors.js";
 // `field` kullanıcıya gösterilen alan adıdır (örn. 'Ders').
 
 // İstek gövdesi bir nesne değilse (gövde yok, dizi, metin) 400 verir
-export function requireBody(req) {
-  const body = req.body;
+export function requireBody(body) {
   if (body === null || typeof body !== "object" || Array.isArray(body)) {
     throw new HttpError(400, "İstek gövdesi eksik veya geçersiz");
   }
@@ -101,20 +100,18 @@ export function requireOneOf(value, field, allowed) {
   return value;
 }
 
-export function assertSubjectExists(db, subjectId) {
-  if (!db.prepare("SELECT 1 FROM subjects WHERE id = ?").get(subjectId)) {
+export function assertSubjectExists(state, subjectId) {
+  if (!state.subjects.some((s) => s.id === subjectId)) {
     throw new HttpError(400, "Ders bulunamadı");
   }
 }
 
 // Konu seçilmişse var olmalı ve seçilen derse ait olmalı (null = konu seçilmedi)
-export function assertTopicMatchesSubject(db, topicId, subjectId) {
+export function assertTopicMatchesSubject(state, topicId, subjectId) {
   if (topicId === null) return;
-  const topic = db
-    .prepare("SELECT subject_id FROM topics WHERE id = ?")
-    .get(topicId);
+  const topic = state.topics.find((t) => t.id === topicId);
   if (!topic) throw new HttpError(400, "Konu bulunamadı");
-  if (topic.subject_id !== subjectId) {
+  if (topic.subjectId !== subjectId) {
     throw new HttpError(400, "Konu seçilen derse ait değil");
   }
 }

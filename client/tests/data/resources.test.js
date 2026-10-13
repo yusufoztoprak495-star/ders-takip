@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import request from "supertest";
-import { todayLocal } from "../src/dates.js";
-import { makeTestApp } from "./helpers.js";
+import request, { makeTestApp } from "./helpers.js";
+import { todayLocal } from "../../src/lib/dates.js";
 
 function valid(overrides = {}) {
   return {
@@ -12,6 +11,13 @@ function valid(overrides = {}) {
     status: "elimde",
     ...overrides,
   };
+}
+
+// Elle yazılan son çözüm tarihini taklit eder (normalde yalnızca test sayısı artınca yazılır)
+async function setLastSolved(app, id, day) {
+  const state = await app.snapshot();
+  state.resources.find((r) => r.id === id).lastSolvedAt = day;
+  await app.replaceAll(state);
 }
 
 describe("todayLocal", () => {
@@ -114,8 +120,8 @@ describe("/api/resources (test kitapları)", () => {
     expect((await request(app).delete("/api/resources/abc")).status).toBe(404);
   });
 
-  it("kitap silinince soru kaydı durur, resource_id boşalır", async () => {
-    const { app, db } = makeTestApp();
+  it("kitap silinince soru kaydı durur, resourceId boşalır", async () => {
+    const { app } = makeTestApp();
     const { body: book } = await request(app)
       .post("/api/resources")
       .send(valid());
@@ -132,24 +138,20 @@ describe("/api/resources (test kitapları)", () => {
     expect(
       (await request(app).delete(`/api/resources/${book.id}`)).status,
     ).toBe(204);
-    expect(db.prepare("SELECT resource_id FROM question_logs").get()).toEqual({
-      resource_id: null,
-    });
+    expect((await app.snapshot()).questions.map((q) => q.resourceId)).toEqual([null]);
   });
 });
 
 describe("son çözüm tarihi (lastSolvedAt)", () => {
   it("çözülen test artınca bugüne ayarlanır; aynı kalır ya da azalırsa değişmez", async () => {
-    const { app, db } = makeTestApp();
+    const { app } = makeTestApp();
     const { body: book } = await request(app)
       .post("/api/resources")
       .send(valid({ solvedTests: 0 }));
     expect(book.lastSolvedAt).toBeNull();
 
     // Eski bir tarih elle yazılır; artış olmayan güncellemeler ona dokunmamalı
-    db.prepare(
-      "UPDATE resources SET last_solved_at = '2026-09-01' WHERE id = ?",
-    ).run(book.id);
+    await setLastSolved(app, book.id, "2026-09-01");
 
     const same = await request(app)
       .put(`/api/resources/${book.id}`)
@@ -161,9 +163,7 @@ describe("son çözüm tarihi (lastSolvedAt)", () => {
       .send(valid({ solvedTests: 4 }));
     expect(up.body.lastSolvedAt).toBe(todayLocal());
 
-    db.prepare(
-      "UPDATE resources SET last_solved_at = '2026-09-02' WHERE id = ?",
-    ).run(book.id);
+    await setLastSolved(app, book.id, "2026-09-02");
     const down = await request(app)
       .put(`/api/resources/${book.id}`)
       .send(valid({ solvedTests: 2 }));
@@ -171,7 +171,7 @@ describe("son çözüm tarihi (lastSolvedAt)", () => {
   });
 
   it("kitaba bağlı soru kaydının tarihi de sayılır (daha yeniyse o gösterilir)", async () => {
-    const { app, db } = makeTestApp();
+    const { app } = makeTestApp();
     const { body: book } = await request(app)
       .post("/api/resources")
       .send(valid({ solvedTests: 0 }));
@@ -189,9 +189,7 @@ describe("son çözüm tarihi (lastSolvedAt)", () => {
     expect(res.body[0].lastSolvedAt).toBe("2026-10-05");
 
     // Elle yazılan tarih daha yeniyse o kazanır
-    db.prepare(
-      "UPDATE resources SET last_solved_at = '2026-10-09' WHERE id = ?",
-    ).run(book.id);
+    await setLastSolved(app, book.id, "2026-10-09");
     res = await request(app).get("/api/resources");
     expect(res.body[0].lastSolvedAt).toBe("2026-10-09");
   });

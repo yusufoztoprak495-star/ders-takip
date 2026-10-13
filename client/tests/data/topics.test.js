@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import request from "supertest";
-import { makeTestApp } from "./helpers.js";
+import request, { makeTestApp } from "./helpers.js";
 
 describe("/api/topics", () => {
   it("geçerli konu eklenir (201)", async () => {

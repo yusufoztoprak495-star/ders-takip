@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
-import request from "supertest";
-import { accuracyOf } from "../src/stats.js";
-import { makeTestApp } from "./helpers.js";
+import request, { makeTestApp } from "./helpers.js";
+import { accuracyOf } from "../../src/data/stats.js";
 
 // Test verisindeki ilk dersin (Türkçe, id 1) konuları
 function topicsOf(db, subjectId) {
-  return db.prepare("SELECT id, name FROM topics WHERE subject_id = ? ORDER BY id").all(subjectId);
+  return db.topics
+    .filter((t) => t.subjectId === subjectId)
+    .map((t) => ({ id: t.id, name: t.name }));
 }
 
 async function addSession(app, { subjectId = 1, topicId = null, local, seconds }) {

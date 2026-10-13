@@ -1,18 +1,15 @@
 import { describe, it, expect } from "vitest";
-import request from "supertest";
-import { makeTestApp } from "./helpers.js";
-import { openDb } from "../src/db.js";
-import { seedIfEmpty } from "../src/seed.js";
+import request, { makeTestApp } from "./helpers.js";
+import { emptyState, seedIfEmpty } from "../../src/data/seed.js";
 
 describe("seedIfEmpty", () => {
   it("iki kez çağrılınca ders sayısı değişmez", () => {
-    const db = openDb(":memory:");
-    seedIfEmpty(db);
-    const first = db.prepare("SELECT COUNT(*) AS n FROM subjects").get().n;
-    seedIfEmpty(db);
-    const second = db.prepare("SELECT COUNT(*) AS n FROM subjects").get().n;
+    const state = emptyState();
+    expect(seedIfEmpty(state)).toBe(true);
+    const first = state.subjects.length;
+    expect(seedIfEmpty(state)).toBe(false);
+    expect(state.subjects.length).toBe(first);
     expect(first).toBe(8);
-    expect(second).toBe(8);
   });
 });
 

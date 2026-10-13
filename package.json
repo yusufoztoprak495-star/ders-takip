@@ -2,21 +2,20 @@
   "name": "ders-takip",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=22"
-  },
-  "description": "YKS hazırlığı için kişisel ders çalışma takip uygulaması",
+  "description": "YKS hazırlığı için kişisel ders çalışma takip uygulaması (sunucusuz, kurulabilir web uygulaması)",
   "workspaces": [
-    "server",
     "client"
   ],
   "scripts": {
+    "dev": "npm run dev -w client",
     "build": "npm run build -w client",
-    "start": "npm run build && node server/src/server.js",
-    "dev": "concurrently -n sunucu,arayuz \"npm run dev -w server\" \"npm run dev -w client\"",
-    "test": "npm test --workspaces --if-present"
+    "preview": "npm run preview -w client",
+    "test": "npm test -w client"
   },
   "devDependencies": {
-    "concurrently": "^10.0.6"
+    "better-sqlite3": "^13.0.3"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

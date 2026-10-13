@@ -1,28 +1,37 @@
-// Sunucudan gelen hata mesajını taşıyan hata (örn. "Ders zorunlu")
+import { createDatabase, StorageError } from "./data/database.js";
+import { HttpError } from "./data/errors.js";
+import { indexedDbStorage } from "./data/storage.js";
+
+// Doğrulama ya da bulunamadı gibi, kullanıcıya gösterilecek Türkçe mesaj taşıyan hata (örn. "Ders zorunlu")
 export class ApiError extends Error {}
 
-// Sunucuya istek atar. `path` /api ile başlayan yoldur (örn. '/api/subjects').
-// Başarısız isteklerde kullanıcıya gösterilebilecek Türkçe bir mesajla hata fırlatır.
+// Uygulamanın tek veritabanı: tarayıcının IndexedDB'sini kullanır. İlk istekte açılır.
+let database = null;
+export function getDatabase() {
+  if (!database) database = createDatabase(indexedDbStorage());
+  return database;
+}
+
+// Testlerde gerçek tarayıcı deposu yerine bellek içi veritabanı vermek için
+export function setDatabase(db) {
+  database = db;
+}
+
+// Eskiden sunucuya giden istek, artık aynı yol ve aynı gövdeyle yerel veritabanına gider; böylece
+// sayfalar değişmeden çalışır. `path` /api ile başlayan yoldur (örn. '/api/subjects').
+// Geçersiz isteklerde kullanıcıya gösterilebilecek Türkçe mesajla ApiError fırlatır.
 export async function apiFetch(path, { method = "GET", body } = {}) {
-  const options = { method };
-  if (body !== undefined) {
-    options.headers = { "Content-Type": "application/json" };
-    options.body = JSON.stringify(body);
-  }
-
-  let res;
+  let result;
   try {
-    res = await fetch(path, options);
-  } catch {
-    // fetch yalnızca ağ hatasında (sunucu kapalı vb.) reddedilir
-    throw new Error("Sunucuya ulaşılamıyor");
+    // Gövde, eskiden olduğu gibi JSON'a çevrilip geri açılır: sayfalar ve veri aynı nesneyi paylaşmaz
+    const payload =
+      body === undefined ? undefined : JSON.parse(JSON.stringify(body));
+    result = await getDatabase().request(method, path, payload);
+  } catch (error) {
+    if (error instanceof HttpError) throw new ApiError(error.message);
+    // Depolama kapalıysa (gizli pencere, dolu disk): kayıt tekrar denenebilir, düz hata verilir
+    if (error instanceof StorageError) throw new Error(error.message);
+    throw new ApiError("Bir şeyler ters gitti");
   }
-
-  if (res.status === 204) return null;
-
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    throw new ApiError(data?.error ?? "Bir şeyler ters gitti");
-  }
-  return data;
+  return result.status === 204 ? null : result.body;
 }

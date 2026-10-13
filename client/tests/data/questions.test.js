@@ -1,17 +1,12 @@
 import { describe, it, expect } from "vitest";
-import request from "supertest";
-import { makeTestApp } from "./helpers.js";
+import request, { makeTestApp } from "./helpers.js";
 
 function fixtures(db) {
-  const subjects = db.prepare("SELECT id FROM subjects ORDER BY id").all();
-  const topicOf = (subjectId) =>
-    db
-      .prepare("SELECT id FROM topics WHERE subject_id = ? LIMIT 1")
-      .get(subjectId).id;
+  const topicOf = (subjectId) => db.topics.find((t) => t.subjectId === subjectId).id;
   return {
-    subjectId: subjects[0].id,
-    topicId: topicOf(subjects[0].id),
-    otherSubjectTopicId: topicOf(subjects[1].id),
+    subjectId: db.subjects[0].id,
+    topicId: topicOf(db.subjects[0].id),
+    otherSubjectTopicId: topicOf(db.subjects[1].id),
   };
 }
 

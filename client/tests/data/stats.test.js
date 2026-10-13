@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import request from "supertest";
-import { netOf } from "../src/stats.js";
-import { makeTestApp } from "./helpers.js";
+import request, { makeTestApp } from "./helpers.js";
+import { netOf } from "../../src/data/stats.js";
 
 // Yerel saatle (saat dilimi fark etmeksizin) bir çalışma kaydı ekler
 async function addSession(app, { subjectId = 1, local, seconds }) {

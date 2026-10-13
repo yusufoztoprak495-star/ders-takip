@@ -58,26 +58,27 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal) hazırlığı sıras�
 
 ### Teknoloji yığını
 
-Node.js 22+ ve Express (sunucu), SQLite / better-sqlite3 (veritabanı), React + Vite ve React Router `HashRouter` (arayüz), elle çizilmiş SVG grafikler (kütüphanesiz), `@fontsource` ile gömülü yazı tipleri (Cormorant Garamond, Figtree), Vitest + Supertest (test). Tasarım: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
+Sunucusuz, tamamen statik bir web uygulaması (PWA olarak yayınlanacak): React + Vite, React Router `HashRouter`, veriler tarayıcıda IndexedDB'de, elle çizilmiş SVG grafikler (kütüphanesiz), `@fontsource` ile gömülü yazı tipleri (Cormorant Garamond, Figtree), Vitest (test). Node.js sunucusu ve SQLite kaldırıldı (`pwa` branch'i; eski hâli `master`'da). Tasarım: `docs/superpowers/specs/`, uygulama planı: `docs/superpowers/plans/`.
 
 ### Komutlar (proje kökünden)
 
-- `npm install`: bağımlılıkları kurar (npm workspaces: `server` ve `client`).
-- `npm start`: arayüzü derler ve sunucuyu başlatır (`http://localhost:3000`).
-- `npm run dev`: sunucu + Vite geliştirme sunucusu (`http://localhost:5173`, `/api` isteklerini 3000'e yönlendirir).
-- `npm test`: sunucu ve arayüz testlerinin hepsi. Tek paket: `npm test -w server` / `npm test -w client`.
-- Ayarlar `.env` içinde (`PORT`, `DB_PATH`); örnek: `.env.example`. Veritabanı `data/calisma.db` (Git'e eklenmez).
+- `npm install`: bağımlılıkları kurar (npm workspace: `client`).
+- `npm run dev`: Vite geliştirme sunucusu (`http://localhost:5173`).
+- `npm run build` / `npm run preview`: derler (`client/dist`) / derlenmiş hâli dener (`http://localhost:4173`).
+- `npm test`: tüm testler.
+- Eski `data/calisma.db` yalnızca tek seferlik yedek dönüştürmesi için durur (Git'e eklenmez).
 
 ### Klasör yapısı
 
-- `server/src/`: `app.js` (`createApp(db, { clientDist })`), `db.js`, `seed.js`, `validation.js`, `stats.js`, `routes/`. Testler `server/tests/` (bellek içi veritabanıyla, `makeTestApp()`).
-- `client/src/`: `pages/`, `components/`, `hooks/`, `context/` (Pomodoro sayacı durumu), `lib/` (saf yardımcılar). Testler `client/tests/`.
+- `client/src/`: `pages/`, `components/`, `hooks/`, `context/` (Pomodoro sayacı durumu), `lib/` (saf yardımcılar), `data/` (tarayıcıdaki veritabanı katmanı). Testler `client/tests/` (veri katmanı testleri `client/tests/data/`).
+- `client/src/data/`: `database.js` (`createDatabase(storage)`), `storage.js` (IndexedDB ve bellek içi depo), `router.js` + `routes/` (eski API uçlarının yerel karşılığı), `validation.js`, `stats.js`, `seed.js`.
+- `client/src/api.js`: `apiFetch('/api/...')` çağrıları aynen duruyor; artık sunucuya değil yerel veritabanına gider. Sayfalar bu yüzden değişmedi.
 
 ### Proje kuralları (kodda uyulan)
 
-- **Doğrulama sunucudadır.** Arayüz kontrolleri yalnızca kolaylıktır; her girdiyi sunucu `400` + Türkçe mesajla reddeder.
-- **Net saklanmaz**, hesaplanır: `net = doğru − yanlış / 4` (`server/src/stats.js` → `netOf`; arayüzde `client/src/lib/charts.js`).
-- **Gün sınırı yereldir:** çalışma kayıtları UTC saklanır, istatistikler `date(started_at, 'localtime')` ile yerel güne göre gruplanır.
-- **Önce test:** sunucu mantığı ve saf arayüz fonksiyonları için önce başarısız test yazılır. Sayfaların görünümü tarayıcıda gerçekten açılıp denenir (testler görsel hataları yakalamaz).
-- Silinen konu/kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır (`ON DELETE SET NULL`).
+- **Doğrulama veri katmanındadır** (`client/src/data/`). Arayüz kontrolleri yalnızca kolaylıktır; her girdiyi veri katmanı Türkçe mesajla reddeder (`HttpError` 400 → `ApiError`).
+- **Net saklanmaz**, hesaplanır: `net = doğru − yanlış / 4` (`client/src/data/stats.js` → `netOf`; arayüzde `client/src/lib/charts.js`).
+- **Gün sınırı yereldir:** çalışma kayıtları UTC saklanır, istatistikler yerel güne (`sessionDay`) göre gruplanır.
+- **Önce test:** veri katmanı mantığı ve saf arayüz fonksiyonları için önce başarısız test yazılır. Sayfaların görünümü tarayıcıda gerçekten açılıp denenir (testler görsel hataları yakalamaz).
+- Silinen konu/kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır (veri katmanı bağlantıyı `null` yapar).
 - Kapsam dışı: PDF'ten soru üretme (ileride).

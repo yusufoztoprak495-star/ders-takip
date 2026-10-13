@@ -1,73 +1,64 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { apiFetch, ApiError } from "../src/api.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import { apiFetch, ApiError, setDatabase } from "../src/api.js";
+import { createDatabase } from "../src/data/database.js";
+import { memoryStorage } from "../src/data/storage.js";
 
-function mockFetch(response) {
-  const fn = vi.fn().mockResolvedValue(response);
-  vi.stubGlobal("fetch", fn);
-  return fn;
-}
-
-afterEach(() => {
-  vi.unstubAllGlobals();
+beforeEach(() => {
+  setDatabase(createDatabase(memoryStorage()));
 });
 
 describe("apiFetch", () => {
-  it("başarılı yanıtta JSON gövdesini döner", async () => {
-    mockFetch({ ok: true, status: 200, json: async () => [{ id: 1 }] });
-    expect(await apiFetch("/api/subjects")).toEqual([{ id: 1 }]);
+  it("başarılı yanıtta gövdeyi döner", async () => {
+    const subjects = await apiFetch("/api/subjects");
+    expect(subjects).toHaveLength(8);
   });
 
-  it("204 yanıtında null döner", async () => {
-    mockFetch({ ok: true, status: 204 });
-    expect(await apiFetch("/api/topics/1", { method: "DELETE" })).toBeNull();
-  });
-
-  it("sunucu { error } dönerse ApiError fırlatır, mesaj sunucudan gelir", async () => {
-    mockFetch({
-      ok: false,
-      status: 400,
-      json: async () => ({ error: "Ders zorunlu" }),
+  it("silmede (204) null döner", async () => {
+    const topic = await apiFetch("/api/topics", {
+      method: "POST",
+      body: { subjectId: 1, name: "Yeni konu" },
     });
+    expect(
+      await apiFetch(`/api/topics/${topic.id}`, { method: "DELETE" }),
+    ).toBeNull();
+  });
+
+  it("geçersiz girdide ApiError fırlatır, mesaj Türkçedir", async () => {
     const error = await apiFetch("/api/sessions", {
       method: "POST",
       body: {},
     }).catch((e) => e);
     expect(error).toBeInstanceOf(ApiError);
-    expect(error.message).toBe("Ders zorunlu");
+    expect(error.message).toBe("Ders tam sayı olmalı");
   });
 
-  it("yanıt JSON değilse genel mesajla ApiError fırlatır", async () => {
-    mockFetch({
-      ok: false,
-      status: 502,
-      json: async () => {
-        throw new Error("json değil");
-      },
-    });
-    await expect(apiFetch("/api/x")).rejects.toThrow("Bir şeyler ters gitti");
+  it("bulunamayan kayıtta ApiError fırlatır", async () => {
+    const error = await apiFetch("/api/topics/9999", {
+      method: "DELETE",
+    }).catch((e) => e);
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.message).toBe("Bulunamadı");
   });
 
-  it("ağ hatasında 'Sunucuya ulaşılamıyor' mesajı verir", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
+  it("depolama çalışmıyorsa ApiError olmayan düz hata verir (kayıt tekrar denenebilsin)", async () => {
+    const broken = {
+      load: () => Promise.reject(new Error("kapalı")),
+      save: () => Promise.reject(new Error("kapalı")),
+    };
+    setDatabase(createDatabase(broken));
+    const error = await apiFetch("/api/subjects").catch((e) => e);
+    expect(error).toBeInstanceOf(Error);
+    expect(error).not.toBeInstanceOf(ApiError);
+    expect(error.message).toContain("depolaması kullanılamıyor");
+  });
+
+  it("gövde kopyalanır: istek sonrası değiştirilen nesne kaydı etkilemez", async () => {
+    const body = { subjectId: 1, name: "Orijinal" };
+    const topic = await apiFetch("/api/topics", { method: "POST", body });
+    body.name = "Değişti";
+    const subjects = await apiFetch("/api/subjects");
+    expect(subjects[0].topics.find((t) => t.id === topic.id).name).toBe(
+      "Orijinal",
     );
-    await expect(apiFetch("/api/subjects")).rejects.toThrow(
-      "Sunucuya ulaşılamıyor",
-    );
-  });
-
-  it("body'yi JSON olarak ve doğru başlıkla gönderir", async () => {
-    const fn = mockFetch({
-      ok: true,
-      status: 201,
-      json: async () => ({ id: 1 }),
-    });
-    await apiFetch("/api/topics", { method: "POST", body: { name: "x" } });
-    const [url, options] = fn.mock.calls[0];
-    expect(url).toBe("/api/topics");
-    expect(options.method).toBe("POST");
-    expect(options.headers["Content-Type"]).toBe("application/json");
-    expect(options.body).toBe(JSON.stringify({ name: "x" }));
   });
 });

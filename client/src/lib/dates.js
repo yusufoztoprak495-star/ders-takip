@@ -27,3 +27,8 @@ export function daysAgo(n, from = new Date()) {
   date.setDate(date.getDate() - n);
   return toLocalDateString(date);
 }
+
+// Bugünün yerel günü 'YYYY-AA-GG' olarak. `now` testlerde sabit bir an vermek içindir.
+export function todayLocal(now = new Date()) {
+  return toLocalDateString(now);
+}
