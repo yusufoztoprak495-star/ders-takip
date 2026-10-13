@@ -19,3 +19,10 @@ createRoot(document.getElementById('root')).render(
     </HashRouter>
   </StrictMode>,
 );
+
+// Servis çalışanı: uygulamanın kurulabilmesi ve çevrimdışı açılması için (yalnızca derlenmiş hâlde)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}

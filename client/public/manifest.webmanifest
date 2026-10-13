@@ -1,0 +1,15 @@
+{
+  "name": "Ders Çalışma Takibi",
+  "short_name": "Ders Takip",
+  "description": "YKS hazırlığı için pomodoro, çalışma süresi, soru ve kaynak takibi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14213d",
+  "theme_color": "#14213d",
+  "lang": "tr",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
