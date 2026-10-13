@@ -11,13 +11,16 @@ import Progress from './pages/Progress.jsx';
 import ProgressSubject from './pages/ProgressSubject.jsx';
 import ProgressTopic from './pages/ProgressTopic.jsx';
 import Decor from './components/Decor.jsx';
+import { useTheme } from './hooks/useTheme.js';
 
 import {
   HomeIcon,
+  MoonIcon,
   LogIcon,
   ProgressIcon,
   QuestionsIcon,
   ResourcesIcon,
+  SunIcon,
   TimerIcon,
   TopicsIcon,
 } from './components/Icons.jsx';
@@ -45,10 +48,24 @@ function NavTimer() {
 }
 
 export default function App() {
+  const { theme, toggle } = useTheme();
+  const goingLight = theme === 'dark';
+  const toggleLabel = goingLight ? 'Açık temaya geç' : 'Koyu temaya geç';
   return (
     <PomodoroProvider>
       <nav className="nav" aria-label="Ana menü">
-        <span className="brand">Ders Takip</span>
+        <div className="brand-row">
+          <span className="brand">Ders Takip</span>
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={toggle}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+          >
+            {goingLight ? <SunIcon /> : <MoonIcon />}
+          </button>
+        </div>
         {NAV_ITEMS.map(({ to, label, short, Icon }) => (
           <NavLink key={to} to={to} end={to === '/'} title={label}>
             <Icon />

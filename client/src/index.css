@@ -30,6 +30,18 @@
   --chart-grid: #1b222c;
   --chart-axis: #2f3846;
 
+  /* Temaya göre değişen ek değerler (açık tema theme.css içinde) */
+  --accent-fill: #cdb07a; /* düğme dolgusu */
+  --gold-text: #cdb07a; /* altın renkli yazı ve ince çizgiler */
+  --accent-2: var(--teal); /* odak çerçevesi, bağlantı vurgusu */
+  --nav-bg: #0a0d12;
+  --paper-line: rgba(205, 176, 122, 0.04);
+  --card-shadow: inset 0 1px 0 var(--gold-hair);
+  --btn-hover: brightness(1.08);
+  --mark-hover: brightness(1.25);
+  --grain-opacity: 0.085;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.2 0 0 0 -0.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
   --radius: 3px;
   --font-ui: "Figtree Variable", "Segoe UI", sans-serif;
   --font-display: "Cormorant Garamond Variable", Georgia, serif;
@@ -55,7 +67,7 @@ body {
 
 /* Klavye ile gezerken görünen odak çerçevesi */
 :focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid var(--accent-2);
   outline-offset: 2px;
 }
 
@@ -104,7 +116,7 @@ body {
 }
 
 .nav a.active .icon {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .nav-short {
@@ -114,7 +126,7 @@ body {
 .nav .nav-timer {
   margin-top: auto;
   justify-content: center;
-  color: var(--gold);
+  color: var(--gold-text);
   border: 1px solid var(--border-strong);
   font-variant-numeric: tabular-nums;
   font-size: 0.9rem;
@@ -295,15 +307,15 @@ button {
   font: inherit;
   font-weight: 600;
   color: var(--on-accent);
-  background: var(--gold);
-  border: 1px solid var(--gold);
+  background: var(--accent-fill);
+  border: 1px solid var(--accent-fill);
   border-radius: var(--radius);
   cursor: pointer;
   transition: filter 0.15s;
 }
 
 button:hover:not(:disabled) {
-  filter: brightness(1.08);
+  filter: var(--btn-hover);
 }
 
 button:disabled {
@@ -336,7 +348,7 @@ button.small {
   width: min(100%, 340px);
   aspect-ratio: 1;
   margin: 0 auto;
-  --dial-color: var(--gold);
+  --dial-color: var(--gold-text);
 }
 
 .dial-break {
@@ -651,13 +663,13 @@ form.card .dial {
   padding: 10px 18px;
   font-weight: 600;
   color: var(--on-accent);
-  background: var(--gold);
+  background: var(--accent-fill);
   border-radius: var(--radius);
   text-decoration: none;
 }
 
 .button-link:hover {
-  filter: brightness(1.08);
+  filter: var(--btn-hover);
 }
 
 .text-link {
@@ -736,7 +748,7 @@ form.card .dial {
 }
 
 .mark-hover {
-  filter: brightness(1.25);
+  filter: var(--mark-hover);
 }
 
 .chart-tip {

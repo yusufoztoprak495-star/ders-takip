@@ -8,8 +8,8 @@ body {
     to bottom,
     transparent 0,
     transparent 35px,
-    rgba(205, 176, 122, 0.04) 35px,
-    rgba(205, 176, 122, 0.04) 36px
+    var(--paper-line) 35px,
+    var(--paper-line) 36px
   );
   background-attachment: fixed;
 }
@@ -23,8 +23,8 @@ body::after {
   inset: 0;
   z-index: 100;
   pointer-events: none;
-  opacity: 0.085;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.2 0 0 0 -0.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: var(--grain-opacity);
+  background-image: var(--grain);
 }
 
 /* --- Tipografi --- */
@@ -45,7 +45,7 @@ h2 {
   margin: 48px 0 18px;
   padding-bottom: 12px;
   font-size: 1.75rem;
-  background: linear-gradient(var(--gold), var(--gold)) left bottom / 32px 1px
+  background: linear-gradient(var(--gold-text), var(--gold-text)) left bottom / 32px 1px
     no-repeat;
   box-shadow: inset 0 -1px 0 var(--border);
 }
@@ -91,7 +91,7 @@ label select {
   border: 1px solid var(--border);
   border-radius: 3px;
   background: var(--surface);
-  box-shadow: inset 0 1px 0 var(--gold-hair);
+  box-shadow: var(--card-shadow);
 }
 
 .card {
@@ -117,12 +117,12 @@ input {
 
 select:hover,
 input:hover {
-  border-color: var(--gold);
+  border-color: var(--gold-text);
 }
 
 select:focus-visible,
 input:focus-visible {
-  border-color: var(--gold);
+  border-color: var(--gold-text);
   box-shadow: 0 0 0 1px var(--gold-hair);
 }
 
@@ -174,8 +174,8 @@ button.secondary {
 }
 
 button.secondary:hover:not(:disabled) {
-  border-color: var(--gold);
-  color: var(--gold);
+  border-color: var(--gold-text);
+  color: var(--gold-text);
 }
 
 .button-link {
@@ -184,7 +184,7 @@ button.secondary:hover:not(:disabled) {
 
 /* --- Menü --- */
 .nav {
-  background: #0a0d12;
+  background: var(--nav-bg);
 }
 
 .brand {
@@ -203,7 +203,7 @@ button.secondary:hover:not(:disabled) {
   bottom: 0;
   width: 32px;
   height: 1px;
-  background: var(--gold);
+  background: var(--gold-text);
 }
 
 .nav a {

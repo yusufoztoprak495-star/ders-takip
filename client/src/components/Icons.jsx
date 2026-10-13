@@ -86,3 +86,19 @@ export const ProgressIcon = () => (
     <path d="m7.5 15 4-4.5 3 2.5 5-6" />
   </Icon>
 );
+
+// Tema düğmesi: güneş (açık temaya geçmek için ay gösterilir, koyuya geçmek için güneş)
+export const SunIcon = () => (
+  <Icon>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+    <path d="M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1" />
+  </Icon>
+);
+
+export const MoonIcon = () => (
+  <Icon>
+    <path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1Z" />
+    <path d="M16.5 3.5v2.4M15.3 4.7h2.4" />
+  </Icon>
+);
