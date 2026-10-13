@@ -2,7 +2,9 @@
 
 YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması: Pomodoro ile çalışma süresini kaydet, çözdüğün soruları gir, test kitaplarında kaçıncı teste geldiğini takip et, ilerlemeni grafiklerle gör.
 
-Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan bir proje. Uygulama mağazalarında yayınlanmaz; indirip kendi bilgisayarında çalıştırabilirsin. Veriler yalnızca senin bilgisayarındaki tek bir dosyada durur.
+Kendi YKS çalışmam için yaptığım, tek kişilik bir proje. **Sunucusuz, tamamen statik bir web uygulamasıdır (PWA):** veriler senin tarayıcında (IndexedDB) durur, hiçbir yere gönderilmez; telefona ya da bilgisayara "uygulama olarak yüklenebilir" ve internet yokken de açılır. Uygulama mağazalarında yayınlanmaz.
+
+**Canlı hâli:** https://yusufoztoprak495-star.github.io/ders-takip/
 
 ![Ana sayfa: bugünün özeti, haftalık değişim, seri ve günün dersi](docs/screenshots/ana-sayfa.png)
 
@@ -10,7 +12,7 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 
 ## Özellikler
 
-- **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Sayaç, saat çerçevesi gibi 60 çentikli bir kadrandır: süre aktıkça çentikler söner (çalışmada turuncu, molada turkuaz). Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt sunucuya ulaşamazsa süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
+- **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Sayaç, saat çerçevesi gibi 60 çentikli bir kadrandır: süre aktıkça çentikler söner (çalışmada turuncu, molada turkuaz). Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt yapılamazsa (örneğin tarayıcı depolaması kapalıysa) süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
 - **Çalışma günlüğü:** Pomodoro kullanmadığın çalışmaları ders, konu, tarih ve dakika girerek elle eklersin. Bugünün kayıtları (Pomodoro ve elle girilenler) toplam süreyle listelenir, istediğini silebilirsin.
 - **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı olarak hangi kitaptan çözdüğünü seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
 - **Kaynaklar:** Yalnızca test kitapları: kitap adı, yayınevi ve ders ile eklersin. Her kitap kartında kaç test çözdüğün ("X test çözüldü") ve son çözüm tarihi görünür. "+1 test" düğmesiyle ya da sayıyı yazıp kaydederek sayacı güncellersin; sayı artınca son çözüm tarihi bugüne ayarlanır, kitaba bağlı soru kayıtlarının tarihi de hesaba katılır. Kitap "Elimde" ya da "Bitirdim" durumunda olur. Silerken onay istenir; kitabı silsen de ona bağlı soru kayıtların kaybolmaz.
@@ -35,35 +37,31 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 
 ## Gereksinimler
 
-- [Node.js](https://nodejs.org) 22 veya üstü
+- [Node.js](https://nodejs.org) 22 veya üstü (yalnızca geliştirmek ve derlemek için; uygulamayı kullanmak için gerekmez)
 
 ## Kurulum ve çalıştırma
 
 ```bash
-git clone <bu-deponun-adresi>
-cd <klasör>
+git clone https://github.com/yusufoztoprak495-star/ders-takip.git
+cd ders-takip
 npm install
-npm start
+npm run dev
 ```
 
-`npm start` arayüzü derler ve sunucuyu başlatır. Uygulama `http://localhost:3000` adresinde açılır. Ayarları değiştirmek istersen önce `cp .env.example .env` ile örnek ayar dosyasını kopyala (zorunlu değil).
+| Komut             | Ne yapar                                                                     |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `npm run dev`     | Geliştirme sunucusu: `http://localhost:5173`, kodu değiştirdikçe yenilenir     |
+| `npm run build`   | Uygulamayı derler (`client/dist`)                                            |
+| `npm run preview` | Derlenmiş hâli dener: `http://localhost:4173`                                |
+| `npm test`        | Tüm testleri çalıştırır                                                      |
 
-**Geliştirme modu:** `npm run dev` sunucuyu ve arayüzü birlikte başlatır; arayüz `http://localhost:5173` adresinde açılır ve kodu değiştirdikçe kendiliğinden yenilenir. İki mod da aynı veritabanı dosyasını kullanır.
+Sunucu, veritabanı ya da `.env` dosyası yoktur; `npm install` dışında bir kurulum gerekmez.
 
-### Ayarlar (`.env`)
+### Yayınlama
 
-| Değişken  | Açıklama                                                      | Varsayılan        |
-| --------- | ------------------------------------------------------------- | ----------------- |
-| `PORT`    | Sunucunun portu                                               | `3000`            |
-| `DB_PATH` | SQLite dosyasının yolu (göreli yol proje köküne göre çözülür) | `data/calisma.db` |
+`master` dalına her gönderimde GitHub Actions (`.github/workflows/pages.yml`) testleri çalıştırır, uygulamayı derler ve GitHub Pages'e yayınlar. Uygulama `HashRouter` kullandığı için alt klasörde (`kullanici.github.io/depo/`) sorunsuz çalışır. Tarayıcıda "Yükle" ya da "Ana ekrana ekle" ile uygulama gibi kurulur; servis çalışanı (`client/public/sw.js`) açılan dosyaları önbelleğe alır, internet yokken oradan verir.
 
-`.env` dosyası Git'e eklenmez; örnek değerler `.env.example` içindedir.
-
-### Kurulum sorun giderme
-
-Projede bir `.npmrc` dosyası var ve `npm install` sırasında paketlerin kurulum betiklerini kapatıyor. Sebep: `better-sqlite3` derlenmiş dosyaları paketin içinde getirir, ama npm yine de C++ ile derlemeyi denerse (derleme araçları olmayan bilgisayarlarda) kurulum hata verir. Bu dosya sayesinde ek bir araç kurmana gerek kalmaz.
-
-### Veriler ve yedekleme
+## Veriler ve yedekleme
 
 Veriler tarayıcının kendi deposunda (IndexedDB) durur. Tarayıcı bu depoyu silerse (site verilerinin temizlenmesi, disk dolması) veriler kaybolur; bu yüzden üç önlem vardır. Hepsi **Ayarlar** sayfasındadır:
 
@@ -79,7 +77,12 @@ Veriler tarayıcının kendi deposunda (IndexedDB) durur. Tarayıcı bu depoyu s
 npm test
 ```
 
-Sunucu testleri (Vitest + Supertest) her uç için başarılı ve başarısız durumları, gün sınırı gibi riskli yerleri ve net/istatistik hesaplarını kapsar. Arayüz testleri (Vitest) hesap yapan küçük parçaları sınar: Pomodoro süre hesabı ve kadran çentikleri, tarih ve süre biçimlendirme, grafik verisi ve eksen hesapları.
+Testler Vitest ile yazıldı ve iki gruptur:
+
+- **Veri katmanı** (`client/tests/data/`): tarayıcıdaki "veritabanı"nın her ucu için başarılı ve başarısız durumlar, doğrulama, gün sınırı gibi riskli yerler, net/istatistik hesapları, yedek doğrulaması ve klasör yedeğinin mantığı (sahte klasörle).
+- **Arayüz yardımcıları** (`client/tests/`): hesap yapan küçük saf parçalar: Pomodoro süre hesabı ve kadran çentikleri, tarih ve süre biçimlendirme, grafik verisi ve eksen hesapları, yedek dosya adı ve döndürme, kalıcı depolama durumu.
+
+Sayfaların görünümü testlerle yakalanamaz; her sayfa tarayıcıda gerçekten açılıp denenir. Klasör izni gibi tarayıcıya özgü kısımlar elle denenir.
 
 ## Tasarım
 
@@ -103,69 +106,55 @@ Masaüstünde sol menü, telefonda alt sekme çubuğu kullanılır.
 
 | Katman     | Teknoloji                                                             |
 | ---------- | --------------------------------------------------------------------- |
-| Sunucu     | Node.js + Express                                                     |
-| Veritabanı | SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3)) |
 | Arayüz     | React + Vite (React Router, `HashRouter`)                             |
+| Veri       | Tarayıcıda IndexedDB (tek kayıt olarak saklanır, yazma atomiktir)     |
+| Çevrimdışı | Web uygulama bildirimi (manifest) + servis çalışanı                   |
 | Grafikler  | Elle çizilmiş SVG (kütüphanesiz)                                      |
 | Yazı tipi  | Cormorant Garamond (başlık), Figtree (metin); `@fontsource`, gömülü   |
-| Test       | Vitest, Supertest                                                     |
+| Test       | Vitest                                                                |
 
 ## Proje yapısı
 
 ```
-server/
-  src/
-    app.js, server.js     uygulamayı kurar / başlatır
-    db.js, seed.js        SQLite şeması ve ilk ders/konu verisi
-    validation.js         giriş doğrulama (sunucu her girdiyi kendisi doğrular)
-    stats.js              net ve istatistik hesapları
-    routes/               sessions, questions, resources, topics, subjects, stats
-  tests/
 client/
+  public/                 manifest, simge, servis çalışanı
   src/
-    pages/                Pomodoro, Çalışma Günlüğü, Soru Kaydı, Kaynaklar, Konular, İlerleme (özet, ders, konu)
+    pages/                Ana sayfa, Pomodoro, Çalışma Günlüğü, Soru Kaydı, Kaynaklar, Konular, İlerleme (özet, ders, konu), Ayarlar
     components/, hooks/   ortak parçalar, ikonlar, çizimler (Doodles), Pomodoro kadranı, SVG grafikler
-    context/              Pomodoro sayacının durumu
-    lib/                  saf yardımcı fonksiyonlar (tarih, süre, grafik verisi, eksen, kadran)
-  tests/
-docs/                     tasarım belgesi, uygulama planı, ekran görüntüleri
+    context/              Pomodoro sayacının ve klasör yedeğinin durumu
+    lib/                  saf yardımcı fonksiyonlar (tarih, süre, grafik verisi, eksen, kadran, yedek, kalıcı depolama)
+    data/                 tarayıcıdaki veri katmanı: database.js, storage.js (IndexedDB ve bellek içi),
+                          router.js + routes/, validation.js, stats.js, seed.js, backupFolder.js
+    api.js                apiFetch('/api/...') çağrılarını yerel veri katmanına yönlendirir
+  tests/                  (veri katmanı testleri tests/data/ altında)
+docs/                     tasarım belgeleri, uygulama planları, ekran görüntüleri
+.github/workflows/        GitHub Pages yayını
 ```
 
-## API
+## Veri katmanı
 
-Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla döner (`400` geçersiz girdi, `404` kayıt yok).
+Proje önce Node.js sunucusu ve SQLite ile yazıldı, sonra sunucusuz hâle getirildi. Sayfalar değişmesin diye `apiFetch('/api/...')` çağrıları aynen duruyor; artık ağa değil `client/src/data/` içindeki yerel veritabanına gidiyor. Yollar eski API ile aynıdır:
 
-| Uç                                             | Açıklama                                                                                             |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `GET /api/health`                              | Sunucu çalışıyor mu                                                                                  |
-| `GET /api/subjects`                            | Dersler, konularıyla birlikte                                                                        |
-| `POST /api/topics`                             | Konu ekle (`{ subjectId, name }`)                                                                    |
-| `PUT /api/topics/:id`                          | Konuyu yeniden adlandır (`{ name }`)                                                                 |
-| `DELETE /api/topics/:id`                       | Konuyu sil                                                                                           |
-| `GET /api/sessions?from=&to=`                  | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre)                                    |
-| `POST /api/sessions`                           | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`)                 |
-| `PUT /api/sessions/:id`                        | Kaydı güncelle (tüm alanlar gönderilir)                                                              |
-| `DELETE /api/sessions/:id`                     | Kaydı sil                                                                                            |
-| `GET /api/resources`                           | Test kitapları (çözülen test sayısı ve son çözüm tarihiyle)                                          |
-| `POST /api/resources`                          | Kitap ekle (`{ name, publisher?, subjectId, solvedTests?, status? }`)                                |
-| `PUT /api/resources/:id`                       | Kitabı güncelle (`solvedTests` verilmezse mevcut değer korunur; artarsa son çözüm tarihi bugün olur) |
-| `DELETE /api/resources/:id`                    | Kaynağı sil                                                                                          |
-| `GET /api/questions?from=&to=`                 | Soru kayıtları, net ile birlikte (tarih aralığı isteğe bağlı)                                        |
-| `POST /api/questions`                          | Soru kaydı ekle (`{ date, subjectId, topicId?, correct, wrong, blank, resourceId? }`)                |
-| `PUT /api/questions/:id`                       | Kaydı güncelle                                                                                       |
-| `DELETE /api/questions/:id`                    | Kaydı sil                                                                                            |
-| `GET /api/stats/daily?from=&to=&subjectId=`    | Gün gün çalışma süresi, soru sayıları ve net (`from`/`to` zorunlu, `subjectId` isteğe bağlı)         |
-| `GET /api/stats/by-subject?from=&to=`          | Ders bazında toplamlar ve doğruluk (8 dersin hepsi, verisiz olanlar sıfırla)                         |
-| `GET /api/stats/by-topic?subjectId=&from=&to=` | Bir dersin konu bazında toplamları ve doğruluğu (verisiz konular sıfırla)                            |
-| `GET /api/stats/topic/:id`                     | Konunun tüm zamanlardaki özeti: toplamlar, son çalışma günü, kitap kırılımı, günlük doğruluk         |
+| Yol                                                          | Açıklama                                                          |
+| ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `/api/subjects`                                              | Dersler, konularıyla birlikte                                     |
+| `/api/topics`                                                | Konu ekle / yeniden adlandır / sil                                |
+| `/api/sessions`                                              | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre) |
+| `/api/questions`                                             | Soru kayıtları, net ile birlikte                                  |
+| `/api/resources`                                             | Test kitapları (çözülen test sayısı ve son çözüm tarihiyle)       |
+| `/api/stats/daily`, `by-subject`, `by-topic`, `topic/:id`    | Günlük, ders bazında ve konu bazında istatistikler                |
 
-**Net hesabı:** `net = doğru − yanlış / 4`. Net veritabanında saklanmaz, her seferinde hesaplanır.
+Hatalar Türkçe mesajla gelir (`HttpError` 400 geçersiz girdi, 404 kayıt yok; arayüzde `ApiError`). **Doğrulama veri katmanındadır:** arayüzdeki kontroller yalnızca kolaylıktır, her girdiyi veri katmanı reddeder.
+
+**Net hesabı:** `net = doğru − yanlış / 4`. Net saklanmaz, her seferinde hesaplanır.
 
 **Doğruluk oranı:** `doğru / (doğru + yanlış + boş)`, yüzde olarak yuvarlanır. Hiç soru çözülmemişse `null` döner (sıfır değil, "veri yok" demektir).
 
 **Gün sınırı:** Çalışma kayıtları evrensel saatle (UTC) saklanır, istatistikler ise bilgisayarının yerel saatine göre günlere ayrılır. Gece 00:30'da başlayan çalışma o günün sayılır.
 
 **Sınırlar:** Yazım hatalarının istatistikleri bozmaması için bir çalışma kaydı en fazla 24 saat, soru kaydında doğru/yanlış/boş her biri en fazla 10000, bir kitaptan çözülen test sayısı en fazla 10000 olabilir. Tarihler 2000–2100 yılları arasında olmalıdır.
+
+**Silme:** Silinen konuya ya da kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır.
 
 ## Yol haritası
 
