@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { backupIfDue, runDailyBackup } from "../../src/data/backupFolder.js";
 
 // Bellek içi sahte klasör: gerçek FileSystemDirectoryHandle'ın kullandığımız yüzeyini taklit eder
-function fakeDir(initial = {}, { failWrite = false } = {}) {
+function fakeDir(initial = {}, { failWrite = false, failRemove = false } = {}) {
   const files = new Map(Object.entries(initial));
   return {
     files,
@@ -26,6 +26,7 @@ function fakeDir(initial = {}, { failWrite = false } = {}) {
       };
     },
     async removeEntry(name) {
+      if (failRemove) throw new Error("NotFoundError");
       files.delete(name);
     },
   };
@@ -39,7 +40,10 @@ describe("runDailyBackup", () => {
     const dir = fakeDir();
     const result = await runDailyBackup(dir, snapshot, today);
     expect(result.status).toBe("written");
-    expect(JSON.parse(dir.files.get("yedek-2026-10-13.json"))).toEqual({ subjects: [], topics: [] });
+    expect(JSON.parse(dir.files.get("yedek-2026-10-13.json"))).toEqual({
+      subjects: [],
+      topics: [],
+    });
   });
 
   it("bugünün yedeği varsa dokunmaz ve veriyi okumaz", async () => {
@@ -52,7 +56,8 @@ describe("runDailyBackup", () => {
 
   it("14'ü aşınca en eski yedeği siler", async () => {
     const initial = {};
-    for (let d = 1; d <= 14; d++) initial[`yedek-2026-09-${String(d).padStart(2, "0")}.json`] = "{}";
+    for (let d = 1; d <= 14; d++)
+      initial[`yedek-2026-09-${String(d).padStart(2, "0")}.json`] = "{}";
     const dir = fakeDir(initial);
     const result = await runDailyBackup(dir, snapshot, today);
     expect(result.deleted).toEqual(["yedek-2026-09-01.json"]);
@@ -61,8 +66,13 @@ describe("runDailyBackup", () => {
   });
 
   it("desene uymayan dosyalara dokunmaz", async () => {
-    const initial = { "yedek-notlar.json": "a", "yedek-2026-10-13.json.bak": "b", "foto.png": "c" };
-    for (let d = 1; d <= 15; d++) initial[`yedek-2026-09-${String(d).padStart(2, "0")}.json`] = "{}";
+    const initial = {
+      "yedek-notlar.json": "a",
+      "yedek-2026-10-13.json.bak": "b",
+      "foto.png": "c",
+    };
+    for (let d = 1; d <= 15; d++)
+      initial[`yedek-2026-09-${String(d).padStart(2, "0")}.json`] = "{}";
     const dir = fakeDir(initial);
     await runDailyBackup(dir, snapshot, today);
     expect(dir.files.has("yedek-notlar.json")).toBe(true);
@@ -72,16 +82,50 @@ describe("runDailyBackup", () => {
 
   it("yazma başarısız olursa hata verir ve eski yedekler silinmez", async () => {
     const initial = {};
-    for (let d = 1; d <= 14; d++) initial[`yedek-2026-09-${String(d).padStart(2, "0")}.json`] = "{}";
+    for (let d = 1; d <= 14; d++)
+      initial[`yedek-2026-09-${String(d).padStart(2, "0")}.json`] = "{}";
     const dir = fakeDir(initial, { failWrite: true });
-    await expect(runDailyBackup(dir, snapshot, today)).rejects.toThrow("disk dolu");
+    await expect(runDailyBackup(dir, snapshot, today)).rejects.toThrow(
+      "disk dolu",
+    );
     expect(dir.files.size).toBe(14);
     expect(dir.files.has("yedek-2026-09-01.json")).toBe(true);
   });
 });
 
+describe("eski yedek silinemezse", () => {
+  it("bugünün yedeği yazıldığı için yine written döner ve son yedek işaretlenir", async () => {
+    const initial = {};
+    for (let d = 1; d <= 14; d++)
+      initial[`yedek-2026-09-${String(d).padStart(2, "0")}.json`] = "{}";
+    const dir = fakeDir(initial, { failRemove: true });
+    const result = await runDailyBackup(dir, snapshot, today);
+    expect(result.status).toBe("written");
+    expect(result.deleted).toEqual([]);
+    expect(dir.files.has("yedek-2026-10-13.json")).toBe(true);
+
+    const markBackedUp = vi.fn();
+    const handle = {
+      ...fakeDir(initial, { failRemove: true }),
+      queryPermission: async () => "granted",
+    };
+    const due = await backupIfDue({
+      loadHandle: async () => handle,
+      getSnapshot: snapshot,
+      now: today,
+      markBackedUp,
+    });
+    expect(due.status).toBe("written");
+    expect(markBackedUp).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("backupIfDue", () => {
-  const base = () => ({ getSnapshot: snapshot, now: today, markBackedUp: vi.fn() });
+  const base = () => ({
+    getSnapshot: snapshot,
+    now: today,
+    markBackedUp: vi.fn(),
+  });
   const handleWith = (dir, permission) => ({
     ...dir,
     keys: dir.keys,
@@ -99,7 +143,10 @@ describe("backupIfDue", () => {
 
   it("izin yoksa needs-permission döner ve yazmaz", async () => {
     const dir = fakeDir();
-    const deps = { ...base(), loadHandle: async () => handleWith(dir, "prompt") };
+    const deps = {
+      ...base(),
+      loadHandle: async () => handleWith(dir, "prompt"),
+    };
     expect((await backupIfDue(deps)).status).toBe("needs-permission");
     expect(dir.files.size).toBe(0);
     expect(deps.markBackedUp).not.toHaveBeenCalled();
@@ -107,14 +154,20 @@ describe("backupIfDue", () => {
 
   it("izin verilmişse yazar ve markBackedUp'ı bir kez çağırır", async () => {
     const dir = fakeDir();
-    const deps = { ...base(), loadHandle: async () => handleWith(dir, "granted") };
+    const deps = {
+      ...base(),
+      loadHandle: async () => handleWith(dir, "granted"),
+    };
     expect((await backupIfDue(deps)).status).toBe("written");
     expect(deps.markBackedUp).toHaveBeenCalledTimes(1);
   });
 
   it("yazma hatasında error ve Türkçe mesaj döner", async () => {
     const dir = fakeDir({}, { failWrite: true });
-    const deps = { ...base(), loadHandle: async () => handleWith(dir, "granted") };
+    const deps = {
+      ...base(),
+      loadHandle: async () => handleWith(dir, "granted"),
+    };
     const result = await backupIfDue(deps);
     expect(result.status).toBe("error");
     expect(result.message).toMatch(/Yedek klasörüne yazılamadı/);

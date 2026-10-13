@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { getDatabase } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import { useBackup } from '../context/BackupContext.jsx';
-import { HttpError } from '../data/errors.js';
 import { parseBackupText } from '../data/validation.js';
 import { backupFileName, readLastBackup, writeLastBackup } from '../lib/backup.js';
 import { persistenceLabel, requestPersistence } from '../lib/persistence.js';
@@ -40,7 +39,8 @@ export default function Settings() {
       link.href = url;
       link.download = backupFileName(new Date());
       link.click();
-      URL.revokeObjectURL(url);
+      // Bazı tarayıcılar indirmeyi hemen iptal etmesin diye adres biraz sonra bırakılır
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       writeLastBackup();
       setLastBackup(readLastBackup());
     } catch (e) {
@@ -60,7 +60,7 @@ export default function Settings() {
       await getDatabase().replaceAll(data);
       window.location.reload();
     } catch (e) {
-      setError(e instanceof HttpError ? e.message : e.message || 'Yedek yüklenemedi');
+      setError(e.message || 'Yedek yüklenemedi');
     }
   }
 

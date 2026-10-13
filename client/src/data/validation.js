@@ -131,6 +131,13 @@ export function validateBackup(data) {
     if (!Array.isArray(data[table])) {
       throw new HttpError(400, `Yedek dosyası geçersiz: "${table}" bir liste olmalı`);
     }
+    // Her kayıt bir nesne ve tamsayı id'li olmalı: aksi hâlde sayfalar yüklemeden sonra çöker
+    const bad = data[table].findIndex(
+      (row) => row === null || typeof row !== "object" || Array.isArray(row) || !Number.isSafeInteger(row.id),
+    );
+    if (bad !== -1) {
+      throw new HttpError(400, `Yedek dosyası geçersiz: "${table}" listesinin ${bad + 1}. kaydı bozuk`);
+    }
     clean[table] = data[table];
   }
   if (Object.keys(clean).length === 0) {

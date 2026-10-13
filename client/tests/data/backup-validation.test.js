@@ -16,6 +16,15 @@ describe("parseBackupText", () => {
     }
   });
 
+  it.each([
+    '{"subjects":[null]}',
+    '{"sessions":[1,2]}',
+    '{"topics":[{"name":"id yok"}]}',
+    '{"topics":[{"id":"3"}]}',
+  ])("%s: kaydı nesne olmayan ya da tamsayı id'si olmayan yedeği reddeder", (text) => {
+    expect(() => parseBackupText(text)).toThrow(/Yedek dosyası geçersiz/);
+  });
+
   it("geçerli yedeği kabul eder", () => {
     const state = emptyState();
     expect(parseBackupText(JSON.stringify(state))).toEqual(state);

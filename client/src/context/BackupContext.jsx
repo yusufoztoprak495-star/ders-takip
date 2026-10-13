@@ -39,18 +39,28 @@ export function BackupProvider({ children }) {
   const [message, setMessage] = useState(null);
   const [folderName, setFolderName] = useState(null);
   const started = useRef(false);
+  // Çalışmalar sırayla yapılır (aynı klasöre iki yazma üst üste binmesin) ve ekrana yalnızca
+  // en son başlatılanın sonucu yazılır: eski klasörle başlayan bir çalışma yenisini ezmez.
+  const queue = useRef(Promise.resolve());
+  const latest = useRef(0);
 
-  const run = useCallback(async (requestPermission) => {
-    const result = await backupIfDue({
-      loadHandle: loadFolderHandle,
-      getSnapshot: () => getDatabase().snapshot(),
-      markBackedUp: writeLastBackup,
-      requestPermission,
-    });
-    setStatus(statusOf(result));
-    setMessage(result.message ?? null);
-    const handle = await loadFolderHandle();
-    setFolderName(handle ? handle.name : null);
+  const run = useCallback((requestPermission) => {
+    const id = ++latest.current;
+    const task = async () => {
+      const result = await backupIfDue({
+        loadHandle: loadFolderHandle,
+        getSnapshot: () => getDatabase().snapshot(),
+        markBackedUp: writeLastBackup,
+        requestPermission,
+      });
+      const handle = await loadFolderHandle();
+      if (id !== latest.current) return;
+      setStatus(statusOf(result));
+      setMessage(result.message ?? null);
+      setFolderName(handle ? handle.name : null);
+    };
+    queue.current = queue.current.then(task, task);
+    return queue.current;
   }, []);
 
   // Açılışta bir kez: klasör seçiliyse ve izin varsa bugünün yedeği alınır
@@ -84,6 +94,8 @@ export function BackupProvider({ children }) {
   const resume = useCallback(() => run(true), [run]);
 
   const removeFolder = useCallback(async () => {
+    // Sırada bekleyen çalışmaların sonucu kaldırılan klasörün durumunu ezmesin
+    latest.current += 1;
     try {
       await clearFolderHandle();
     } catch {

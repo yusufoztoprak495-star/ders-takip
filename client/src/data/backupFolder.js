@@ -12,6 +12,7 @@ async function listNames(dir) {
 
 // Bugünün yedeği yoksa yazar, ardından en yeni 14'ü dışındaki eski yedekleri siler.
 // Yazma başarısız olursa hata fırlar ve HİÇBİR şey silinmez (eski yedekler son güvencedir).
+// Silme sırasındaki hatalar yutulur: yazma bittikten sonra yedek zaten alınmıştır.
 // Dosya, `close()` çağrılana kadar asıl yerine yazılmaz; yarım dosya kalmaz.
 export async function runDailyBackup(dir, getSnapshot, now = new Date()) {
   const names = await listNames(dir);
@@ -24,8 +25,16 @@ export async function runDailyBackup(dir, getSnapshot, now = new Date()) {
   await writable.write(JSON.stringify(data, null, 2));
   await writable.close();
 
-  const deleted = namesToDelete([...names, name]);
-  for (const old of deleted) await dir.removeEntry(old);
+  // Bugünün yedeği artık güvende: eski yedeği silememek (örn. başka sekme zaten sildi) hata sayılmaz
+  const deleted = [];
+  for (const old of namesToDelete([...names, name])) {
+    try {
+      await dir.removeEntry(old);
+      deleted.push(old);
+    } catch {
+      // bir sonraki günlük yedekte yeniden denenir
+    }
+  }
   return { status: "written", deleted };
 }
 
