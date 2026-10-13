@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Route, Routes } from 'react-router-dom';
+import { BackupProvider } from './context/BackupContext.jsx';
 import { PomodoroProvider, usePomodoro } from './context/PomodoroContext.jsx';
 import { formatTime } from './lib/pomodoro.js';
 import { requestPersistence } from './lib/persistence.js';
@@ -61,6 +62,7 @@ export default function App() {
   const goingLight = theme === 'dark';
   const toggleLabel = goingLight ? 'Açık temaya geç' : 'Koyu temaya geç';
   return (
+    <BackupProvider>
     <PomodoroProvider>
       <nav className="nav" aria-label="Ana menü">
         <div className="brand-row">
@@ -100,5 +102,6 @@ export default function App() {
         </Routes>
       </main>
     </PomodoroProvider>
+    </BackupProvider>
   );
 }

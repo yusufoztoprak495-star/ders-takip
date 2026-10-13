@@ -20,6 +20,7 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
   - **Ders sayfası:** Bir derse tıklayınca açılır: o dersin göstergeleri, zaman grafikleri ve konular. Konular **en zayıftan en güçlüye** (doğruluk oranına göre) sıralanır; henüz soru çözmediğin konular sönük ve en altta durur.
   - **Konu sayfası:** Bir konuya tıklayınca açılır: toplam çalışma süresi, çözülen soru, net, doğruluk, doğru/yanlış/boş dağılımı, zaman içinde doğruluk grafiği, hangi kitaplardan çözdüğün ve en son ne zaman çalıştığın.
   - Sayfaların üstünde yol çubuğu (İlerleme › Matematik › Türev) bulunur. Grafiklerin üzerine gelince ayrıntı balonu çıkar; her grafiğin tablo görünümü de vardır.
+- **Veri güvenliği (Ayarlar):** Kalıcı depolama izni, yedeği indir/yükle, haftalık yedek hatırlatması ve bilgisayarda seçilen klasöre günlük otomatik yedek (son 14 tutulur). Ayrıntılar aşağıda, "Veriler ve yedekleme" bölümünde.
 - **Ana sayfa:** Dört kart: bugünün özeti (süre, soru, net, doğruluk), haftalık değişim (son 7 gün önceki 7 güne göre, ↑ / ↓ yüzde), seri (kaç gündür üst üste çalıştığın) ve günün en çok çalışılan dersi. Altında son 7 günün çalışma ritmi vardır.
 
 | Pomodoro                                                  | Kaynaklar                                                               |
@@ -28,8 +29,8 @@ Kendi YKS çalışmam için yaptığım, tek kişilik ve bilgisayarda çalışan
 
 ![Soru kaydı formu ve son kayıtlar](docs/screenshots/soru-kaydi.png)
 
-| Ders sayfası (konular zayıftan güçlüye) | Konu sayfası |
-| --------------------------------------- | ------------ |
+| Ders sayfası (konular zayıftan güçlüye)             | Konu sayfası                                        |
+| --------------------------------------------------- | --------------------------------------------------- |
 | ![Ders sayfası](docs/screenshots/ilerleme-ders.png) | ![Konu sayfası](docs/screenshots/ilerleme-konu.png) |
 
 ## Gereksinimler
@@ -64,7 +65,13 @@ Projede bir `.npmrc` dosyası var ve `npm install` sırasında paketlerin kurulu
 
 ### Veriler ve yedekleme
 
-Veriler tek bir SQLite dosyasında (`data/calisma.db`) tutulur; dosya ilk çalıştırmada kendiliğinden oluşur ve Git'e eklenmez. Yedeklemek için bu dosyayı kopyalamak yeterli. Veritabanı şeması değiştiğinde (örneğin eski sürümden yükseltirken) uygulama, dosyayı değiştirmeden önce yanına `calisma.db.yedek-TARİH-SAAT` adıyla otomatik bir yedek kopya bırakır. İlk kurulumda TYT/AYT ders ve konu listesi otomatik yüklenir.
+Veriler tarayıcının kendi deposunda (IndexedDB) durur. Tarayıcı bu depoyu silerse (site verilerinin temizlenmesi, disk dolması) veriler kaybolur; bu yüzden üç önlem vardır. Hepsi **Ayarlar** sayfasındadır:
+
+- **Kalıcı depolama izni:** Uygulama açılışta tarayıcıdan `navigator.storage.persist()` ile kalıcılık ister; verilirse tarayıcı verileri kendiliğinden silmez. İzin durumu Ayarlar'da görünür. Tarayıcı bu izni sorabilir, sessizce verebilir ya da reddedebilir.
+- **Yedeği indir / yükle:** Tüm veriyi `yedek-YYYY-AA-GG.json` dosyası olarak indirir; aynı dosyayı yükleyerek geri alırsın (mevcut verinin yerine geçer, geçersiz dosya reddedilir). Son yedek 7 günden eskiyse (ya da hiç yoksa) Ana sayfada hatırlatma çıkar. Telefon gibi her tarayıcıda çalışır.
+- **Yedek klasörü (otomatik):** "Yedek klasörü seç" ile bilgisayarında bir klasör seçersin. Uygulama her gün ilk açılışta oraya tarihli bir JSON yedeği yazar, son 14 yedeği tutar ve eskilerini siler (yalnızca `yedek-YYYY-AA-GG.json` adlı dosyalara dokunur). Bu özellik File System Access API ister: **yalnızca Chromium tabanlı masaüstü tarayıcılarda (Chrome, Edge) çalışır**; Firefox ve telefonlarda bölüm gizlenir. Tarayıcı yeni oturumda klasör iznini kendiliğinden vermeyebilir; o zaman Ana sayfada ve Ayarlar'da "Yedeklemeyi sürdür" düğmesi çıkar, tıklayınca yedek yazılır.
+
+İlk kurulumda TYT/AYT ders ve konu listesi otomatik yüklenir.
 
 ## Testler
 
@@ -100,7 +107,7 @@ Masaüstünde sol menü, telefonda alt sekme çubuğu kullanılır.
 | Veritabanı | SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3)) |
 | Arayüz     | React + Vite (React Router, `HashRouter`)                             |
 | Grafikler  | Elle çizilmiş SVG (kütüphanesiz)                                      |
-| Yazı tipi  | Cormorant Garamond (başlık), Figtree (metin); `@fontsource`, gömülü  |
+| Yazı tipi  | Cormorant Garamond (başlık), Figtree (metin); `@fontsource`, gömülü   |
 | Test       | Vitest, Supertest                                                     |
 
 ## Proje yapısı
@@ -128,29 +135,29 @@ docs/                     tasarım belgesi, uygulama planı, ekran görüntüler
 
 Arayüz şu uçları kullanır. Hatalar Türkçe mesajla ve uygun durum koduyla döner (`400` geçersiz girdi, `404` kayıt yok).
 
-| Uç                                          | Açıklama                                                                                     |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `GET /api/health`                           | Sunucu çalışıyor mu                                                                          |
-| `GET /api/subjects`                         | Dersler, konularıyla birlikte                                                                |
-| `POST /api/topics`                          | Konu ekle (`{ subjectId, name }`)                                                            |
-| `PUT /api/topics/:id`                       | Konuyu yeniden adlandır (`{ name }`)                                                         |
-| `DELETE /api/topics/:id`                    | Konuyu sil                                                                                   |
-| `GET /api/sessions?from=&to=`               | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre)                            |
-| `POST /api/sessions`                        | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`)         |
-| `PUT /api/sessions/:id`                     | Kaydı güncelle (tüm alanlar gönderilir)                                                      |
-| `DELETE /api/sessions/:id`                  | Kaydı sil                                                                                    |
-| `GET /api/resources`                        | Test kitapları (çözülen test sayısı ve son çözüm tarihiyle)                                  |
-| `POST /api/resources`                       | Kitap ekle (`{ name, publisher?, subjectId, solvedTests?, status? }`)                        |
-| `PUT /api/resources/:id`                    | Kitabı güncelle (`solvedTests` verilmezse mevcut değer korunur; artarsa son çözüm tarihi bugün olur) |
-| `DELETE /api/resources/:id`                 | Kaynağı sil                                                                                  |
-| `GET /api/questions?from=&to=`              | Soru kayıtları, net ile birlikte (tarih aralığı isteğe bağlı)                                |
-| `POST /api/questions`                       | Soru kaydı ekle (`{ date, subjectId, topicId?, correct, wrong, blank, resourceId? }`)        |
-| `PUT /api/questions/:id`                    | Kaydı güncelle                                                                               |
-| `DELETE /api/questions/:id`                 | Kaydı sil                                                                                    |
-| `GET /api/stats/daily?from=&to=&subjectId=` | Gün gün çalışma süresi, soru sayıları ve net (`from`/`to` zorunlu, `subjectId` isteğe bağlı) |
-| `GET /api/stats/by-subject?from=&to=`       | Ders bazında toplamlar ve doğruluk (8 dersin hepsi, verisiz olanlar sıfırla)                 |
-| `GET /api/stats/by-topic?subjectId=&from=&to=` | Bir dersin konu bazında toplamları ve doğruluğu (verisiz konular sıfırla)                 |
-| `GET /api/stats/topic/:id`                  | Konunun tüm zamanlardaki özeti: toplamlar, son çalışma günü, kitap kırılımı, günlük doğruluk |
+| Uç                                             | Açıklama                                                                                             |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `GET /api/health`                              | Sunucu çalışıyor mu                                                                                  |
+| `GET /api/subjects`                            | Dersler, konularıyla birlikte                                                                        |
+| `POST /api/topics`                             | Konu ekle (`{ subjectId, name }`)                                                                    |
+| `PUT /api/topics/:id`                          | Konuyu yeniden adlandır (`{ name }`)                                                                 |
+| `DELETE /api/topics/:id`                       | Konuyu sil                                                                                           |
+| `GET /api/sessions?from=&to=`                  | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre)                                    |
+| `POST /api/sessions`                           | Çalışma kaydı ekle (`{ subjectId, topicId, startedAt, durationSeconds, entryType }`)                 |
+| `PUT /api/sessions/:id`                        | Kaydı güncelle (tüm alanlar gönderilir)                                                              |
+| `DELETE /api/sessions/:id`                     | Kaydı sil                                                                                            |
+| `GET /api/resources`                           | Test kitapları (çözülen test sayısı ve son çözüm tarihiyle)                                          |
+| `POST /api/resources`                          | Kitap ekle (`{ name, publisher?, subjectId, solvedTests?, status? }`)                                |
+| `PUT /api/resources/:id`                       | Kitabı güncelle (`solvedTests` verilmezse mevcut değer korunur; artarsa son çözüm tarihi bugün olur) |
+| `DELETE /api/resources/:id`                    | Kaynağı sil                                                                                          |
+| `GET /api/questions?from=&to=`                 | Soru kayıtları, net ile birlikte (tarih aralığı isteğe bağlı)                                        |
+| `POST /api/questions`                          | Soru kaydı ekle (`{ date, subjectId, topicId?, correct, wrong, blank, resourceId? }`)                |
+| `PUT /api/questions/:id`                       | Kaydı güncelle                                                                                       |
+| `DELETE /api/questions/:id`                    | Kaydı sil                                                                                            |
+| `GET /api/stats/daily?from=&to=&subjectId=`    | Gün gün çalışma süresi, soru sayıları ve net (`from`/`to` zorunlu, `subjectId` isteğe bağlı)         |
+| `GET /api/stats/by-subject?from=&to=`          | Ders bazında toplamlar ve doğruluk (8 dersin hepsi, verisiz olanlar sıfırla)                         |
+| `GET /api/stats/by-topic?subjectId=&from=&to=` | Bir dersin konu bazında toplamları ve doğruluğu (verisiz konular sıfırla)                            |
+| `GET /api/stats/topic/:id`                     | Konunun tüm zamanlardaki özeti: toplamlar, son çalışma günü, kitap kırılımı, günlük doğruluk         |
 
 **Net hesabı:** `net = doğru − yanlış / 4`. Net veritabanında saklanmaz, her seferinde hesaplanır.
 

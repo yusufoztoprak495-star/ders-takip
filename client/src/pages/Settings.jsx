@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getDatabase } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
+import { useBackup } from '../context/BackupContext.jsx';
 import { HttpError } from '../data/errors.js';
 import { parseBackupText } from '../data/validation.js';
 import { backupFileName, readLastBackup, writeLastBackup } from '../lib/backup.js';
@@ -11,6 +12,12 @@ export default function Settings() {
   const [persistence, setPersistence] = useState('checking');
   const [lastBackup, setLastBackup] = useState(readLastBackup);
   const [error, setError] = useState(null);
+  const folder = useBackup();
+
+  // Klasör yedeği arka planda tamamlanınca "Son yedek" satırı da güncellenir
+  useEffect(() => {
+    setLastBackup(readLastBackup());
+  }, [folder.status]);
 
   useEffect(() => {
     let active = true;
@@ -85,6 +92,42 @@ export default function Settings() {
               <input type="file" accept=".json,application/json" onChange={handleRestore} />
             </label>
           </p>
+        </article>
+        <article className="panel panel-wide">
+          <h2 className="panel-label">Yedek klasörü</h2>
+          {!folder.supported && (
+            <p className="muted">
+              Bu tarayıcı klasöre yedeklemeyi desteklemiyor; yukarıdaki indirme yolunu kullan.
+            </p>
+          )}
+          {folder.supported && (
+            <>
+              <ErrorBanner message={folder.status === 'error' ? folder.message : null} />
+              <p>
+                {folder.folderName ? `Klasör: ${folder.folderName}` : 'Henüz klasör seçilmedi.'}
+                {folder.status === 'ok' && ' — bugünün yedeği hazır.'}
+              </p>
+              <p className="muted">
+                Klasör seçilince her gün ilk açılışta oraya tarihli bir yedek yazılır; son 14 yedek
+                tutulur, eskileri silinir.
+              </p>
+              <p>
+                <button type="button" onClick={folder.pickFolder}>
+                  Yedek klasörü seç
+                </button>{' '}
+                {folder.status === 'needs-permission' && (
+                  <button type="button" onClick={folder.resume}>
+                    Yedeklemeyi sürdür
+                  </button>
+                )}{' '}
+                {folder.folderName && (
+                  <button type="button" className="secondary" onClick={folder.removeFolder}>
+                    Klasörü kaldır
+                  </button>
+                )}
+              </p>
+            </>
+          )}
         </article>
       </div>
     </section>
