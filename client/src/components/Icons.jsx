@@ -102,3 +102,13 @@ export const MoonIcon = () => (
     <path d="M16.5 3.5v2.4M15.3 4.7h2.4" />
   </Icon>
 );
+
+// Ayarlar: iki sürgülü çizgi
+export const SettingsIcon = () => (
+  <Icon>
+    <path d="M4 8h16" />
+    <path d="M4 16h16" />
+    <path d="M9 5v6" />
+    <path d="M15 13v6" />
+  </Icon>
+);

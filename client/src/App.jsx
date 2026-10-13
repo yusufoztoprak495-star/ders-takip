@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { Link, NavLink, Route, Routes } from 'react-router-dom';
 import { PomodoroProvider, usePomodoro } from './context/PomodoroContext.jsx';
 import { formatTime } from './lib/pomodoro.js';
+import { requestPersistence } from './lib/persistence.js';
+import Settings from './pages/Settings.jsx';
 import Home from './pages/Home.jsx';
 import Pomodoro from './pages/Pomodoro.jsx';
 import StudyLog from './pages/StudyLog.jsx';
@@ -20,6 +23,7 @@ import {
   ProgressIcon,
   QuestionsIcon,
   ResourcesIcon,
+  SettingsIcon,
   SunIcon,
   TimerIcon,
   TopicsIcon,
@@ -34,6 +38,7 @@ const NAV_ITEMS = [
   { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon },
   { to: '/konular', label: 'Konular', short: 'Konu', Icon: TopicsIcon },
   { to: '/ilerleme', label: 'İlerleme', short: 'İlerleme', Icon: ProgressIcon },
+  { to: '/ayarlar', label: 'Ayarlar', short: 'Ayarlar', Icon: SettingsIcon },
 ];
 
 // Sayaç çalışırken başka sayfadayken de kalan süreyi menüde gösterir
@@ -49,6 +54,10 @@ function NavTimer() {
 
 export default function App() {
   const { theme, toggle } = useTheme();
+  // Açılışta kalıcı depolama izni istenir (sonuç Ayarlar sayfasında gösterilir)
+  useEffect(() => {
+    requestPersistence();
+  }, []);
   const goingLight = theme === 'dark';
   const toggleLabel = goingLight ? 'Açık temaya geç' : 'Koyu temaya geç';
   return (
@@ -87,6 +96,7 @@ export default function App() {
           <Route path="/ilerleme" element={<Progress />} />
           <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
           <Route path="/ilerleme/ders/:subjectId/konu/:topicId" element={<ProgressTopic />} />
+          <Route path="/ayarlar" element={<Settings />} />
         </Routes>
       </main>
     </PomodoroProvider>
