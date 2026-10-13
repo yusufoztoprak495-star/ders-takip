@@ -115,3 +115,37 @@ export function assertTopicMatchesSubject(state, topicId, subjectId) {
     throw new HttpError(400, "Konu seçilen derse ait değil");
   }
 }
+
+// Yedek dosyasındaki tablolar: hepsi dizi olmalı, başka alanlar atılır
+const BACKUP_TABLES = ["subjects", "topics", "sessions", "questions", "resources"];
+
+// Yedek verisini doğrular ve yalnızca bilinen tabloları içeren temiz bir kopya verir.
+// En az bir tablo bulunmalı; bulunan her tablo dizi olmalı (eksik tablolar sonradan boş dizi olur).
+export function validateBackup(data) {
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    throw new HttpError(400, "Yedek dosyası geçersiz: veri bir nesne olmalı");
+  }
+  const clean = {};
+  for (const table of BACKUP_TABLES) {
+    if (!(table in data)) continue;
+    if (!Array.isArray(data[table])) {
+      throw new HttpError(400, `Yedek dosyası geçersiz: "${table}" bir liste olmalı`);
+    }
+    clean[table] = data[table];
+  }
+  if (Object.keys(clean).length === 0) {
+    throw new HttpError(400, "Yedek dosyası geçersiz: tanıdığımız hiçbir veri yok");
+  }
+  return clean;
+}
+
+// Yedek dosyasının metnini okur ve doğrular (JSON değilse de aynı türde hata verir)
+export function parseBackupText(text) {
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new HttpError(400, "Yedek dosyası geçersiz: JSON olarak okunamadı");
+  }
+  return validateBackup(data);
+}

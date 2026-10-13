@@ -1,6 +1,7 @@
 import { HttpError } from "./errors.js";
 import { resolveRoute } from "./router.js";
 import { emptyState, seedIfEmpty } from "./seed.js";
+import { validateBackup } from "./validation.js";
 
 // Depolama (yazma/okuma) başarısız olduysa: sunucuya ulaşılamıyor demenin tarayıcıdaki karşılığı
 export class StorageError extends Error {}
@@ -80,10 +81,10 @@ export function createDatabase(storage) {
         return structuredClone(state);
       });
     },
-    // Tüm veriyi verilen veriyle değiştirir (yedek yüklemek için). Önce doğrulanmış olmalıdır.
+    // Tüm veriyi verilen veriyle değiştirir (yedek yüklemek için). Geçersiz veri HttpError(400) ile reddedilir.
     replaceAll(data) {
       const task = async () => {
-        const next = normalize(data);
+        const next = normalize(validateBackup(data));
         await persist(next);
         state = next;
       };
