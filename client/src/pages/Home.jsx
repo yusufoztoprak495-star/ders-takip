@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiFetch } from '../api.js';
 import { EmptyChart } from '../components/Doodles.jsx';
 import EmptyState from '../components/EmptyState.jsx';
+import BackupReminder from '../components/BackupReminder.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import { fillMissingDays, summarize } from '../lib/charts.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
@@ -89,6 +90,7 @@ export default function Home() {
     <section>
       <h1>Bugün</h1>
       <ErrorBanner message={error} />
+      <BackupReminder />
 
       {view && (
         <>

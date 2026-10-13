@@ -39,3 +39,23 @@ export function needsReminder(lastBackupIso, now = new Date()) {
   if (Number.isNaN(last)) return true;
   return now.getTime() - last > REMINDER_DAYS * 24 * 60 * 60 * 1000;
 }
+
+export const LAST_BACKUP_KEY = "ders-takip-son-yedek";
+
+// Son yedeğin ISO tarihi; kayıt yoksa ya da localStorage kapalıysa null
+export function readLastBackup() {
+  try {
+    return localStorage.getItem(LAST_BACKUP_KEY);
+  } catch {
+    return null;
+  }
+}
+
+// Son yedek anını kaydeder; localStorage kapalıysa sessizce geçilir (yalnızca hatırlatma etkilenir)
+export function writeLastBackup(date = new Date()) {
+  try {
+    localStorage.setItem(LAST_BACKUP_KEY, date.toISOString());
+  } catch {
+    // kayıt yapılamazsa hatırlatma "yedek yok" gibi davranır
+  }
+}

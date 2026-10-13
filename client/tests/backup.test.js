@@ -1,10 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import {
   backupFileName,
   hasBackupForDay,
   isBackupFileName,
   namesToDelete,
   needsReminder,
+  readLastBackup,
+  writeLastBackup,
 } from "../src/lib/backup.js";
 
 describe("backupFileName", () => {
@@ -53,4 +55,33 @@ describe("needsReminder", () => {
   it("6 gün önceyse false", () => expect(needsReminder(daysBefore(6), now)).toBe(false));
   it("8 gün önceyse true", () => expect(needsReminder(daysBefore(8), now)).toBe(true));
   it("geçersiz tarih metninde true", () => expect(needsReminder("abc", now)).toBe(true));
+});
+
+describe("son yedek tarihi (localStorage)", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("yazılan tarih geri okunur", () => {
+    const store = {};
+    vi.stubGlobal("localStorage", {
+      getItem: (k) => store[k] ?? null,
+      setItem: (k, v) => {
+        store[k] = v;
+      },
+    });
+    writeLastBackup(new Date(Date.UTC(2026, 9, 13, 9, 0)));
+    expect(readLastBackup()).toBe("2026-10-13T09:00:00.000Z");
+  });
+
+  it("localStorage erişilemezse çökmez: okuma null, yazma sessiz", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("erişim yok");
+      },
+      setItem: () => {
+        throw new Error("erişim yok");
+      },
+    });
+    expect(readLastBackup()).toBeNull();
+    expect(() => writeLastBackup()).not.toThrow();
+  });
 });
