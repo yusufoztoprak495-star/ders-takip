@@ -5,3 +5,4 @@ client/dist/
 .playwright-mcp/
 *.db.yedek-*
 data/yedek/
+.claude/settings.local.json
