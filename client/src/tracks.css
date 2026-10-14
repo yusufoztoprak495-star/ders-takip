@@ -1,0 +1,178 @@
+/* --- Çalışma hedefi (YKS / DGS / Üniversite) --- */
+
+/* Menüde uygulama adının altında seçili hedef */
+.brand-track {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+/* Üç parçalı seçici: tek sıra, seçili parça dolgulu */
+.segmented {
+  display: inline-flex;
+  max-width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.segmented button {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 16px;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  text-align: center;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--border-strong);
+}
+
+.segmented button.active {
+  color: var(--on-accent);
+  background: var(--accent-fill);
+}
+
+.segmented button:hover:not(:disabled):not(.active) {
+  filter: none;
+  background: var(--surface-2);
+}
+
+.segmented button:disabled:not(.active) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.segmented-title {
+  display: block;
+  font-weight: 600;
+}
+
+/* Ayrıntılı görünüm: geniş parçalar, altında kısa açıklama */
+.track-switcher.detailed .segmented {
+  display: flex;
+  width: 100%;
+}
+
+.track-switcher.detailed .segmented button {
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.segmented-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  opacity: 0.8;
+}
+
+.track-switcher .small {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+}
+
+.track-intro {
+  margin-bottom: 18px;
+}
+
+/* Telefonda açıklamalı seçici alt alta dizilir */
+@media (max-width: 560px) {
+  .track-switcher.detailed .segmented {
+    flex-direction: column;
+  }
+
+  .track-switcher.detailed .segmented button + button {
+    border-left: 0;
+    border-top: 1px solid var(--border-strong);
+  }
+}
+
+/* --- Dersler ve Konular sayfası --- */
+.subject-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.subject-head h2 {
+  margin-bottom: 4px;
+}
+
+.subject-head .actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.new-subject {
+  max-width: 640px;
+  margin: 4px 0 20px;
+}
+
+.inline-form .group-input {
+  flex: 0 1 200px;
+}
+
+@media (max-width: 560px) {
+  .inline-form.new-subject,
+  .inline-form.subject-edit {
+    flex-wrap: wrap;
+  }
+
+  .inline-form.new-subject input,
+  .inline-form.subject-edit input {
+    flex: 1 1 100%;
+  }
+}
+
+/* --- Tarayıcılar arası tutarlılık --- */
+
+/* Bağlantılar: renk tarayıcıya bırakılmaz (Chrome mavi/mor, Safari başka ton gösteriyordu).
+   :where özgüllüğü sıfırdır; menü, düğme gibi kendi rengi olan bağlantıları ezmez. */
+:where(a:link, a:visited) {
+  color: var(--accent-2);
+}
+
+/* Telefonda alt menü: 8 öğe 360 px genişliğe de sığsın (önceden "Ayarlar" dışarı taşıyordu) */
+@media (max-width: 820px) {
+  .nav a {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 2px;
+  }
+
+  .nav-short {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 400px) {
+  .nav-short {
+    font-size: 0.62rem;
+  }
+}
+
+/* iOS Safari yan çevrilince yazıları kendiliğinden büyütmesin; Firefox'ta macOS yazı yumuşatması */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  -moz-osx-font-smoothing: grayscale;
+}

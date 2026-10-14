@@ -1,53 +1,56 @@
-/* --- Açık tema: krem kâğıda basılmış ajanda ---
+/* --- Açık tema: beyaz kâğıt, lacivert mürekkep ---
    Koyu temanın değerleri index.css / decor.css içindeki :root'ta durur. Burada yalnızca aynı değişkenlerin
    açık karşılıkları var; bileşenlerde renk yazılmaz, hepsi değişkenden gelir.
-   Kontrast (WCAG AA): yazı en az 4.5:1, grafik işaretleri en az 3:1 (kartın #fbf8f1 yüzeyine göre). */
+   Neden nötr beyaz: eski krem/sepya zemin (#f3eee3) sıcak renkli ekranlarda, gece ışığı / okuma modu açıkken
+   ve bazı telefon panellerinde sarı görünüyordu. Zemin ve yüzeyler artık sarıya hiç kaymayan gri-beyaz;
+   altın yalnızca küçük vurgularda (grafik serisi) kaldı, büyük yüzeylerde yok.
+   Kontrast (WCAG AA): yazı en az 4.5:1, grafik işaretleri en az 3:1 (beyaz karta göre). */
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --bg: #f3eee3; /* sıcak kâğıt */
-  --surface: #fbf8f1; /* zeminden bir ton açık kart */
-  --surface-2: #f7f2e7;
-  --text: #221d16; /* sepya mürekkep */
-  --muted: #6b6354;
-  --border: #e4dccb;
-  --border-strong: #cfc4ac;
+  --bg: #f4f5f7; /* çok açık gri: beyaz kartlar zeminden ayrılsın */
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --text: #16191f; /* neredeyse siyah, hafif soğuk */
+  --muted: #5a6170;
+  --border: #e3e6eb;
+  --border-strong: #c9ced6;
 
-  --gold: #8a6a22; /* antik altın / pirinç: yazı ve ince çizgiler (krem üstünde ~4.9:1) */
-  --gold-hair: rgba(138, 106, 34, 0.2);
-  --teal: #1f6f68;
-  --rose: #9a3b34;
-  --accent-fill: #a8832f; /* düğme dolgusu; üzerindeki koyu mürekkep yazı ~5:1 */
-  --gold-text: #8a6a22;
-  --accent-2: #26385a; /* derin lacivert: odak çerçevesi, bağlantı vurgusu */
-  --on-accent: #1d1608;
+  --gold: #26385a; /* açık temada vurgu lacivert (değişken adı koyu temadan kalma) */
+  --gold-hair: rgba(38, 56, 90, 0.16);
+  --teal: #1b6b64;
+  --rose: #a33a33;
+  --accent-fill: #26385a; /* düğme dolgusu; üzerindeki beyaz yazı ~11:1 */
+  --gold-text: #26385a;
+  --accent-2: #2f5fb3; /* odak çerçevesi, bağlantı vurgusu */
+  --on-accent: #ffffff;
 
-  --danger-bg: #f6e3df;
-  --danger-text: #8a2f29;
+  --danger-bg: #fbe9e7;
+  --danger-text: #8f2c26;
 
-  --series-1: #a8832f;
-  --series-2: #1f6f68;
-  --series-3: #9a3b34;
-  --series-blank: #8f8773;
-  --series-dim: #ddd3bd;
-  --chart-grid: #e8e0cf;
-  --chart-axis: #cfc4ac;
+  --series-1: #3b5b92;
+  --series-2: #1b8079;
+  --series-3: #b4483f;
+  --series-blank: #8b919c;
+  --series-dim: #dde1e7;
+  --chart-grid: #eceef2;
+  --chart-axis: #c9ced6;
 
-  --nav-bg: #ece5d6;
-  --paper-line: rgba(120, 95, 50, 0.075);
-  /* Üstte beyaz ışık çizgisi + üç katmanlı, sepya tonlu çok yumuşak gölge */
+  --nav-bg: #ffffff;
+  --paper-line: rgba(38, 56, 90, 0.045);
+  /* Üstte ince ışık çizgisi + nötr gri, çok yumuşak gölge (renk tonu yok) */
   --card-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 1px 2px rgba(70, 52, 22, 0.05),
-    0 4px 12px rgba(70, 52, 22, 0.05), 0 14px 32px rgba(70, 52, 22, 0.05);
-  --btn-hover: brightness(0.93);
+    0 1px 2px rgba(16, 24, 40, 0.05), 0 4px 12px rgba(16, 24, 40, 0.05),
+    0 14px 32px rgba(16, 24, 40, 0.04);
+  --btn-hover: brightness(1.15);
   --mark-hover: brightness(0.85);
-  --grain-opacity: 0.16;
-  /* Kâğıt tanesi: koyu sepya benekler */
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.35 0 0 0 0 0.27 0 0 0 0 0.15 1.2 0 0 0 -0.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-opacity: 0.06;
+  /* Kâğıt tanesi: nötr gri benekler (eskisi kahverengiydi, beyazı sarartıyordu) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.3 0 0 0 0 0.32 0 0 0 0 0.36 1.2 0 0 0 -0.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
-  /* Gravür motifleri: sepya mürekkep, ince çizgi */
-  --doodle: rgba(90, 74, 48, 0.4);
-  --doodle-strong: rgba(90, 74, 48, 0.55);
+  /* Gravür motifleri: gri-lacivert mürekkep, ince çizgi */
+  --doodle: rgba(38, 56, 90, 0.28);
+  --doodle-strong: rgba(38, 56, 90, 0.42);
 }
 
 /* --- Tema düğmesi --- */

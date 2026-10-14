@@ -1,3 +1,4 @@
+import { subjectLabel } from '../lib/tracks.js';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../api.js';
@@ -60,7 +61,7 @@ export default function ProgressSubject() {
     );
   }
 
-  const title = subject ? `${subject.name} (${subject.examType})` : '';
+  const title = subject ? subjectLabel(subject.name, subject.examType) : '';
 
   return (
     <section>

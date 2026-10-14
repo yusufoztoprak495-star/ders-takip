@@ -1,3 +1,4 @@
+import { subjectLabel } from '../lib/tracks.js';
 import { useEffect, useRef, useState } from 'react';
 import { labelIndexes, niceTicks } from '../lib/scale.js';
 import { formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
@@ -181,7 +182,7 @@ export function SubjectTimeBars({ rows, highlightId, ariaLabel }) {
             const cy = i * layout.rowH + layout.rowH / 2 + 4;
             const w = Math.max((r.totalSeconds / maxSeconds) * plotW, 2);
             const faded = highlightId && r.subjectId !== highlightId;
-            const name = `${r.subjectName} (${r.examType})`;
+            const name = subjectLabel(r.subjectName, r.examType);
             return (
               <g key={r.subjectId}>
                 <RowLabel text={name} y={cy + 4} labelW={layout.labelW} dim={faded} />
@@ -251,7 +252,7 @@ export function QuestionStacks({ rows, highlightId, ariaLabel }) {
             const cy = i * layout.rowH + layout.rowH / 2 + 4;
             const total = r.correct + r.wrong + r.blank;
             const faded = highlightId && r.subjectId !== highlightId;
-            const name = `${r.subjectName} (${r.examType})`;
+            const name = subjectLabel(r.subjectName, r.examType);
             let cursor = layout.plotLeft;
             return (
               <g key={r.subjectId} opacity={faded ? 0.35 : 1}>

@@ -1,3 +1,4 @@
+import { subjectLabel } from '../lib/tracks.js';
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
@@ -102,7 +103,7 @@ export default function Resources() {
 
   const subjectName = (id) => {
     const s = subjects.find((x) => x.id === id);
-    return s ? `${s.name} (${s.examType})` : '';
+    return s ? subjectLabel(s.name, s.examType) : '';
   };
 
   const { active, done } = splitByStatus(resources);

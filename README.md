@@ -1,8 +1,8 @@
 # Ders Çalışma Takip Uygulaması
 
-YKS (sayısal) hazırlığı için kişisel bir çalışma takip uygulaması: Pomodoro ile çalışma süresini kaydet, çözdüğün soruları gir, test kitaplarında kaçıncı teste geldiğini takip et, ilerlemeni grafiklerle gör.
+YKS, DGS ya da üniversite dersleri için kişisel bir çalışma takip uygulaması: Pomodoro ile çalışma süresini kaydet, çözdüğün soruları gir, test kitaplarında kaçıncı teste geldiğini takip et, ilerlemeni grafiklerle gör.
 
-Kendi YKS çalışmam için yaptığım, tek kişilik bir proje. **Sunucusuz, tamamen statik bir web uygulamasıdır (PWA):** veriler senin tarayıcında (IndexedDB) durur, hiçbir yere gönderilmez; telefona ya da bilgisayara "uygulama olarak yüklenebilir" ve internet yokken de açılır. Uygulama mağazalarında yayınlanmaz.
+Kendi çalışmam için yaptığım, tek kişilik bir proje. **Sunucusuz, tamamen statik bir web uygulamasıdır (PWA):** veriler senin tarayıcında (IndexedDB) durur, hiçbir yere gönderilmez; telefona ya da bilgisayara "uygulama olarak yüklenebilir" ve internet yokken de açılır. Uygulama mağazalarında yayınlanmaz.
 
 **Canlı hâli:** https://yusufoztoprak495-star.github.io/ders-takip/
 
@@ -12,12 +12,13 @@ Kendi YKS çalışmam için yaptığım, tek kişilik bir proje. **Sunucusuz, ta
 
 ## Özellikler
 
+- **Çalışma hedefi (YKS / DGS / Üniversite):** İlk açılışta ve Ayarlar'da ne için çalıştığını seçersin. YKS'de TYT/AYT, DGS'de sayısal (matematik, geometri) ve sözel (Türkçe) ders ve konu listesi hazır gelir; üniversitede listeyi kendin kurarsın (ders adı ve isteğe bağlı dönem). Dersler, kayıtlar, kitaplar ve grafikler seçili hedefe göre ayrı tutulur. Hedef değiştirince diğer hedefin kayıtları silinmez, yalnızca gizlenir; geri dönünce yerinde durur. Sayaç çalışırken hedef değiştirilemez. Hedef bilgisi yedeğe de girer; eski veriler ve eski yedekler kendiliğinden YKS sayılır.
 - **Pomodoro:** Ders (ve isteğe bağlı konu) seçip çalışma sayacını başlatırsın. Sayaç, saat çerçevesi gibi 60 çentikli bir kadrandır: süre aktıkça çentikler söner (çalışmada turuncu, molada turkuaz). Süre dolunca çalışma otomatik kaydedilir ve mola başlar. Çalışma/mola süreleri ayarlanabilir (varsayılan 25/5 dk). Sayaç, başka sayfaya geçsen de menüde görünür ve devam eder. "Vazgeç" kayıt oluşturmaz. Kayıt yapılamazsa (örneğin tarayıcı depolaması kapalıysa) süre ekranda kalır ve "Tekrar dene" ile kaydedilebilir.
 - **Odak sesi:** Pomodoro'nun çalışma süresi boyunca arkada sakin bir ses çalar: sakin piyano, derin odak (ambiyans), yağmur ya da kahverengi gürültü (ya da kapalı). Ses seviyesi ayarlanır, sayaç çalışırken bile değiştirilebilir; molada ve "Vazgeç"te yavaşça susar. Ses dosyası yoktur: müzik Web Audio API ile tarayıcıda anlık üretilir (piyano notaları her ölçüde akorun seslerinden rastgele seçilir, bu yüzden hiç tekrar etmez ve uyumsuz ses çıkmaz), internetsiz de çalışır.
 - **Çalışma günlüğü:** Pomodoro kullanmadığın çalışmaları ders, konu, tarih ve dakika girerek elle eklersin. Bugünün kayıtları (Pomodoro ve elle girilenler) toplam süreyle listelenir, istediğini silebilirsin.
 - **Soru kaydı:** Tarih, ders, konu ve doğru/yanlış/boş sayılarını girersin (isteğe bağlı olarak hangi kitaptan çözdüğünü seçebilirsin). Net (doğru − yanlış/4) otomatik hesaplanır. Son 30 günün kayıtları listelenir; düzenleyebilir ve silebilirsin.
 - **Kaynaklar:** Yalnızca test kitapları: kitap adı, yayınevi ve ders ile eklersin. Her kitap kartında kaç test çözdüğün ("X test çözüldü") ve son çözüm tarihi görünür. "+1 test" düğmesiyle ya da sayıyı yazıp kaydederek sayacı güncellersin; sayı artınca son çözüm tarihi bugüne ayarlanır, kitaba bağlı soru kayıtlarının tarihi de hesaba katılır. Kitap "Elimde" ya da "Bitirdim" durumunda olur. Silerken onay istenir; kitabı silsen de ona bağlı soru kayıtların kaybolmaz.
-- **Konular:** İlk kurulumda TYT/AYT ders ve konu listesi hazır gelir. Konular sayfasından her derse konu ekleyebilir, konu adını değiştirebilir ya da silebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır.
+- **Dersler ve Konular:** Yeni ders ekleyebilir, dersin adını ve grubunu (TYT, Sayısal, 3. Dönem…) değiştirebilir, derse konu ekleyip konuları düzenleyebilirsin. Bir konuyu silsen de ona bağlı çalışma ve soru kayıtların silinmez, sadece konusuz kalır. Ders ise ancak ona bağlı çalışma, soru ya da kitap kaydı yoksa silinir (kayıtlar derssiz kalamaz).
 - **İlerleme (üç katman):**
   - **Ana sayfa:** Son 7/14/30/90 günü seçip çalışma süresi, çözülen soru, net ve doğruluk oranı özetini görürsün. Altında tüm derslerin listesi ve grafikler (günlük/haftalık çalışma süresi, günlük net, derse göre süre ve doğru/yanlış/boş) var. Bir ders seçersen göstergeler ve zaman grafikleri o dersi gösterir.
   - **Ders sayfası:** Bir derse tıklayınca açılır: o dersin göstergeleri, zaman grafikleri ve konular. Konular **en zayıftan en güçlüye** (doğruluk oranına göre) sıralanır; henüz soru çözmediğin konular sönük ve en altta durur.
@@ -93,7 +94,7 @@ Hedef his: deri kaplı bir ajanda ve dolma kalem. Gece mavisi-kömür zemin, kı
 - **Tipografi:** Başlıklarda zarif **Cormorant Garamond**, metinde okunaklı **Figtree**. Etiketler küçük boyutlu büyük harf ve geniş harf aralığıyla yazılır (gerçek small caps yerine `text-transform` kullanıldı, çünkü yazı tipinin small caps tablosu Türkçe noktalı İ'yi üretmiyor). Tüm sayılar düz ve tabular rakamdır, alt alta düzgün hizalanır. Font dosyaları projeye gömülüdür; uygulama internet olmadan da aynı görünür.
 - **Yüzeyler:** Kalın gölge yok; kartlar 1px çizgi kenarlıklı, üstte ince altın ışık çizgisiyle. Bol boşluk, ince ayırıcı çizgiler, başlık altlarında kısa altın çizgi.
 - **Doku:** Zeminde çok hafif kâğıt dokusu (grain) ve defter çizgileri.
-- **Açık ve koyu tema:** Menüdeki güneş/ay düğmesiyle geçilir. Açık tema krem kâğıt zemin, sepya mürekkep yazı, antik altın (pirinç) ve derin lacivert vurgu, sepya tonlu yumuşak gölgeli kartlar ve sepya gravür motiflerle gelir. Seçim tarayıcıda hatırlanır; kayıt yoksa bilgisayarın sistem temasına uyulur. Tarayıcı sayfaları zorla karartıyorsa (Chrome "Auto Dark Mode", Samsung Internet karanlık modu) uygulama kendi koyu temasıyla açılır: aksi hâlde tarayıcı açık temayı ters çevirip yazıları altın-bej gösteriyordu. Tespit, açık renk şemalı bir öğenin `Canvas` sistem renginin koyu dönmesine bakılarak yapılır. Tüm renkler CSS değişkenlerindedir (koyu: `index.css`, açık: `theme.css`); yazılar WCAG AA kontrastını geçer.
+- **Açık ve koyu tema:** Menüdeki güneş/ay düğmesiyle geçilir. Açık tema beyaz kartlar, çok açık gri zemin, neredeyse siyah yazı ve lacivert vurgu ile gelir. Önceki krem/sepya açık tema sıcak renkli ekranlarda, gece ışığı ya da okuma modu açıkken ve bazı telefon panellerinde sarı görünüyordu; bu yüzden zemin, gölge ve kâğıt dokusu renk tonu olmayan nötr gri-beyaza çevrildi. Seçim tarayıcıda hatırlanır; kayıt yoksa bilgisayarın sistem temasına uyulur. Tarayıcı sayfaları zorla karartıyorsa (Chrome "Auto Dark Mode", Samsung Internet karanlık modu) uygulama kendi koyu temasıyla açılır: aksi hâlde tarayıcı açık temayı ters çevirip yazıları altın-bej gösteriyordu. Tespit, açık renk şemalı bir öğenin `Canvas` sistem renginin koyu dönmesine bakılarak yapılır. Tüm renkler CSS değişkenlerindedir (koyu: `index.css`, açık: `theme.css`); yazılar WCAG AA kontrastını geçer.
 - **Etkileşim:** Geçişler kısa ve yumuşaktır (0,16 sn), abartılı animasyon yoktur.
 - **Grafikler:** Elle çizilmiş SVG, kütüphanesiz. Renkleri (pirinç, deniz yeşili, kiremit) renk körlüğü ve karşıtlık kontrollerinden geçirildi.
 - **Motifler:** 13 özel çizim: dolma kalem, kurşun kalem, kitap yığını, açık defter, kum saati, pergel, cetvel, masa lambası, kahve fincanı, ataç, mühür, küre ve mektup zarfı. Hepsi aynı ince çizgi kalınlığında, tek renkte (altın) ve düşük opaklıkta, gravür tarzı tarama çizgileriyle. Dört ekran köşesinde süslemeli köşe ornamentleri vardır. Her sayfa farklı bir motif düzeni alır, stil aynı kalır.
@@ -139,7 +140,8 @@ Proje önce Node.js sunucusu ve SQLite ile yazıldı, sonra sunucusuz hâle geti
 
 | Yol                                                          | Açıklama                                                          |
 | ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `/api/subjects`                                              | Dersler, konularıyla birlikte                                     |
+| `/api/settings`                                              | Seçili çalışma hedefi (`yks`, `dgs`, `uni`) oku / değiştir        |
+| `/api/subjects`                                              | Seçili hedefin dersleri (konularıyla); ders ekle / düzenle / sil  |
 | `/api/topics`                                                | Konu ekle / yeniden adlandır / sil                                |
 | `/api/sessions`                                              | Çalışma kayıtları (tarih aralığı isteğe bağlı, yerel tarihe göre) |
 | `/api/questions`                                             | Soru kayıtları, net ile birlikte                                  |
@@ -156,7 +158,11 @@ Hatalar Türkçe mesajla gelir (`HttpError` 400 geçersiz girdi, 404 kayıt yok;
 
 **Sınırlar:** Yazım hatalarının istatistikleri bozmaması için bir çalışma kaydı en fazla 24 saat, soru kaydında doğru/yanlış/boş her biri en fazla 10000, bir kitaptan çözülen test sayısı en fazla 10000 olabilir. Tarihler 2000–2100 yılları arasında olmalıdır.
 
-**Silme:** Silinen konuya ya da kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır.
+**Silme:** Silinen konuya ya da kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır. Kaydı olan ders silinmez.
+
+**Hedefe göre süzme:** Her dersin bir hedefi (`track`) vardır. Ders, çalışma, soru ve kitap listeleri ile istatistikler yalnızca seçili hedefin derslerinden hesaplanır; diğer hedeflerin verisi veritabanında aynen durur. Bir hedefin hazır ders listesi o hedef ilk seçildiğinde bir kez yüklenir (hazır bir dersi silersen geri gelmez).
+
+**Güvenlik:** Derlenmiş sayfada içerik güvenlik politikası (CSP) vardır: sayfa yalnızca kendi dosyalarını yükleyebilir, dışarıdaki bir adrese bağlanamaz; tek satır içi betik (tema) özetiyle (hash) izinlidir. Yedek dosyası yüklenirken her tablo ve ayar doğrulanır, bilinmeyen alanlar atılır.
 
 ## Yol haritası
 

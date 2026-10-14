@@ -1,3 +1,4 @@
+import TrackIntro from '../components/TrackIntro.jsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../api.js';
@@ -111,6 +112,7 @@ export default function Home() {
   return (
     <section>
       <h1>Bugün</h1>
+      <TrackIntro />
       <DailyQuote date={today} />
       <ErrorBanner message={error} />
       <BackupReminder />
@@ -170,7 +172,8 @@ export default function Home() {
               {view.topSubject ? (
                 <>
                   <span className="value">
-                    {view.topSubject.subjectName} <small>({view.topSubject.examType})</small>
+                    {view.topSubject.subjectName}{' '}
+                    {view.topSubject.examType && <small>({view.topSubject.examType})</small>}
                   </span>
                   <p className="panel-note">Bugün en çok bu derse çalıştın: {formatDuration(view.topSubject.totalSeconds)}</p>
                 </>

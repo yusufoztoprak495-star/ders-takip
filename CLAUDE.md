@@ -2,7 +2,7 @@
 
 ## Proje
 
-Kişisel ders çalışma takip uygulaması. YKS (sayısal) hazırlığı sırasında kendim kullanacağım ve GitHub profilimde portfolyo projesi olarak duracak. Uygulama mağazalarında yayınlanmayacak.
+Kişisel ders çalışma takip uygulaması. YKS (sayısal), DGS ya da üniversite dersleri için kullanılır (çalışma hedefi seçilir); kendim kullanacağım ve GitHub profilimde portfolyo projesi olarak duracak. Uygulama mağazalarında yayınlanmayacak.
 
 ## Temel Özellikler
 
@@ -80,5 +80,6 @@ Sunucusuz, tamamen statik bir web uygulaması (PWA olarak yayınlanacak): React 
 - **Net saklanmaz**, hesaplanır: `net = doğru − yanlış / 4` (`client/src/data/stats.js` → `netOf`; arayüzde `client/src/lib/charts.js`).
 - **Gün sınırı yereldir:** çalışma kayıtları UTC saklanır, istatistikler yerel güne (`sessionDay`) göre gruplanır.
 - **Önce test:** veri katmanı mantığı ve saf arayüz fonksiyonları için önce başarısız test yazılır. Sayfaların görünümü tarayıcıda gerçekten açılıp denenir (testler görsel hataları yakalamaz).
-- Silinen konu/kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır (veri katmanı bağlantıyı `null` yapar).
+- Silinen konu/kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır (veri katmanı bağlantıyı `null` yapar). Kaydı olan ders silinmez.
+- **Çalışma hedefi:** `state.settings.track` (`yks`/`dgs`/`uni`, `client/src/lib/tracks.js`). Her dersin `track` alanı vardır; listeler ve istatistikler `activeSubjectIds` ile seçili hedefe süzülür. Hazır listeler `seedData.js` → `SEED_BY_TRACK`, göç `seed.js` → `prepareState`.
 - Kapsam dışı: PDF'ten soru üretme (ileride).

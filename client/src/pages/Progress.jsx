@@ -1,3 +1,4 @@
+import { subjectLabel } from '../lib/tracks.js';
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api.js';
 import ChartCard from '../components/ChartCard.jsx';
@@ -12,7 +13,7 @@ import { useDailyStats } from '../hooks/useDailyStats.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDuration, formatNet, formatPercent } from '../lib/format.js';
 
-const subjectLabel = (r) => `${r.subjectName} (${r.examType})`;
+const rowLabel = (r) => subjectLabel(r.subjectName, r.examType);
 const questionTotal = (r) => r.correct + r.wrong + r.blank;
 
 // Ana ilerleme sayfası (1. katman): tüm derslerin özeti. Bir derse tıklayınca ders sayfası açılır.
@@ -63,7 +64,7 @@ export default function Progress() {
 
   const highlightId = subjectId === 'all' ? null : Number(subjectId);
   const chosen = subjects.find((s) => String(s.id) === subjectId);
-  const scope = chosen ? `${chosen.name} (${chosen.examType})` : 'tüm dersler';
+  const scope = chosen ? subjectLabel(chosen.name, chosen.examType) : 'tüm dersler';
 
   return (
     <section>
@@ -78,7 +79,7 @@ export default function Progress() {
             <option value="all">Tüm dersler</option>
             {subjects.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name} ({s.examType})
+                {subjectLabel(s.name, s.examType)}
               </option>
             ))}
           </select>
@@ -118,7 +119,7 @@ export default function Progress() {
                 rows={bySubject.map((r) => ({
                   key: r.subjectId,
                   to: `/ilerleme/ders/${r.subjectId}`,
-                  name: subjectLabel(r),
+                  name: rowLabel(r),
                   cells: [
                     formatDuration(r.totalSeconds),
                     String(questionTotal(r)),
@@ -149,7 +150,7 @@ export default function Progress() {
                   subtitle={`Son ${range} gün`}
                   empty={rows.time.length === 0}
                   headers={['Ders', 'Süre']}
-                  rows={rows.time.map((r) => [subjectLabel(r), formatDuration(r.totalSeconds)])}
+                  rows={rows.time.map((r) => [rowLabel(r), formatDuration(r.totalSeconds)])}
                 >
                   <SubjectTimeBars
                     rows={rows.time}
@@ -163,7 +164,7 @@ export default function Progress() {
                   subtitle={`Son ${range} gün`}
                   empty={rows.questions.length === 0}
                   headers={['Ders', 'Doğru', 'Yanlış', 'Boş', 'Net']}
-                  rows={rows.questions.map((r) => [subjectLabel(r), r.correct, r.wrong, r.blank, formatNet(r.net)])}
+                  rows={rows.questions.map((r) => [rowLabel(r), r.correct, r.wrong, r.blank, formatNet(r.net)])}
                 >
                   <QuestionStacks
                     rows={rows.questions}

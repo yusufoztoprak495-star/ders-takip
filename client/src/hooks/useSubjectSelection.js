@@ -6,6 +6,7 @@ import { apiFetch } from "../api.js";
 export function useSubjectSelection() {
   const [subjects, setSubjects] = useState([]);
   const [error, setError] = useState(null);
+  const [loaded, setLoaded] = useState(false);
   // select öğeleri metin değer verdiği için id'ler burada metin olarak tutulur
   const [subjectId, setSubjectId] = useState("");
   const [topicId, setTopicId] = useState("");
@@ -16,6 +17,7 @@ export function useSubjectSelection() {
         setSubjects(list);
         // Henüz seçim yapılmadıysa ilk ders seçili gelsin
         setSubjectId((current) => current || String(list[0]?.id ?? ""));
+        setLoaded(true);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -36,5 +38,6 @@ export function useSubjectSelection() {
     selectSubject,
     selectTopic: setTopicId,
     subjectId,
+    loaded,
   };
 }

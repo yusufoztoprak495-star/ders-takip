@@ -177,7 +177,7 @@ export default function Questions() {
               <li key={log.id}>
                 <div>
                   <strong>{s?.name}</strong>
-                  {s && ` (${s.examType})`}
+                  {s?.examType && ` (${s.examType})`}
                   {topic && ` · ${topic}`}
                   <div className="muted">
                     {log.date} · {log.correct} D / {log.wrong} Y / {log.blank} B · Net{' '}

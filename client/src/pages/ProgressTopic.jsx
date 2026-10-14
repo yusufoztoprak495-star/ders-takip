@@ -1,3 +1,4 @@
+import { subjectLabel } from '../lib/tracks.js';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError, apiFetch } from '../api.js';
@@ -105,7 +106,7 @@ export default function ProgressTopic() {
       />
       <h1>{detail.topicName}</h1>
       <p className="muted">
-        {detail.subjectName} ({detail.examType}) · tüm zamanlar
+        {subjectLabel(detail.subjectName, detail.examType)} · tüm zamanlar
       </p>
 
       <div className="kpis">

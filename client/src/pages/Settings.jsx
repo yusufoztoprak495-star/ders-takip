@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { getDatabase } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
+import TrackSwitcher from '../components/TrackSwitcher.jsx';
+import { useTrack } from '../context/TrackContext.jsx';
 import { useBackup } from '../context/BackupContext.jsx';
 import { parseBackupText } from '../data/validation.js';
 import { backupFileName, readLastBackup, writeLastBackup } from '../lib/backup.js';
 import { persistenceLabel, requestPersistence } from '../lib/persistence.js';
 
-// Ayarlar: veri güvenliği ile ilgili durum ve işlemler
+// Ayarlar: çalışma hedefi ve veri güvenliği ile ilgili durum ve işlemler
 export default function Settings() {
+  const track = useTrack();
   const [persistence, setPersistence] = useState('checking');
   const [lastBackup, setLastBackup] = useState(readLastBackup);
   const [error, setError] = useState(null);
@@ -67,8 +70,16 @@ export default function Settings() {
   return (
     <section>
       <h1>Ayarlar</h1>
-      <ErrorBanner message={error} />
+      <ErrorBanner message={error ?? track.error} />
       <div className="panels">
+        <article className="panel panel-wide">
+          <h2 className="panel-label">Çalışma hedefi</h2>
+          <p className="muted">
+            Dersler, kayıtlar ve grafikler seçili hedefe göre gösterilir. Hedef değiştirince diğer
+            hedefin kayıtları silinmez, yalnızca gizlenir; geri dönünce yerinde durur.
+          </p>
+          <TrackSwitcher detailed />
+        </article>
         <article className="panel panel-wide">
           <h2 className="panel-label">Veri güvenliği</h2>
           <p>{persistenceLabel(persistence)}</p>

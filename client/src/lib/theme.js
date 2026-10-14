@@ -2,7 +2,7 @@
 export const THEME_KEY = "tema";
 
 // Tarayıcı çubuğu (theme-color) için temaların zemin rengi; CSS'teki --bg ile aynı
-export const THEME_BAR_COLORS = { dark: "#0c0f14", light: "#f3eee3" };
+export const THEME_BAR_COLORS = { dark: "#0c0f14", light: "#f4f5f7" };
 
 // Hangi tema uygulanacak? Kayıtlı geçerli bir seçim varsa o, yoksa bilgisayarın sistem teması.
 // İstisna: tarayıcı sayfayı zorla karartıyorsa (Chrome "Auto Dark Mode", Samsung Internet karanlık modu)

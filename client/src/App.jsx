@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { Link, NavLink, Route, Routes } from 'react-router-dom';
 import { BackupProvider } from './context/BackupContext.jsx';
 import { PomodoroProvider, usePomodoro } from './context/PomodoroContext.jsx';
+import { TrackProvider, useTrack } from './context/TrackContext.jsx';
+import { trackInfo } from './lib/tracks.js';
 import { formatTime } from './lib/pomodoro.js';
 import { requestPersistence } from './lib/persistence.js';
 import Settings from './pages/Settings.jsx';
@@ -33,11 +35,11 @@ import {
 // Menü öğeleri: her yeni sayfa eklendiğinde buraya bir satır ve aşağıya bir <Route> eklenir
 const NAV_ITEMS = [
   { to: '/', label: 'Ana Sayfa', short: 'Ana', Icon: HomeIcon },
-  { to: '/pomodoro', label: 'Pomodoro', short: 'Pomodoro', Icon: TimerIcon },
+  { to: '/pomodoro', label: 'Pomodoro', short: 'Sayaç', Icon: TimerIcon },
   { to: '/gunluk', label: 'Çalışma Günlüğü', short: 'Günlük', Icon: LogIcon },
   { to: '/sorular', label: 'Soru Kaydı', short: 'Soru', Icon: QuestionsIcon },
   { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon },
-  { to: '/konular', label: 'Konular', short: 'Konu', Icon: TopicsIcon },
+  { to: '/konular', label: 'Dersler ve Konular', short: 'Dersler', Icon: TopicsIcon },
   { to: '/ilerleme', label: 'İlerleme', short: 'İlerleme', Icon: ProgressIcon },
   { to: '/ayarlar', label: 'Ayarlar', short: 'Ayarlar', Icon: SettingsIcon },
 ];
@@ -53,6 +55,38 @@ function NavTimer() {
   );
 }
 
+// Menüdeki uygulama adı ve altında seçili hedef
+function Brand() {
+  const { track } = useTrack();
+  return (
+    <span className="brand">
+      Ders Takip
+      {track && <span className="brand-track">{trackInfo(track).title}</span>}
+    </span>
+  );
+}
+
+// Sayfalar seçili hedefe göre veri çeker. Hedef değişince `key` değişir ve tüm sayfa
+// yeniden kurulur: her sayfa kendi verisini yeni hedef için baştan yükler.
+function Pages() {
+  const { track } = useTrack();
+  if (!track) return null;
+  return (
+    <Routes key={track}>
+      <Route path="/" element={<Home />} />
+      <Route path="/pomodoro" element={<Pomodoro />} />
+      <Route path="/gunluk" element={<StudyLog />} />
+      <Route path="/sorular" element={<Questions />} />
+      <Route path="/kaynaklar" element={<Resources />} />
+      <Route path="/konular" element={<Topics />} />
+      <Route path="/ilerleme" element={<Progress />} />
+      <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
+      <Route path="/ilerleme/ders/:subjectId/konu/:topicId" element={<ProgressTopic />} />
+      <Route path="/ayarlar" element={<Settings />} />
+    </Routes>
+  );
+}
+
 export default function App() {
   const { theme, toggle } = useTheme();
   // Açılışta kalıcı depolama izni istenir (sonuç Ayarlar sayfasında gösterilir)
@@ -64,9 +98,10 @@ export default function App() {
   return (
     <BackupProvider>
     <PomodoroProvider>
+    <TrackProvider>
       <nav className="nav" aria-label="Ana menü">
         <div className="brand-row">
-          <span className="brand">Ders Takip</span>
+          <Brand />
           <button
             type="button"
             className="theme-toggle"
@@ -88,19 +123,9 @@ export default function App() {
       </nav>
       <Decor />
       <main className="page">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/pomodoro" element={<Pomodoro />} />
-          <Route path="/gunluk" element={<StudyLog />} />
-          <Route path="/sorular" element={<Questions />} />
-          <Route path="/kaynaklar" element={<Resources />} />
-          <Route path="/konular" element={<Topics />} />
-          <Route path="/ilerleme" element={<Progress />} />
-          <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
-          <Route path="/ilerleme/ders/:subjectId/konu/:topicId" element={<ProgressTopic />} />
-          <Route path="/ayarlar" element={<Settings />} />
-        </Routes>
+        <Pages />
       </main>
+    </TrackProvider>
     </PomodoroProvider>
     </BackupProvider>
   );
