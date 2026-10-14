@@ -1,5 +1,6 @@
 import Dial from '../components/Dial.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
+import FocusSoundControls from '../components/FocusSoundControls.jsx';
 import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { usePomodoro } from '../context/PomodoroContext.jsx';
 import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
@@ -60,6 +61,7 @@ export default function Pomodoro() {
               {phase.kind === 'work' ? (runningSubject?.name ?? 'Çalışma') : 'Mola'}
             </p>
           </Dial>
+          {phase.kind === 'work' && <FocusSoundControls />}
           <button type="button" className="secondary" onClick={cancel}>
             Vazgeç
           </button>
@@ -91,6 +93,7 @@ export default function Pomodoro() {
               />
             </label>
           </div>
+          <FocusSoundControls />
           <button type="submit" disabled={!subject}>
             Başlat
           </button>

@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../api.js';
 import { createSingleFlight, formatTime, loadSettings, remainingSeconds, saveSettings } from '../lib/pomodoro.js';
+import { loadSoundSettings, saveSoundSettings, shouldPlay } from '../lib/focusSound.js';
+import { createFocusPlayer } from '../lib/focusPlayer.js';
 
 // Sayaç durumu sayfada değil uygulama düzeyinde tutulur: Pomodoro çalışırken başka
 // sayfaya geçince sayaç ve kaydedilemeyen çalışmalar kaybolmaz.
@@ -19,6 +21,10 @@ export function PomodoroProvider({ children }) {
   const [pending, setPending] = useState([]);
   const [notice, setNotice] = useState(null);
   const nextPendingId = useRef(1);
+  // Odak sesi: ayar + uygulama boyunca tek bir çalar (sayfa değişse de müzik kesilmez)
+  const [sound, setSound] = useState(loadSoundSettings);
+  const player = useRef(null);
+  if (!player.current) player.current = createFocusPlayer();
 
   // Sayaç çalışırken saati sık sık okur
   useEffect(() => {
@@ -83,8 +89,25 @@ export function PomodoroProvider({ children }) {
     };
   }, [phase, remaining]);
 
+  // Çalışma turunda ve ses açıkken çal; mola, bitiş ya da vazgeçte yavaşça sustur
+  const playing = shouldPlay(phase, sound);
+  useEffect(() => {
+    if (playing) player.current.play(sound.kind, sound.volume);
+    else player.current.stop();
+  }, [playing, sound.kind, sound.volume]);
+
+  // Uygulama kapanırken (ör. sayfa yenilenince) sesi kes
+  useEffect(() => () => player.current.stop(), []);
+
+  const updateSound = useCallback((next) => {
+    setSound(next);
+    saveSoundSettings(next);
+  }, []);
+
   const start = useCallback(
     ({ subjectId, topicId }) => {
+      // Tarayıcı sesi ancak bir tıklamayla açar: "Başlat"a basıldığı anda ses motoru hazırlanır
+      player.current.unlock();
       setNotice(null);
       setNow(Date.now());
       setPhase({
@@ -143,6 +166,8 @@ export function PomodoroProvider({ children }) {
     cancel,
     retry,
     dismissPending,
+    sound,
+    updateSound,
   };
   return <PomodoroContext.Provider value={value}>{children}</PomodoroContext.Provider>;
 }
