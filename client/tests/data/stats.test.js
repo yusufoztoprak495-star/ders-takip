@@ -173,13 +173,13 @@ describe("GET /api/stats/daily", () => {
 });
 
 describe("GET /api/stats/by-subject", () => {
-  it("veri yokken 8 dersin hepsi sıfırlarla döner (NaN yok; doğruluk oranı bilinçli olarak null)", async () => {
+  it("veri yokken 15 dersin hepsi sıfırlarla döner (NaN yok; doğruluk oranı bilinçli olarak null)", async () => {
     const { app } = makeTestApp();
     const res = await request(app).get(
       "/api/stats/by-subject?from=2026-10-01&to=2026-10-31",
     );
     expect(res.status).toBe(200);
-    expect(res.body).toHaveLength(8);
+    expect(res.body).toHaveLength(15);
     for (const row of res.body) {
       expect(row).toEqual({
         subjectId: expect.any(Number),

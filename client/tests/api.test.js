@@ -10,7 +10,7 @@ beforeEach(() => {
 describe("apiFetch", () => {
   it("başarılı yanıtta gövdeyi döner", async () => {
     const subjects = await apiFetch("/api/subjects");
-    expect(subjects).toHaveLength(8);
+    expect(subjects).toHaveLength(15);
   });
 
   it("silmede (204) null döner", async () => {

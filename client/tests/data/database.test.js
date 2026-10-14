@@ -16,10 +16,10 @@ describe("createDatabase", () => {
     const storage = memoryStorage();
     const db = createDatabase(storage);
     const { body } = await db.request("GET", "/api/subjects");
-    expect(body).toHaveLength(8);
+    expect(body).toHaveLength(15);
     // Kaydedilmiş olmalı: yeni bir veritabanı aynı depodan okuyabilir
     const saved = await storage.load();
-    expect(saved.subjects).toHaveLength(8);
+    expect(saved.subjects).toHaveLength(15);
   });
 
   it("yazılan veri depoya gider; yeni bir veritabanı onu geri okur (sayfa yenileme)", async () => {

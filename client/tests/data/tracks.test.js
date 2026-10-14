@@ -24,7 +24,7 @@ describe("çalışma hedefi (YKS / DGS / Üniversite)", () => {
     const api = request(app);
     expect((await api.get("/api/settings")).body).toEqual({ track: "yks" });
     const subjects = (await api.get("/api/subjects")).body;
-    expect(subjects).toHaveLength(8);
+    expect(subjects).toHaveLength(15);
     expect(subjects.every((s) => s.track === "yks")).toBe(true);
   });
 
@@ -205,7 +205,7 @@ describe("eski verinin yeni şekle getirilmesi", () => {
     old.subjects.push({ id: 1, name: "Türkçe", examType: "TYT" });
     expect(prepareState(old)).toBe(true);
     expect(old.subjects).toEqual([{ id: 1, name: "Türkçe", examType: "TYT", track: "yks" }]);
-    expect(old.settings).toEqual({ track: "yks", seededTracks: ["yks"] });
+    expect(old.settings).toEqual({ track: "yks", seededTracks: ["yks"], yksListVersion: 2 });
     // Hazır YKS listesi kullanıcı dersinin yanına tekrar eklenmez
     expect(old.subjects).toHaveLength(1);
   });

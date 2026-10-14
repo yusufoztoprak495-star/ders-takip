@@ -1,6 +1,6 @@
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
-import { activeSubjectIds } from "../seed.js";
+import { activeSubjectIds, sortSubjects, sortTopics } from "../seed.js";
 import { optionalString, parseId, requireBody, requireString } from "../validation.js";
 
 const NAME_MAX = 100;
@@ -9,8 +9,8 @@ const GROUP_MAX = 40;
 // Seçili hedefin dersleri, her birinin konularıyla birlikte
 export function listSubjects({ state }) {
   const active = activeSubjectIds(state);
-  const subjects = state.subjects.filter((s) => active.has(s.id)).sort((a, b) => a.id - b.id);
-  const topics = [...state.topics].sort((a, b) => a.id - b.id);
+  // Hazır YKS dersleri ve konuları müfredat sırasıyla, diğerleri eklenme sırasıyla
+  const subjects = sortSubjects(state.subjects.filter((s) => active.has(s.id)));
   return {
     status: 200,
     body: subjects.map((s) => ({
@@ -18,9 +18,10 @@ export function listSubjects({ state }) {
       name: s.name,
       examType: s.examType ?? "",
       track: s.track,
-      topics: topics
-        .filter((t) => t.subjectId === s.id)
-        .map((t) => ({ id: t.id, name: t.name })),
+      topics: sortTopics(s, state.topics.filter((t) => t.subjectId === s.id)).map((t) => ({
+        id: t.id,
+        name: t.name,
+      })),
     })),
   };
 }

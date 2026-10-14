@@ -9,12 +9,12 @@ describe("seedIfEmpty", () => {
     const first = state.subjects.length;
     expect(seedIfEmpty(state)).toBe(false);
     expect(state.subjects.length).toBe(first);
-    expect(first).toBe(8);
+    expect(first).toBe(15);
   });
 });
 
 describe("GET /api/subjects", () => {
-  it("8 dersi sınav türü ve konularıyla döner", async () => {
+  it("15 dersi sınav türü ve konularıyla döner", async () => {
     const { app } = makeTestApp();
     const res = await request(app).get("/api/subjects");
     expect(res.status).toBe(200);
@@ -22,10 +22,17 @@ describe("GET /api/subjects", () => {
     expect(res.body.map(label).sort()).toEqual(
       [
         "Türkçe (TYT)",
-        "Sosyal Bilimler (TYT)",
         "Matematik (TYT)",
-        "Fen Bilimleri (TYT)",
+        "Geometri (TYT)",
+        "Fizik (TYT)",
+        "Kimya (TYT)",
+        "Biyoloji (TYT)",
+        "Tarih (TYT)",
+        "Coğrafya (TYT)",
+        "Felsefe (TYT)",
+        "Din Kültürü ve Ahlak Bilgisi (TYT)",
         "Matematik (AYT)",
+        "Geometri (AYT)",
         "Fizik (AYT)",
         "Kimya (AYT)",
         "Biyoloji (AYT)",
