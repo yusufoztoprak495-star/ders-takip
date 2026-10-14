@@ -5,7 +5,8 @@
   --bg: #0c0f14;
   --surface: #11151c;
   --surface-2: #171c25;
-  --text: #ebe5d6;
+  /* Kırık beyaz: önceki fildişi (#ebe5d6) bazı ekranlarda ve gece modunda sarı/altın görünüyordu */
+  --text: #eeece7;
   --muted: #8e8b83;
   --border: #1f2631;
   --border-strong: #2f3846;

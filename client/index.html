@@ -7,7 +7,8 @@
     <!-- Simge ve PWA manifesti: tarayıcı uygulamayı "yükle" olarak sunabilsin -->
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <meta name="theme-color" content="#14213d" />
+    <!-- Tarayıcı çubuğunun rengi: temanın zemin rengiyle aynı (aşağıdaki betik ayarlar) -->
+    <meta name="theme-color" content="#0c0f14" />
     <!-- Tema, sayfa çizilmeden önce ayarlanır: açık temada koyu bir an görünmez -->
     <script>
       (function () {
@@ -20,7 +21,20 @@
             ? "dark"
             : "light";
         }
+        // Tarayıcı sayfayı zorla karartıyorsa (Chrome/Samsung "karanlık mod") koyu temayla aç:
+        // açık tema ters çevrilince yazılar altın-bej görünüyor. Ayrıntı: src/lib/theme.js
+        try {
+          var p = document.createElement("div");
+          p.style.cssText =
+            "position:absolute;visibility:hidden;color-scheme:light;background-color:Canvas";
+          document.documentElement.appendChild(p);
+          var c = getComputedStyle(p).backgroundColor.match(/\d+/g);
+          p.remove();
+          if (c && c.length >= 3 && (+c[0] + +c[1] + +c[2]) / 3 < 100) t = "dark";
+        } catch (e) {}
         document.documentElement.dataset.theme = t;
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.content = t === "dark" ? "#0c0f14" : "#f3eee3";
       })();
     </script>
   </head>
