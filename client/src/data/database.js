@@ -1,14 +1,18 @@
 import { HttpError } from "./errors.js";
 import { resolveRoute } from "./router.js";
-import { emptyState, seedIfEmpty } from "./seed.js";
+import { emptyState, prepareState } from "./seed.js";
 import { validateBackup } from "./validation.js";
 
 // Depolama (yazma/okuma) başarısız olduysa: sunucuya ulaşılamıyor demenin tarayıcıdaki karşılığı
 export class StorageError extends Error {}
 
-// Kayıtlı veriyi güncel şekle getirir: eksik tablolar boş dizi olur
+// Kayıtlı veriyi güncel şekle getirir: eksik tablolar boş dizi olur.
+// Ayar burada eklenmez: ayarı olmayan eski veri prepareState içinde ayrıca tanınır.
 function normalize(saved) {
-  return { ...emptyState(), ...(saved ?? {}) };
+  const { settings, ...tables } = emptyState();
+  const data = { ...tables, ...(saved ?? {}) };
+  if (!data.settings) delete data.settings;
+  return data;
 }
 
 // Tarayıcıdaki "veritabanı". Eskiden sunucuya giden /api isteklerini burada, yerelde cevaplar.
@@ -33,8 +37,8 @@ export function createDatabase(storage) {
       );
     }
     const loaded = normalize(saved);
-    // İlk açılışta ders ve konu listesi yüklenir ve hemen kaydedilir
-    if (seedIfEmpty(loaded)) await persist(loaded);
+    // İlk açılışta (ve eski veride) ayar eklenir, seçili hedefin ders listesi yüklenir ve hemen kaydedilir
+    if (prepareState(loaded)) await persist(loaded);
     state = loaded;
   }
 
@@ -85,6 +89,7 @@ export function createDatabase(storage) {
     replaceAll(data) {
       const task = async () => {
         const next = normalize(validateBackup(data));
+        prepareState(next, { seed: false });
         await persist(next);
         state = next;
       };

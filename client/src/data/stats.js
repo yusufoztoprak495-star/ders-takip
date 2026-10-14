@@ -1,4 +1,5 @@
 import { toLocalDateString } from "../lib/dates.js";
+import { activeSubjectIds } from "./seed.js";
 
 // YKS neti: her 4 yanlış 1 doğruyu götürür. Net hiçbir yerde saklanmaz, hep buradan hesaplanır.
 export function netOf(correct, wrong) {
@@ -26,10 +27,11 @@ const totalsOf = (rows) => ({
 });
 
 // Gün gün toplamlar: yalnızca verisi olan günler, tarihe göre artan.
-// subjectId verilirse yalnızca o ders sayılır.
+// subjectId verilirse yalnızca o ders, verilmezse seçili hedefin tüm dersleri sayılır.
 export function dailyStats(state, { from, to, subjectId = null }) {
+  const active = activeSubjectIds(state);
   const matchesSubject = (row) =>
-    subjectId === null || row.subjectId === subjectId;
+    subjectId === null ? active.has(row.subjectId) : row.subjectId === subjectId;
 
   const days = new Map();
   const entry = (day) => {
@@ -63,9 +65,11 @@ export function dailyStats(state, { from, to, subjectId = null }) {
     .map((d) => ({ ...d, net: netOf(d.correct, d.wrong) }));
 }
 
-// Her ders için toplamlar; verisi olmayan dersler de sıfırlarla döner
+// Seçili hedefin her dersi için toplamlar; verisi olmayan dersler de sıfırlarla döner
 export function subjectStats(state, { from, to }) {
-  return [...state.subjects]
+  const active = activeSubjectIds(state);
+  return state.subjects
+    .filter((s) => active.has(s.id))
     .sort((a, b) => a.id - b.id)
     .map((s) => {
       const seconds = sum(
@@ -82,7 +86,7 @@ export function subjectStats(state, { from, to }) {
       return {
         subjectId: s.id,
         subjectName: s.name,
-        examType: s.examType,
+        examType: s.examType ?? "",
         totalSeconds: seconds,
         ...q,
         net: netOf(q.correct, q.wrong),
@@ -178,7 +182,7 @@ export function topicDetail(state, topicId) {
     topicName: topic.name,
     subjectId: topic.subjectId,
     subjectName: subject.name,
-    examType: subject.examType,
+    examType: subject.examType ?? "",
     totalSeconds: sum(sessions, "durationSeconds"),
     ...totals,
     net: netOf(totals.correct, totals.wrong),

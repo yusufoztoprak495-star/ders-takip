@@ -1,6 +1,7 @@
 import { todayLocal } from "../../lib/dates.js";
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
+import { activeSubjectIds } from "../seed.js";
 import {
   assertSubjectExists,
   parseId,
@@ -62,8 +63,10 @@ function parseResourceBody(state, rawBody, fallbackSolved) {
   };
 }
 
+// Yalnızca seçili hedefin derslerine ait kitaplar
 export function listResources({ state }) {
-  const rows = [...state.resources].sort((a, b) => a.id - b.id);
+  const active = activeSubjectIds(state);
+  const rows = state.resources.filter((r) => active.has(r.subjectId)).sort((a, b) => a.id - b.id);
   return { status: 200, body: rows.map((r) => toResource(state, r)) };
 }
 

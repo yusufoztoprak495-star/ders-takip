@@ -1,5 +1,6 @@
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
+import { activeSubjectIds } from "../seed.js";
 import { sessionDay } from "../stats.js";
 import {
   assertSubjectExists,
@@ -40,8 +41,9 @@ function parseSessionBody(state, rawBody) {
   };
 }
 
-// İsteğe bağlı from/to (yerel tarih, uçlar dahil), yeniden eskiye sıralı
+// İsteğe bağlı from/to (yerel tarih, uçlar dahil), yeniden eskiye sıralı. Yalnızca seçili hedefin dersleri.
 export function listSessions({ state, query }) {
+  const active = activeSubjectIds(state);
   const from = query.has("from")
     ? requireDate(query.get("from"), "Başlangıç tarihi")
     : null;
@@ -50,6 +52,7 @@ export function listSessions({ state, query }) {
     : null;
   const rows = state.sessions
     .filter((s) => {
+      if (!active.has(s.subjectId)) return false;
       const day = sessionDay(s);
       return (from === null || day >= from) && (to === null || day <= to);
     })

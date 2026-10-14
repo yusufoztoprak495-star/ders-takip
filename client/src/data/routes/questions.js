@@ -1,5 +1,6 @@
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
+import { activeSubjectIds } from "../seed.js";
 import { netOf } from "../stats.js";
 import {
   assertSubjectExists,
@@ -58,8 +59,9 @@ function parseLogBody(state, rawBody) {
   };
 }
 
-// İsteğe bağlı from/to (uçlar dahil), yeniden eskiye sıralı
+// İsteğe bağlı from/to (uçlar dahil), yeniden eskiye sıralı. Yalnızca seçili hedefin dersleri.
 export function listQuestions({ state, query }) {
+  const active = activeSubjectIds(state);
   const from = query.has("from")
     ? requireDate(query.get("from"), "Başlangıç tarihi")
     : null;
@@ -68,7 +70,10 @@ export function listQuestions({ state, query }) {
     : null;
   const rows = state.questions
     .filter(
-      (q) => (from === null || q.date >= from) && (to === null || q.date <= to),
+      (q) =>
+        active.has(q.subjectId) &&
+        (from === null || q.date >= from) &&
+        (to === null || q.date <= to),
     )
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
   return { status: 200, body: rows.map(toQuestionLog) };

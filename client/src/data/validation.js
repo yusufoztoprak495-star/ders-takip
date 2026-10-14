@@ -100,6 +100,17 @@ export function requireOneOf(value, field, allowed) {
   return value;
 }
 
+// İsteğe bağlı kısa metin: verilmezse boş metin, verilirse kırpılır ve uzunluğu denetlenir
+export function optionalString(value, field, { maxLength } = {}) {
+  if (value === undefined || value === null) return "";
+  if (typeof value !== "string") throw new HttpError(400, `${field} metin olmalı`);
+  const trimmed = value.trim();
+  if (maxLength !== undefined && trimmed.length > maxLength) {
+    throw new HttpError(400, `${field} en fazla ${maxLength} karakter olabilir`);
+  }
+  return trimmed;
+}
+
 export function assertSubjectExists(state, subjectId) {
   if (!state.subjects.some((s) => s.id === subjectId)) {
     throw new HttpError(400, "Ders bulunamadı");
@@ -142,6 +153,14 @@ export function validateBackup(data) {
   }
   if (Object.keys(clean).length === 0) {
     throw new HttpError(400, "Yedek dosyası geçersiz: tanıdığımız hiçbir veri yok");
+  }
+  // Ayarlar (çalışma hedefi) isteğe bağlıdır; varsa nesne olmalı. İçeriği yüklenirken temizlenir.
+  if ("settings" in data) {
+    const s = data.settings;
+    if (s === null || typeof s !== "object" || Array.isArray(s)) {
+      throw new HttpError(400, "Yedek dosyası geçersiz: ayarlar bir nesne olmalı");
+    }
+    clean.settings = s;
   }
   return clean;
 }

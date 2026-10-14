@@ -1,5 +1,7 @@
-// İlk kurulumda yüklenen YKS sayısal ders ve konu başlıkları.
-// Konular sonradan Konular sayfasından düzenlenebilir.
+// Hazır ders ve konu başlıkları. Bir hedef (YKS, DGS) ilk kez seçildiğinde o hedefin listesi yüklenir.
+// Konular ve dersler sonradan Konular sayfasından düzenlenebilir. Üniversite hedefinde hazır liste yoktur.
+
+// YKS sayısal: examType sınav oturumudur (TYT / AYT)
 export const SEED_SUBJECTS = [
   {
     name: "Türkçe",
@@ -147,3 +149,61 @@ export const SEED_SUBJECTS = [
     ],
   },
 ];
+
+// DGS: examType sınavın bölümüdür (Sayısal / Sözel)
+export const DGS_SUBJECTS = [
+  {
+    name: "Matematik",
+    examType: "Sayısal",
+    topics: [
+      "Temel Kavramlar ve Sayılar",
+      "Sayı Basamakları, Bölme ve Bölünebilme",
+      "EBOB - EKOK",
+      "Rasyonel ve Ondalık Sayılar",
+      "Eşitsizlikler ve Mutlak Değer",
+      "Üslü ve Köklü Sayılar",
+      "Çarpanlara Ayırma ve Denklemler",
+      "Oran - Orantı",
+      "Sayı ve Kesir Problemleri",
+      "Yaş, İşçi ve Hareket Problemleri",
+      "Yüzde, Kâr - Zarar ve Karışım Problemleri",
+      "Kümeler ve Fonksiyonlar",
+      "İşlem ve Modüler Aritmetik",
+      "Permütasyon, Kombinasyon, Olasılık",
+      "Tablo ve Grafik Yorumlama",
+      "Sayısal Mantık",
+    ],
+  },
+  {
+    name: "Geometri",
+    examType: "Sayısal",
+    topics: [
+      "Doğruda ve Üçgende Açılar",
+      "Dik Üçgen ve Pisagor",
+      "Üçgende Alan ve Benzerlik",
+      "Açıortay ve Kenarortay",
+      "Çokgenler ve Dörtgenler",
+      "Çember ve Daire",
+      "Analitik Geometri",
+      "Katı Cisimler",
+    ],
+  },
+  {
+    name: "Türkçe",
+    examType: "Sözel",
+    topics: [
+      "Sözcükte Anlam",
+      "Cümlede Anlam",
+      "Paragraf",
+      "Ses Bilgisi",
+      "Yazım ve Noktalama",
+      "Sözcük Türleri ve Yapı",
+      "Cümlenin Ögeleri",
+      "Anlatım Bozuklukları",
+      "Sözel Mantık",
+    ],
+  },
+];
+
+// Hedefe göre hazır listeler (listesi olmayan hedef boş başlar)
+export const SEED_BY_TRACK = { yks: SEED_SUBJECTS, dgs: DGS_SUBJECTS };

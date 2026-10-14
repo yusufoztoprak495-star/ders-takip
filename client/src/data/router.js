@@ -1,5 +1,11 @@
 import { HttpError } from "./errors.js";
-import { listSubjects } from "./routes/subjects.js";
+import { getSettings, updateSettings } from "./routes/settings.js";
+import {
+  createSubject,
+  deleteSubject,
+  listSubjects,
+  updateSubject,
+} from "./routes/subjects.js";
 import { createTopic, deleteTopic, renameTopic } from "./routes/topics.js";
 import {
   createSession,
@@ -29,7 +35,12 @@ import {
 // [yöntem, yol, işleyici]. ':id' yol parametresidir. GET dışındakiler veriyi değiştirir.
 const ROUTES = [
   ["GET", "/api/health", () => ({ status: 200, body: { status: "ok" } })],
+  ["GET", "/api/settings", getSettings],
+  ["PUT", "/api/settings", updateSettings],
   ["GET", "/api/subjects", listSubjects],
+  ["POST", "/api/subjects", createSubject],
+  ["PUT", "/api/subjects/:id", updateSubject],
+  ["DELETE", "/api/subjects/:id", deleteSubject],
   ["POST", "/api/topics", createTopic],
   ["PUT", "/api/topics/:id", renameTopic],
   ["DELETE", "/api/topics/:id", deleteTopic],
