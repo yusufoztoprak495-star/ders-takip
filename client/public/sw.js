@@ -1,5 +1,6 @@
 // Basit servis çalışanı: açılan dosyaları önbelleğe alır, internet yokken oradan verir.
-const CACHE = "ders-takip-v1";
+// Sürüm adı değişince eski önbellek silinir (yeni tasarım/özellik gelince artırılır).
+const CACHE = "ders-takip-v2";
 
 self.addEventListener("install", () => self.skipWaiting());
 
@@ -20,10 +21,23 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(req)
       .then((res) => {
-        const kopya = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, kopya));
+        // Yalnızca başarılı cevaplar saklanır: 404 ya da hata sayfası önbelleğe girip
+        // çevrimdışıyken doğru dosyanın yerine verilmesin
+        if (res.ok && res.type === "basic") {
+          const copy = res.clone();
+          event.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)));
+        }
         return res;
       })
-      .catch(() => caches.match(req).then((r) => r || caches.match("./"))),
+      .catch(async () => {
+        const cached = await caches.match(req);
+        if (cached) return cached;
+        // Sayfa açılışıysa (adres çubuğu) uygulamanın ana sayfası verilir; dosyaysa hata
+        if (req.mode === "navigate") {
+          const home = await caches.match("./");
+          if (home) return home;
+        }
+        return Response.error();
+      }),
   );
 });
