@@ -4,6 +4,7 @@ import { activeSubjectIds } from "../seed.js";
 import { netOf } from "../stats.js";
 import {
   assertSubjectExists,
+  assertSubjectTracksQuestions,
   assertTopicMatchesSubject,
   optionalInt,
   parseId,
@@ -25,6 +26,7 @@ function parseLogBody(state, rawBody) {
   const topicId = optionalInt(body.topicId, "Konu");
   const resourceId = optionalInt(body.resourceId, "Kaynak");
   assertSubjectExists(state, subjectId);
+  assertSubjectTracksQuestions(state, subjectId);
   assertTopicMatchesSubject(state, topicId, subjectId);
   if (
     resourceId !== null &&

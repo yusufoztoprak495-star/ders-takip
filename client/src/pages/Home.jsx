@@ -1,3 +1,5 @@
+import { useTrack } from '../context/TrackContext.jsx';
+import { tracksQuestions } from '../lib/tracks.js';
 import TrackIntro from '../components/TrackIntro.jsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -78,6 +80,7 @@ function DailyQuote({ date }) {
 
 // Karşılama sayfası: bugünün özeti, haftalık değişim, çalışma serisi, günün dersi ve son haftanın ritmi
 export default function Home() {
+  const exam = tracksQuestions(useTrack().track);
   const [history, setHistory] = useState(null);
   const [todaySubjects, setTodaySubjects] = useState(null);
   const [error, setError] = useState(null);
@@ -106,6 +109,8 @@ export default function Home() {
       change: weeklyChange(history, today),
       streak: studyStreak(history, today),
       topSubject: topSubjectOfDay(todaySubjects),
+      weekSeconds: week.reduce((t, d) => t + d.totalSeconds, 0),
+      weekDays: week.filter((d) => d.totalSeconds > 0).length,
     };
   }, [history, todaySubjects, today]);
 
@@ -127,18 +132,33 @@ export default function Home() {
                   <span className="value">{formatDuration(view.todaySummary.totalSeconds)}</span>
                   <span className="label">Çalışma süresi</span>
                 </div>
-                <div>
-                  <span className="value">{view.todaySummary.questions}</span>
-                  <span className="label">Çözülen soru</span>
-                </div>
-                <div>
-                  <span className="value">{formatNet(view.todaySummary.net)}</span>
-                  <span className="label">Net</span>
-                </div>
-                <div>
-                  <span className="value">{formatPercent(view.todaySummary.accuracy)}</span>
-                  <span className="label">Doğruluk</span>
-                </div>
+                {exam ? (
+                  <>
+                    <div>
+                      <span className="value">{view.todaySummary.questions}</span>
+                      <span className="label">Çözülen soru</span>
+                    </div>
+                    <div>
+                      <span className="value">{formatNet(view.todaySummary.net)}</span>
+                      <span className="label">Net</span>
+                    </div>
+                    <div>
+                      <span className="value">{formatPercent(view.todaySummary.accuracy)}</span>
+                      <span className="label">Doğruluk</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <span className="value">{formatDuration(view.weekSeconds)}</span>
+                      <span className="label">Son 7 gün</span>
+                    </div>
+                    <div>
+                      <span className="value">{view.weekDays}<small> / 7</small></span>
+                      <span className="label">Çalışılan gün</span>
+                    </div>
+                  </>
+                )}
               </div>
             </article>
 
@@ -187,11 +207,15 @@ export default function Home() {
           </div>
 
           <h2>Son 7 gün</h2>
-          {view.week.every((d) => d.totalSeconds === 0 && d.correct + d.wrong + d.blank === 0) ? (
+          {view.week.every((d) => d.totalSeconds === 0 && (!exam || d.correct + d.wrong + d.blank === 0)) ? (
             <EmptyState
               Doodle={EmptyChart}
               title="Bu hafta henüz kayıt yok"
-              hint="Bir Pomodoro başlat ya da soru kaydı gir; son 7 günün burada görünür."
+              hint={
+                exam
+                  ? 'Bir Pomodoro başlat ya da soru kaydı gir; son 7 günün burada görünür.'
+                  : 'Bir Pomodoro başlat ya da çalışma günlüğüne süre gir; son 7 günün burada görünür.'
+              }
             />
           ) : (
             <WeekBars days={view.week} />

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { Link, NavLink, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { BackupProvider } from './context/BackupContext.jsx';
 import { PomodoroProvider, usePomodoro } from './context/PomodoroContext.jsx';
 import { TrackProvider, useTrack } from './context/TrackContext.jsx';
-import { trackInfo } from './lib/tracks.js';
+import { trackInfo, tracksQuestions } from './lib/tracks.js';
 import { formatTime } from './lib/pomodoro.js';
 import { requestPersistence } from './lib/persistence.js';
 import Settings from './pages/Settings.jsx';
@@ -37,12 +37,26 @@ const NAV_ITEMS = [
   { to: '/', label: 'Ana Sayfa', short: 'Ana', Icon: HomeIcon },
   { to: '/pomodoro', label: 'Pomodoro', short: 'Sayaç', Icon: TimerIcon },
   { to: '/gunluk', label: 'Çalışma Günlüğü', short: 'Günlük', Icon: LogIcon },
-  { to: '/sorular', label: 'Soru Kaydı', short: 'Soru', Icon: QuestionsIcon },
-  { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon },
+  // questions: true olanlar yalnızca sınav hedeflerinde (YKS, DGS) görünür
+  { to: '/sorular', label: 'Soru Kaydı', short: 'Soru', Icon: QuestionsIcon, questions: true },
+  { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon, questions: true },
   { to: '/konular', label: 'Dersler ve Konular', short: 'Dersler', Icon: TopicsIcon },
   { to: '/ilerleme', label: 'İlerleme', short: 'İlerleme', Icon: ProgressIcon },
   { to: '/ayarlar', label: 'Ayarlar', short: 'Ayarlar', Icon: SettingsIcon },
 ];
+
+// Menü bağlantıları: seçili hedefte olmayan sayfalar listelenmez
+function NavLinks() {
+  const { track } = useTrack();
+  const exam = tracksQuestions(track);
+  return NAV_ITEMS.filter((item) => exam || !item.questions).map(({ to, label, short, Icon }) => (
+    <NavLink key={to} to={to} end={to === '/'} title={label}>
+      <Icon />
+      <span className="nav-label">{label}</span>
+      <span className="nav-short">{short}</span>
+    </NavLink>
+  ));
+}
 
 // Sayaç çalışırken başka sayfadayken de kalan süreyi menüde gösterir
 function NavTimer() {
@@ -71,13 +85,16 @@ function Brand() {
 function Pages() {
   const { track } = useTrack();
   if (!track) return null;
+  // Üniversitede soru ve kitap sayfaları yok: eski bağlantıyla gelinirse ana sayfaya dönülür
+  const exam = tracksQuestions(track);
+  const examOnly = (element) => (exam ? element : <Navigate to="/" replace />);
   return (
     <Routes key={track}>
       <Route path="/" element={<Home />} />
       <Route path="/pomodoro" element={<Pomodoro />} />
       <Route path="/gunluk" element={<StudyLog />} />
-      <Route path="/sorular" element={<Questions />} />
-      <Route path="/kaynaklar" element={<Resources />} />
+      <Route path="/sorular" element={examOnly(<Questions />)} />
+      <Route path="/kaynaklar" element={examOnly(<Resources />)} />
       <Route path="/konular" element={<Topics />} />
       <Route path="/ilerleme" element={<Progress />} />
       <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
@@ -112,13 +129,7 @@ export default function App() {
             {goingLight ? <SunIcon /> : <MoonIcon />}
           </button>
         </div>
-        {NAV_ITEMS.map(({ to, label, short, Icon }) => (
-          <NavLink key={to} to={to} end={to === '/'} title={label}>
-            <Icon />
-            <span className="nav-label">{label}</span>
-            <span className="nav-short">{short}</span>
-          </NavLink>
-        ))}
+        <NavLinks />
         <NavTimer />
       </nav>
       <Decor />

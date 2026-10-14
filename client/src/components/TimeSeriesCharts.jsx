@@ -4,7 +4,8 @@ import { DurationColumns, NetLine } from './ProgressCharts.jsx';
 
 // Zaman grafikleri: günlük süre, haftalık süre, günlük net. Ana ilerleme ve ders sayfasında ortak.
 // view: useDailyStats çıktısı; scope: alt başlıkta yazan kapsam ("tüm dersler", "Matematik (AYT)").
-export default function TimeSeriesCharts({ view, range, scope, totalNote = '' }) {
+// showNet={false}: net grafiği gizlenir (üniversite derslerinde soru takibi yok)
+export default function TimeSeriesCharts({ view, range, scope, totalNote = '', showNet = true }) {
   return (
     <>
       <ChartCard
@@ -37,7 +38,7 @@ export default function TimeSeriesCharts({ view, range, scope, totalNote = '' })
         />
       </ChartCard>
 
-      <ChartCard
+      {showNet && <ChartCard
         title="Günlük net değişimi"
         subtitle={`Son ${range} gün · ${scope}${totalNote} · yalnızca soru çözülen günler`}
         empty={view.netDays.length === 0}
@@ -45,7 +46,7 @@ export default function TimeSeriesCharts({ view, range, scope, totalNote = '' })
         rows={view.netDays.map((d) => [formatDate(d.date), d.correct, d.wrong, d.blank, formatNet(d.net)])}
       >
         <NetLine days={view.netDays} ariaLabel={`Son ${range} günün günlük net değişimi`} />
-      </ChartCard>
+      </ChartCard>}
     </>
   );
 }

@@ -1,3 +1,5 @@
+import { useTrack } from '../context/TrackContext.jsx';
+import { tracksQuestions } from '../lib/tracks.js';
 import { subjectLabel } from '../lib/tracks.js';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -47,6 +49,7 @@ function Distribution({ detail }) {
 
 // Konu sayfası (3. katman): bir konunun tüm zamanlardaki özeti.
 export default function ProgressTopic() {
+  const exam = tracksQuestions(useTrack().track);
   const params = useParams();
   const subjectId = Number(params.subjectId);
   const [detail, setDetail] = useState(undefined); // undefined: yükleniyor, null: bulunamadı
@@ -114,6 +117,7 @@ export default function ProgressTopic() {
           <span className="muted">Çalışma süresi</span>
           <strong>{formatDuration(detail.totalSeconds)}</strong>
         </div>
+        {exam && (<>
         <div className="tile">
           <span className="muted">Çözülen soru</span>
           <strong>{questionCount(detail)}</strong>
@@ -126,13 +130,14 @@ export default function ProgressTopic() {
           <span className="muted">Doğruluk</span>
           <strong>{formatPercent(detail.accuracy)}</strong>
         </div>
+        </>)}
       </div>
       <p className="last-studied">
         <span className="muted">En son çalıştığın gün: </span>
         <strong>{formatLastStudied(detail.lastStudiedAt, today)}</strong>
       </p>
 
-      {!hasQuestions ? (
+      {!exam ? null : !hasQuestions ? (
         <EmptyState
           Doodle={EmptyNote}
           title="Bu konuda henüz soru çözmedin"

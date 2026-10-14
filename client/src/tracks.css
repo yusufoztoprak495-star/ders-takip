@@ -176,3 +176,20 @@ html {
 body {
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Telefonda kartlar ekran genişliğini asla aşmasın. "1fr" içeriğin en dar hâlinden daha dar olamaz;
+   Ayarlar'daki dosya seçme kutusu sayfayı 438 px'e itiyor, tarayıcı da sayfayı uzaklaştırınca
+   alttaki sabit menü ekran dışına düşüyordu. minmax(0, 1fr) ile kart ekrana sığar. */
+@media (max-width: 820px) {
+  .panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.panel {
+  min-width: 0;
+}
+
+input[type="file"] {
+  max-width: 100%;
+}

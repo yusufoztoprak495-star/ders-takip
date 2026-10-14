@@ -181,6 +181,23 @@ describe("çalışma hedefi (YKS / DGS / Üniversite)", () => {
   });
 });
 
+describe("üniversite hedefi: yalnızca süre takibi", () => {
+  it("üniversite dersine soru kaydı ve kitap eklenemez, çalışma kaydı eklenir", async () => {
+    const { app } = makeTestApp();
+    const api = request(app);
+    await switchTo(api, "uni");
+    const course = (await api.post("/api/subjects").send({ name: "Fizik 1" })).body;
+    const q = await api.post("/api/questions").send({
+      subjectId: course.id, topicId: null, resourceId: null, date: "2026-10-12", correct: 1, wrong: 0, blank: 0,
+    });
+    expect(q.status).toBe(400);
+    expect(q.body.error).toMatch(/üniversite/i);
+    const r = await api.post("/api/resources").send({ name: "Kitap", subjectId: course.id });
+    expect(r.status).toBe(400);
+    expect((await api.post("/api/sessions").send(session(course.id))).status).toBe(201);
+  });
+});
+
 describe("eski verinin yeni şekle getirilmesi", () => {
   it("hedefi olmayan eski dersler YKS sayılır, ayar eklenir, DGS kendiliğinden yüklenmez", () => {
     const old = emptyState();

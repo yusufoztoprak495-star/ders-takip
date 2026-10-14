@@ -1,4 +1,5 @@
-import { subjectLabel } from '../lib/tracks.js';
+import { subjectLabel, tracksQuestions } from '../lib/tracks.js';
+import { useTrack } from '../context/TrackContext.jsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../api.js';
@@ -16,6 +17,7 @@ import { EmptyBook } from '../components/Doodles.jsx';
 
 // Ders sayfası (2. katman): o dersin göstergeleri, zaman grafikleri ve konular (en zayıftan en güçlüye).
 export default function ProgressSubject() {
+  const exam = tracksQuestions(useTrack().track);
   const subjectId = Number(useParams().subjectId);
   const [range, setRange] = useState(30);
   const [subject, setSubject] = useState(undefined); // undefined: yükleniyor, null: bulunamadı
@@ -47,7 +49,11 @@ export default function ProgressSubject() {
     };
   }, [subject, subjectId, range]);
 
-  const sortedTopics = useMemo(() => (topicRows ? sortWeakestFirst(topicRows) : null), [topicRows]);
+  // Sınavda zayıftan güçlüye; üniversitede en çok çalışılandan aza (soru takibi yok)
+  const sortedTopics = useMemo(() => {
+    if (!topicRows) return null;
+    return exam ? sortWeakestFirst(topicRows) : [...topicRows].sort((a, b) => b.totalSeconds - a.totalSeconds);
+  }, [topicRows, exam]);
 
   if (subject === null) {
     return (
@@ -79,6 +85,13 @@ export default function ProgressSubject() {
               <span className="muted">Çalışma süresi</span>
               <strong>{formatDuration(totals.totalSeconds)}</strong>
             </div>
+            {!exam && (
+              <div className="tile">
+                <span className="muted">Çalışılan gün</span>
+                <strong>{view.days.filter((d) => d.totalSeconds > 0).length}</strong>
+              </div>
+            )}
+            {exam && (<>
             <div className="tile">
               <span className="muted">Çözülen soru</span>
               <strong>{questionCount(totals)}</strong>
@@ -91,21 +104,24 @@ export default function ProgressSubject() {
               <span className="muted">Doğruluk</span>
               <strong>{formatPercent(totals.accuracy)}</strong>
             </div>
+            </>)}
           </div>
 
           <h2>Konular</h2>
           <p className="muted filter-note">
-            En zayıftan en güçlüye (doğruluk oranına göre). Henüz soru çözmediğin konular sönük ve en altta. Ayrıntı için bir konuya tıkla.
+            {exam
+              ? 'En zayıftan en güçlüye (doğruluk oranına göre). Henüz soru çözmediğin konular sönük ve en altta. Ayrıntı için bir konuya tıkla.'
+              : 'En çok çalıştığından en aza. Ayrıntı için bir konuya tıkla.'}
           </p>
           {sortedTopics && sortedTopics.length > 0 ? (
             <StatList
-              columns={['Konu', 'Doğruluk', 'Çözülen soru', 'Net', 'Süre']}
+              columns={exam ? ['Konu', 'Doğruluk', 'Çözülen soru', 'Net', 'Süre'] : ['Konu', 'Süre']}
               rows={sortedTopics.map((t) => ({
                 key: t.topicId,
                 to: `/ilerleme/ders/${subjectId}/konu/${t.topicId}`,
                 name: t.topicName,
-                muted: t.accuracy === null, // soru çözülmemiş konular sönük gösterilir
-                cells: [
+                muted: exam ? t.accuracy === null : t.totalSeconds === 0, // verisi olmayan konular sönük
+                cells: !exam ? [formatDuration(t.totalSeconds)] : [
                   { text: formatPercent(t.accuracy), bar: t.accuracy },
                   String(questionCount(t)),
                   t.accuracy === null ? '—' : formatNet(t.net),
@@ -119,7 +135,7 @@ export default function ProgressSubject() {
 
           <h2>Grafikler</h2>
           <div className="chart-grid">
-            <TimeSeriesCharts view={view} range={range} scope={title} />
+            <TimeSeriesCharts view={view} range={range} scope={title} showNet={exam} />
           </div>
         </div>
       )}

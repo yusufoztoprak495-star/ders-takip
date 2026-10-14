@@ -117,6 +117,14 @@ export function assertSubjectExists(state, subjectId) {
   }
 }
 
+// Soru kaydı ve test kitabı yalnızca sınav (YKS, DGS) derslerine eklenebilir
+export function assertSubjectTracksQuestions(state, subjectId) {
+  const subject = state.subjects.find((s) => s.id === subjectId);
+  if (subject && subject.track === "uni") {
+    throw new HttpError(400, "Üniversite derslerinde soru ve kitap takibi yok; yalnızca çalışma süresi tutulur");
+  }
+}
+
 // Konu seçilmişse var olmalı ve seçilen derse ait olmalı (null = konu seçilmedi)
 export function assertTopicMatchesSubject(state, topicId, subjectId) {
   if (topicId === null) return;

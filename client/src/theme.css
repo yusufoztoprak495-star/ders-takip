@@ -6,7 +6,8 @@
    altın yalnızca küçük vurgularda (grafik serisi) kaldı, büyük yüzeylerde yok.
    Kontrast (WCAG AA): yazı en az 4.5:1, grafik işaretleri en az 3:1 (beyaz karta göre). */
 :root[data-theme="light"] {
-  color-scheme: light;
+  /* "only light": tarayıcı bu temayı zorla karartamaz (CSS standardındaki "dokunma" işareti) */
+  color-scheme: only light;
 
   --bg: #f4f5f7; /* çok açık gri: beyaz kartlar zeminden ayrılsın */
   --surface: #ffffff;
@@ -118,5 +119,13 @@
   .theme-switching *::before,
   .theme-switching *::after {
     transition: none !important;
+  }
+}
+
+/* Tarayıcıya sayfanın koyu temayı kendisinin desteklediğini bildirir (Samsung Internet buna bakıyor).
+   Tema her zaman data-theme ile seçildiği için bu kural normalde hiçbir şeyi değiştirmez. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
   }
 }

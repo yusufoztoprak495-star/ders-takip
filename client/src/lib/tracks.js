@@ -19,7 +19,7 @@ export const TRACKS = [
     id: "uni",
     label: "Üniversite",
     title: "Üniversite dersleri",
-    hint: "Kendi derslerini ve konularını sen eklersin",
+    hint: "Pomodoro ve çalışma süresi; derslerini sen eklersin",
     groupLabel: "Dönem",
   },
 ];
@@ -38,4 +38,10 @@ export function trackInfo(id) {
 // Dersin ekranda görünen adı: grup (TYT, Sayısal, 1. Dönem...) varsa parantez içinde
 export function subjectLabel(name, group) {
   return group ? `${name} (${group})` : name;
+}
+
+// Soru (doğru/yanlış/net) ve test kitabı takibi yalnızca sınav hedeflerinde var.
+// Üniversite derslerinde yalnızca Pomodoro ve çalışma süresi tutulur.
+export function tracksQuestions(id) {
+  return id !== "uni";
 }

@@ -1,4 +1,5 @@
-import { subjectLabel } from '../lib/tracks.js';
+import { subjectLabel, tracksQuestions } from '../lib/tracks.js';
+import { useTrack } from '../context/TrackContext.jsx';
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api.js';
 import ChartCard from '../components/ChartCard.jsx';
@@ -17,7 +18,11 @@ const rowLabel = (r) => subjectLabel(r.subjectName, r.examType);
 const questionTotal = (r) => r.correct + r.wrong + r.blank;
 
 // Ana ilerleme sayfası (1. katman): tüm derslerin özeti. Bir derse tıklayınca ders sayfası açılır.
+// Seçilen aralıkta en az bir dakika çalışılan gün sayısı
+const studiedDays = (view) => view.days.filter((d) => d.totalSeconds > 0).length;
+
 export default function Progress() {
+  const exam = tracksQuestions(useTrack().track);
   const [subjects, setSubjects] = useState([]);
   const [range, setRange] = useState(14);
   const [subjectId, setSubjectId] = useState('all');
@@ -96,6 +101,13 @@ export default function Progress() {
               <span className="muted">Çalışma süresi</span>
               <strong>{formatDuration(view.summary.totalSeconds)}</strong>
             </div>
+            {!exam && (
+              <div className="tile">
+                <span className="muted">Çalışılan gün</span>
+                <strong>{studiedDays(view)}</strong>
+              </div>
+            )}
+            {exam && (<>
             <div className="tile">
               <span className="muted">Çözülen soru</span>
               <strong>{view.summary.questions}</strong>
@@ -108,6 +120,7 @@ export default function Progress() {
               <span className="muted">Doğruluk</span>
               <strong>{formatPercent(view.summary.accuracy)}</strong>
             </div>
+            </>)}
           </div>
 
           {bySubject && (
@@ -115,17 +128,19 @@ export default function Progress() {
               <h2>Dersler</h2>
               <p className="muted filter-note">Ayrıntı için bir derse tıkla.</p>
               <StatList
-                columns={['Ders', 'Süre', 'Çözülen soru', 'Net', 'Doğruluk']}
+                columns={exam ? ['Ders', 'Süre', 'Çözülen soru', 'Net', 'Doğruluk'] : ['Ders', 'Süre']}
                 rows={bySubject.map((r) => ({
                   key: r.subjectId,
                   to: `/ilerleme/ders/${r.subjectId}`,
                   name: rowLabel(r),
-                  cells: [
-                    formatDuration(r.totalSeconds),
-                    String(questionTotal(r)),
-                    formatNet(r.net),
-                    { text: formatPercent(r.accuracy), bar: r.accuracy },
-                  ],
+                  cells: exam
+                    ? [
+                        formatDuration(r.totalSeconds),
+                        String(questionTotal(r)),
+                        formatNet(r.net),
+                        { text: formatPercent(r.accuracy), bar: r.accuracy },
+                      ]
+                    : [formatDuration(r.totalSeconds)],
                 }))}
               />
             </>
@@ -135,13 +150,13 @@ export default function Progress() {
             <EmptyState
               Doodle={EmptyChart}
               title="Bu aralıkta henüz kayıt yok"
-              hint="Bir Pomodoro başlat ya da soru kaydı gir; grafikler burada belirir."
+              hint={exam ? 'Bir Pomodoro başlat ya da soru kaydı gir; grafikler burada belirir.' : 'Bir Pomodoro başlat ya da çalışma günlüğüne süre gir; grafikler burada belirir.'}
             />
           ) : (
             <>
           <h2>Grafikler</h2>
           <div className="chart-grid">
-            <TimeSeriesCharts view={view} range={range} scope={scope} totalNote={chosen ? '' : ' (toplam)'} />
+            <TimeSeriesCharts view={view} range={range} scope={scope} totalNote={chosen ? '' : ' (toplam)'} showNet={exam} />
 
             {rows && (
               <>
@@ -159,7 +174,7 @@ export default function Progress() {
                   />
                 </ChartCard>
 
-                <ChartCard
+                {exam && <ChartCard
                   title="Derse göre doğru / yanlış / boş"
                   subtitle={`Son ${range} gün`}
                   empty={rows.questions.length === 0}
@@ -171,7 +186,7 @@ export default function Progress() {
                     highlightId={highlightId}
                     ariaLabel={`Son ${range} günde derse göre doğru, yanlış ve boş soru sayıları`}
                   />
-                </ChartCard>
+                </ChartCard>}
               </>
             )}
           </div>

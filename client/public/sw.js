@@ -1,6 +1,6 @@
 // Basit servis çalışanı: açılan dosyaları önbelleğe alır, internet yokken oradan verir.
 // Sürüm adı değişince eski önbellek silinir (yeni tasarım/özellik gelince artırılır).
-const CACHE = "ders-takip-v2";
+const CACHE = "ders-takip-v3";
 
 self.addEventListener("install", () => self.skipWaiting());
 

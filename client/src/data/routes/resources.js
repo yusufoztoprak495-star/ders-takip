@@ -4,6 +4,7 @@ import { nextId } from "../ids.js";
 import { activeSubjectIds } from "../seed.js";
 import {
   assertSubjectExists,
+  assertSubjectTracksQuestions,
   parseId,
   requireBody,
   requireInt,
@@ -47,6 +48,7 @@ function parseResourceBody(state, rawBody, fallbackSolved) {
   const body = requireBody(rawBody);
   const subjectId = requireInt(body.subjectId, "Ders");
   assertSubjectExists(state, subjectId);
+  assertSubjectTracksQuestions(state, subjectId);
   return {
     name: requireString(body.name, "Kitap adı", { maxLength: 150 }),
     publisher: parsePublisher(body.publisher),
