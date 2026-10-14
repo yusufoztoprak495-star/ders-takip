@@ -9,6 +9,7 @@ import { fillMissingDays, summarize } from '../lib/charts.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
 import { addDays, studyStreak, topSubjectOfDay, weeklyChange } from '../lib/insights.js';
+import { quoteOfDay } from '../lib/quotes.js';
 
 // Seri ve haftalık karşılaştırma için bu kadar geriye bakılır (daha uzun seriler "365+" yazılır)
 const HISTORY_DAYS = 365;
@@ -53,6 +54,27 @@ function changeText(change) {
   return 'Değişmedi';
 }
 
+// Günün sözü: her gün farklı bir söz; "Başka söz" ile sıradakine geçilir
+function DailyQuote({ date }) {
+  const [offset, setOffset] = useState(0);
+  const quote = quoteOfDay(date, offset);
+  return (
+    <figure className="daily-quote">
+      <span className="panel-label">Günün sözü</span>
+      <blockquote>{quote.text}</blockquote>
+      <figcaption>
+        <span>
+          {quote.author}
+          {quote.source && <cite>, {quote.source}</cite>}
+        </span>
+        <button type="button" className="secondary small" onClick={() => setOffset((o) => o + 1)}>
+          Başka söz
+        </button>
+      </figcaption>
+    </figure>
+  );
+}
+
 // Karşılama sayfası: bugünün özeti, haftalık değişim, çalışma serisi, günün dersi ve son haftanın ritmi
 export default function Home() {
   const [history, setHistory] = useState(null);
@@ -89,6 +111,7 @@ export default function Home() {
   return (
     <section>
       <h1>Bugün</h1>
+      <DailyQuote date={today} />
       <ErrorBanner message={error} />
       <BackupReminder />
 
