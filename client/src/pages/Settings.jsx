@@ -3,6 +3,8 @@ import { getDatabase } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import TrackSwitcher from '../components/TrackSwitcher.jsx';
 import GoalsForm from '../components/GoalsForm.jsx';
+import { buildDemoState } from '../lib/demoData.js';
+import { toLocalDateString } from '../lib/dates.js';
 import { useTrack } from '../context/TrackContext.jsx';
 import { useBackup } from '../context/BackupContext.jsx';
 import { MAX_BACKUP_BYTES, parseBackupText } from '../data/validation.js';
@@ -73,6 +75,20 @@ export default function Settings() {
     }
   }
 
+  // Uygulamayı dolu hâliyle görmek için: mevcut verinin yerine örnek bir YKS öğrencisinin verisi gelir
+  async function handleDemo() {
+    const ok = window.confirm(
+      'Şu anki verilerin silinip yerine örnek veriler gelecek. Önce "Yedeği indir" ile yedek almak isteyebilirsin. Devam edilsin mi?',
+    );
+    if (!ok) return;
+    try {
+      await getDatabase().replaceAll(buildDemoState(toLocalDateString(new Date())));
+      window.location.reload();
+    } catch (e) {
+      setError(e.message || 'Örnek veriler yüklenemedi');
+    }
+  }
+
   return (
     <section>
       <h1>Ayarlar</h1>
@@ -112,6 +128,18 @@ export default function Settings() {
               Yedekten yükle (mevcut verinin yerine geçer){' '}
               <input type="file" accept=".json,application/json" onChange={handleRestore} />
             </label>
+          </p>
+        </article>
+        <article className="panel panel-wide">
+          <h2 className="panel-label">Örnek verilerle dene</h2>
+          <p className="muted">
+            Uygulamayı dolu hâliyle görmek için 200 günlük örnek bir YKS çalışma geçmişi yükler: çalışmalar,
+            sorular, denemeler, ders programı ve plan. Mevcut verilerinin yerine geçer.
+          </p>
+          <p>
+            <button type="button" className="secondary" onClick={handleDemo}>
+              Örnek verileri yükle
+            </button>
           </p>
         </article>
         <article className="panel panel-wide">

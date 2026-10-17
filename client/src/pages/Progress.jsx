@@ -10,6 +10,7 @@ import { QuestionStacks, SubjectTimeBars } from '../components/ProgressCharts.js
 import RangeFilter from '../components/RangeFilter.jsx';
 import StatList from '../components/StatList.jsx';
 import TimeSeriesCharts from '../components/TimeSeriesCharts.jsx';
+import Heatmap from '../components/Heatmap.jsx';
 import { useDailyStats } from '../hooks/useDailyStats.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDuration, formatNet, formatPercent } from '../lib/format.js';
@@ -75,6 +76,7 @@ export default function Progress() {
     <section>
       <h1>İlerleme</h1>
       <ErrorBanner message={error || subjectError} />
+      <Heatmap />
 
       <div className="filters">
         <RangeFilter range={range} onChange={setRange} />

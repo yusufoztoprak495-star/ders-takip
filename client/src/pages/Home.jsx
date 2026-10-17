@@ -16,6 +16,7 @@ import { addDays, studyStreak, topSubjectOfDay, weeklyChange } from '../lib/insi
 import { QUOTES, drawQuote } from '../lib/quotes.js';
 import CountUp from '../components/CountUp.jsx';
 import TodayPlan from '../components/TodayPlan.jsx';
+import Heatmap from '../components/Heatmap.jsx';
 import { celebrate } from '../lib/celebrate.js';
 
 // Seri ve haftalık karşılaştırma için bu kadar geriye bakılır (daha uzun seriler "365+" yazılır)
@@ -386,6 +387,8 @@ export default function Home() {
           ) : (
             <WeekBars days={view.week} />
           )}
+
+          <Heatmap weeks={18} title="Son dört ay" />
 
           <p className="home-actions">
             <Link to="/pomodoro" className="button-link">

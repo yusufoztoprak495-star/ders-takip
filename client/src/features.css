@@ -418,3 +418,91 @@
   color: var(--teal);
   border-color: var(--teal);
 }
+
+/* --- Isı haritası --- */
+.heatmap-card {
+  margin: 8px 0 24px;
+}
+
+.heatmap-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+  direction: rtl; /* dar ekranda en yeni haftalar (sağ) görünür kalsın */
+}
+
+.heatmap {
+  display: block;
+  direction: ltr;
+  margin-right: auto; /* kaydırma kutusu sağdan sola; sığdığında yine sola yaslansın */
+}
+
+.hm-label {
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.hm-cell {
+  fill: var(--series-dim);
+  background: var(--series-dim);
+}
+
+.hm-cell.l1 {
+  fill: color-mix(in srgb, var(--series-2) 35%, var(--series-dim));
+  background: color-mix(in srgb, var(--series-2) 35%, var(--series-dim));
+}
+
+.hm-cell.l2 {
+  fill: color-mix(in srgb, var(--series-2) 60%, var(--series-dim));
+  background: color-mix(in srgb, var(--series-2) 60%, var(--series-dim));
+}
+
+.hm-cell.l3 {
+  fill: color-mix(in srgb, var(--series-2) 82%, var(--series-dim));
+  background: color-mix(in srgb, var(--series-2) 82%, var(--series-dim));
+}
+
+.hm-cell.l4 {
+  fill: var(--series-2);
+  background: var(--series-2);
+}
+
+rect.hm-cell.today {
+  stroke: var(--gold-text);
+  stroke-width: 1.5;
+}
+
+rect.hm-cell {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hm-in 0.4s var(--ease-out) both;
+}
+
+@keyframes hm-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+.hm-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.hm-legend i {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 2.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  rect.hm-cell {
+    animation: none;
+  }
+}
