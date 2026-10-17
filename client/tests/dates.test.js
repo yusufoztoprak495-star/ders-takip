@@ -53,3 +53,17 @@ describe("daysAgo", () => {
     expect(toLocalDateString(d)).toBe("2026-10-12");
   });
 });
+
+import { daysBetween } from "../src/lib/dates.js";
+
+describe("daysBetween", () => {
+  it("iki yerel gün arasındaki gün sayısı (geri sayım için)", () => {
+    expect(daysBetween("2026-10-17", "2026-10-17")).toBe(0);
+    expect(daysBetween("2026-10-17", "2027-06-19")).toBe(245);
+    expect(daysBetween("2026-10-17", "2026-10-10")).toBe(-7);
+  });
+
+  it("yaz saati geçişinde de tam gün sayar", () => {
+    expect(daysBetween("2026-03-28", "2026-03-30")).toBe(2);
+  });
+});

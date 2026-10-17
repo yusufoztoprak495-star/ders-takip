@@ -1,8 +1,17 @@
 import { useState } from 'react';
+import { formatShortDate } from '../lib/format.js';
 
-// Tek bir konu satırı: adı gösterir; "Düzenle" ile yerinde yeniden adlandırılır.
-// onRename(topic, newName) başarılıysa true döner; onDelete(topic) silme onayını üst sayfada yapar.
-export default function TopicRow({ topic, onRename, onDelete }) {
+// Bitmiş konunun tekrar durumu: sıradaki tekrar günü ya da (dört tekrar bittiyse) "kalıcı"
+function reviewNote(topic) {
+  if (!topic.done) return null;
+  if (!topic.nextReview) return 'Kalıcı';
+  return `Tekrar ${formatShortDate(topic.nextReview)}`;
+}
+
+// Tek bir konu satırı: bitti kutusu ve adı; "Düzenle" ile yerinde yeniden adlandırılır.
+// onRename(topic, newName) başarılıysa true döner; onDelete(topic) silme onayını üst sayfada yapar;
+// onToggleDone(topic, done) konuyu bitti / bitmedi yapar.
+export default function TopicRow({ topic, onRename, onDelete, onToggleDone }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(topic.name);
 
@@ -36,9 +45,14 @@ export default function TopicRow({ topic, onRename, onDelete }) {
     );
   }
 
+  const note = reviewNote(topic);
   return (
-    <li>
-      <span>{topic.name}</span>
+    <li className={topic.done ? 'topic-done' : undefined}>
+      <label className="topic-check">
+        <input type="checkbox" checked={Boolean(topic.done)} onChange={(e) => onToggleDone(topic, e.target.checked)} />
+        <span className="topic-name">{topic.name}</span>
+        {note && <span className="topic-review">{note}</span>}
+      </label>
       <span className="actions">
         <button type="button" className="secondary" onClick={() => setEditing(true)}>
           Düzenle

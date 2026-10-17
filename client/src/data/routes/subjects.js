@@ -1,6 +1,7 @@
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
 import { activeSubjectIds, sortSubjects, sortTopics } from "../seed.js";
+import { topicStatus } from "./topics.js";
 import { optionalString, parseId, requireBody, requireString } from "../validation.js";
 
 const NAME_MAX = 100;
@@ -18,10 +19,11 @@ export function listSubjects({ state }) {
       name: s.name,
       examType: s.examType ?? "",
       track: s.track,
-      topics: sortTopics(s, state.topics.filter((t) => t.subjectId === s.id)).map((t) => ({
-        id: t.id,
-        name: t.name,
-      })),
+      // Bitmiş konularda tekrar bilgisi de gelir; bitmemişlerde yalnızca kimlik ve ad
+      topics: sortTopics(s, state.topics.filter((t) => t.subjectId === s.id)).map((t) => {
+        const status = topicStatus(t);
+        return status.done ? { id: t.id, name: t.name, ...status } : { id: t.id, name: t.name };
+      }),
     })),
   };
 }

@@ -19,6 +19,7 @@ export function emptyState() {
     resources: [],
     classes: [], // ders programı (okul/üniversite dersleri)
     plans: [], // haftalık programın blokları
+    exams: [], // deneme sınavları
     settings: { track: DEFAULT_TRACK, seededTracks: [] },
   };
 }
@@ -70,6 +71,18 @@ export function cleanSettings(raw, { hasSubjects = false } = {}) {
     clean.dayStart = dayStart;
     clean.dayEnd = dayEnd;
   }
+  // Sınav tarihleri (hedef başına) ve günlük hedef (dakika): yalnızca geçerli olanlar kalır
+  if (settings.examDates && typeof settings.examDates === "object" && !Array.isArray(settings.examDates)) {
+    const dates = Object.fromEntries(
+      Object.entries(settings.examDates).filter(
+        ([id, date]) => isTrack(id) && typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date),
+      ),
+    );
+    if (Object.keys(dates).length > 0) clean.examDates = dates;
+  }
+  if (Number.isSafeInteger(settings.dailyGoal) && settings.dailyGoal > 0 && settings.dailyGoal <= 960) {
+    clean.dailyGoal = settings.dailyGoal;
+  }
   return clean;
 }
 
@@ -87,14 +100,15 @@ export function ensureTrackSeeded(state, track) {
 // seed: false (yedek yükleme): yedek olduğu gibi kalsın diye hazır liste eklenmez, yüklenmiş sayılır.
 // Bir şey değiştiyse true döner (veri kaydedilmeli).
 export function prepareState(state, { seed = true } = {}) {
-  const tracksOf = () => [state.subjects, state.classes ?? [], state.plans ?? []].map((rows) => rows.map((r) => r.track));
+  const tracksOf = () =>
+    [state.subjects, state.classes ?? [], state.plans ?? [], state.exams ?? []].map((rows) => rows.map((r) => r.track));
   const before = JSON.stringify([state.settings, tracksOf()]);
   state.settings = cleanSettings(state.settings, { hasSubjects: state.subjects.length > 0 });
   for (const subject of state.subjects) {
     if (!TRACK_IDS.includes(subject.track)) subject.track = "yks";
   }
   // Program satırları da hedefe bağlıdır; hedefsiz (elle düzenlenmiş yedek) satırlar YKS sayılır
-  for (const row of [...(state.classes ?? []), ...(state.plans ?? [])]) {
+  for (const row of [...(state.classes ?? []), ...(state.plans ?? []), ...(state.exams ?? [])]) {
     if (!TRACK_IDS.includes(row.track)) row.track = "yks";
   }
   const track = state.settings.track;

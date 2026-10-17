@@ -6,6 +6,7 @@ import TopicRow from '../components/TopicRow.jsx';
 import { EmptyChart } from '../components/Doodles.jsx';
 import { useTrack } from '../context/TrackContext.jsx';
 import { trackInfo } from '../lib/tracks.js';
+import { toLocalDateString } from '../lib/dates.js';
 
 // Hedefe göre grup alanının örnek metni (ders adının yanındaki parantez)
 const GROUP_PLACEHOLDER = {
@@ -39,8 +40,24 @@ function SubjectFields({ name, setName, group, setGroup, groupLabel, placeholder
   );
 }
 
+// Dersin kaç konusu bitti: ince çubuk ve "12 / 30" yazısı
+function TopicProgress({ topics }) {
+  const done = topics.filter((t) => t.done).length;
+  const percent = Math.round((done / topics.length) * 100);
+  return (
+    <span className="topic-progress" title={`${topics.length} konunun ${done} tanesi bitti`}>
+      <span className="topic-bar" aria-hidden="true">
+        <span style={{ width: `${percent}%` }} />
+      </span>
+      <span>
+        {done} / {topics.length}
+      </span>
+    </span>
+  );
+}
+
 // Bir dersin başlığı (düzenlenebilir), konu listesi ve yeni konu ekleme alanı
-function SubjectSection({ subject, groupLabel, placeholder, onAdd, onRename, onDelete, onEditSubject, onDeleteSubject }) {
+function SubjectSection({ subject, groupLabel, placeholder, onAdd, onRename, onDelete, onToggleDone, onEditSubject, onDeleteSubject }) {
   const [newName, setNewName] = useState('');
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(subject.name);
@@ -77,6 +94,7 @@ function SubjectSection({ subject, groupLabel, placeholder, onAdd, onRename, onD
           <h2>
             {subject.name} {subject.examType && <span className="badge">{subject.examType}</span>}
           </h2>
+          {subject.topics.length > 0 && <TopicProgress topics={subject.topics} />}
           <span className="actions">
             <button type="button" className="secondary small" onClick={() => setEditing(true)}>
               Dersi düzenle
@@ -90,7 +108,7 @@ function SubjectSection({ subject, groupLabel, placeholder, onAdd, onRename, onD
       {subject.topics.length === 0 && <p className="muted">Bu derste henüz konu yok.</p>}
       <ul className="list topics">
         {subject.topics.map((topic) => (
-          <TopicRow key={topic.id} topic={topic} onRename={onRename} onDelete={onDelete} />
+          <TopicRow key={topic.id} topic={topic} onRename={onRename} onDelete={onDelete} onToggleDone={onToggleDone} />
         ))}
       </ul>
       <form className="inline-form" onSubmit={handleAdd}>
@@ -139,6 +157,7 @@ export default function Topics() {
     } catch (e) {
       // Geçersiz girdiyi veri katmanı Türkçe mesajla reddeder, aynen gösterilir
       setError(e.message);
+      await load();
       return false;
     }
   }
@@ -167,6 +186,17 @@ export default function Topics() {
   const handleAdd = (subject, name) =>
     run(() => apiFetch('/api/topics', { method: 'POST', body: { subjectId: subject.id, name } }));
 
+  // Bitti işareti: tekrar takvimi bugünden başlar (1, 3, 7, 30 gün sonra)
+  // Kutu hemen işaretlenir (beklemeden); kayıt başarısız olursa yeniden yükleme eski hâline döndürür
+  const handleToggleDone = (topic, done) => {
+    setSubjects((list) =>
+      list.map((s) => ({ ...s, topics: s.topics.map((t) => (t.id === topic.id ? { ...t, done } : t)) })),
+    );
+    return run(() =>
+      apiFetch(`/api/topics/${topic.id}/done`, { method: 'PUT', body: { done, today: toLocalDateString(new Date()) } }),
+    );
+  };
+
   const handleRename = (topic, name) =>
     run(() => apiFetch(`/api/topics/${topic.id}`, { method: 'PUT', body: { name } }));
 
@@ -182,8 +212,8 @@ export default function Topics() {
     <section>
       <h1>Dersler ve Konular</h1>
       <p className="muted">
-        {info.title}: derslerini ve konularını ihtiyacına göre düzenle. Yeni ders ekle, adını değiştir
-        ya da sil.
+        {info.title}: derslerini ve konularını ihtiyacına göre düzenle. Bitirdiğin konuyu işaretle; 1, 3, 7 ve
+        30 gün sonra ana sayfadaki tekrar listesine düşer.
       </p>
       <ErrorBanner message={error} />
 
@@ -220,6 +250,7 @@ export default function Topics() {
           onAdd={handleAdd}
           onRename={handleRename}
           onDelete={handleDelete}
+          onToggleDone={handleToggleDone}
           onEditSubject={handleEditSubject}
           onDeleteSubject={handleDeleteSubject}
         />

@@ -348,7 +348,7 @@ function TrendLine({ days, valueOf, format, label, domain, ariaLabel }) {
           {days.length > 1 && <path d={path} fill="none" stroke="var(--series-1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
           {days.map((d, i) => (
             <circle
-              key={d.date}
+              key={`${d.date}-${i}`}
               cx={x(i)}
               cy={y(valueOf(d))}
               r={active?.i === i ? 5 : 4}

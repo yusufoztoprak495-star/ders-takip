@@ -9,8 +9,9 @@ import EmptyState from '../components/EmptyState.jsx';
 import BackupReminder from '../components/BackupReminder.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import { fillMissingDays, summarize } from '../lib/charts.js';
-import { daysAgo, toLocalDateString } from '../lib/dates.js';
-import { formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
+import { daysAgo, daysBetween, toLocalDateString } from '../lib/dates.js';
+import { trackInfo } from '../lib/tracks.js';
+import { formatDate, formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
 import { addDays, studyStreak, topSubjectOfDay, weeklyChange } from '../lib/insights.js';
 import { quoteOfDay } from '../lib/quotes.js';
 
@@ -78,9 +79,94 @@ function DailyQuote({ date }) {
   );
 }
 
+// Sınava geri sayım: tarih Ayarlar'dan girilir. Girilmediyse küçük bir davet gösterilir.
+function Countdown({ examDate, today, track }) {
+  // Üniversitede tek bir sınav yok: geri sayım final haftasına yapılır
+  const label = track === 'uni' ? 'Final' : trackInfo(track).label;
+  if (!examDate) {
+    return (
+      <p className="countdown-invite muted">
+        {label} tarihini girersen burada geri sayım görünür. <Link className="text-link" to="/ayarlar">Ayarlar'da gir</Link>
+      </p>
+    );
+  }
+  const days = daysBetween(today, examDate);
+  if (days < 0) {
+    return (
+      <p className="countdown-invite muted">
+        Girdiğin sınav tarihi geçti. <Link className="text-link" to="/ayarlar">Yeni tarihi gir</Link>
+      </p>
+    );
+  }
+  return (
+    <div className="countdown" role="status">
+      <span className="countdown-days">{days}</span>
+      <span className="countdown-text">
+        {days === 0 ? `Bugün ${label} günü. Başarılar!` : `gün kaldı · ${label} ${formatDate(examDate)}`}
+        <span className="countdown-weeks muted">{days >= 14 ? `yaklaşık ${Math.floor(days / 7)} hafta` : ''}</span>
+      </span>
+    </div>
+  );
+}
+
+// Günlük hedef çubuğu: bugünkü süre hedefin yüzde kaçı
+function GoalBar({ seconds, goalMinutes }) {
+  const percent = Math.min(100, Math.round((seconds / 60 / goalMinutes) * 100));
+  const reached = percent >= 100;
+  return (
+    <div className={reached ? 'goal-bar reached' : 'goal-bar'}>
+      <div className="goal-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="Günlük hedef">
+        <span style={{ width: `${percent}%` }} />
+      </div>
+      <span className="goal-text">
+        {reached ? 'Günlük hedef tamam' : `Günlük hedef ${formatDuration(goalMinutes * 60)} · %${percent}`}
+      </span>
+    </div>
+  );
+}
+
+// Bugün tekrarı gelen konular (bitirilen konular 1, 3, 7 ve 30 gün sonra buraya düşer)
+const REVIEW_LIMIT = 6;
+function DueReviews({ reviews, onReviewed, today }) {
+  if (reviews.length === 0) return null;
+  const shown = reviews.slice(0, REVIEW_LIMIT);
+  return (
+    <article className="panel panel-wide reviews">
+      <h2 className="panel-label">Bugün tekrar edilecek konular</h2>
+      <ul className="review-list">
+        {shown.map((r) => {
+          const late = daysBetween(r.nextReview, today);
+          return (
+            <li key={r.id}>
+              <span className="review-topic">
+                {r.name}
+                <span className="muted">
+                  {' '}
+                  {r.subjectName}
+                  {r.examType ? ` (${r.examType})` : ''} · {r.reviewStep + 1}. tekrar
+                  {late > 0 ? ` · ${late} gün gecikti` : ''}
+                </span>
+              </span>
+              <button type="button" className="secondary small" onClick={() => onReviewed(r)}>
+                Tekrar ettim
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {reviews.length > REVIEW_LIMIT && (
+        <p className="panel-note">ve {reviews.length - REVIEW_LIMIT} konu daha. Önce en eskileri tekrar et.</p>
+      )}
+    </article>
+  );
+}
+
 // Karşılama sayfası: bugünün özeti, haftalık değişim, çalışma serisi, günün dersi ve son haftanın ritmi
 export default function Home() {
-  const exam = tracksQuestions(useTrack().track);
+  const { track } = useTrack();
+  const exam = tracksQuestions(track);
+  const [goals, setGoals] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [history, setHistory] = useState(null);
   const [todaySubjects, setTodaySubjects] = useState(null);
   const [error, setError] = useState(null);
@@ -98,7 +184,19 @@ export default function Home() {
         setTodaySubjects(subjects);
       })
       .catch((e) => setError(e.message));
+    apiFetch('/api/goals').then(setGoals).catch(() => {});
+    apiFetch(`/api/reviews?date=${to}`).then(setReviews).catch(() => {});
   }, []);
+
+  async function handleReviewed(topic) {
+    setError(null);
+    try {
+      await apiFetch(`/api/topics/${topic.id}/review`, { method: 'POST', body: { today } });
+      setReviews(await apiFetch(`/api/reviews?date=${today}`));
+    } catch (e) {
+      setError(e.message);
+    }
+  }
 
   const view = useMemo(() => {
     if (!history || !todaySubjects) return null;
@@ -117,6 +215,7 @@ export default function Home() {
   return (
     <section>
       <h1>Bugün</h1>
+      {goals && <Countdown examDate={goals.examDate} today={today} track={track} />}
       <TrackIntro />
       <DailyQuote date={today} />
       <ErrorBanner message={error} />
@@ -160,7 +259,10 @@ export default function Home() {
                   </>
                 )}
               </div>
+              {goals?.dailyGoal > 0 && <GoalBar seconds={view.todaySummary.totalSeconds} goalMinutes={goals.dailyGoal} />}
             </article>
+
+            <DueReviews reviews={reviews} onReviewed={handleReviewed} today={today} />
 
             <article className="panel">
               <h2 className="panel-label">Haftalık değişim</h2>

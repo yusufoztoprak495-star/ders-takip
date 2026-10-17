@@ -6,7 +6,16 @@ import {
   listSubjects,
   updateSubject,
 } from "./routes/subjects.js";
-import { createTopic, deleteTopic, renameTopic } from "./routes/topics.js";
+import {
+  createTopic,
+  deleteTopic,
+  listDueReviews,
+  renameTopic,
+  reviewTopic,
+  setTopicDone,
+} from "./routes/topics.js";
+import { createExam, deleteExam, listExams, updateExam } from "./routes/exams.js";
+import { getGoals, updateGoals } from "./routes/goals.js";
 import {
   createSession,
   deleteSession,
@@ -57,6 +66,15 @@ const ROUTES = [
   ["POST", "/api/topics", createTopic],
   ["PUT", "/api/topics/:id", renameTopic],
   ["DELETE", "/api/topics/:id", deleteTopic],
+  ["PUT", "/api/topics/:id/done", setTopicDone],
+  ["POST", "/api/topics/:id/review", reviewTopic],
+  ["GET", "/api/reviews", listDueReviews],
+  ["GET", "/api/exams", listExams],
+  ["POST", "/api/exams", createExam],
+  ["PUT", "/api/exams/:id", updateExam],
+  ["DELETE", "/api/exams/:id", deleteExam],
+  ["GET", "/api/goals", getGoals],
+  ["PUT", "/api/goals", updateGoals],
   ["GET", "/api/sessions", listSessions],
   ["POST", "/api/sessions", createSession],
   ["PUT", "/api/sessions/:id", updateSession],

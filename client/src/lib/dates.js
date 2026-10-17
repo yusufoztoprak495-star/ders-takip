@@ -32,3 +32,12 @@ export function daysAgo(n, from = new Date()) {
 export function todayLocal(now = new Date()) {
   return toLocalDateString(now);
 }
+
+// İki 'YYYY-AA-GG' günü arasındaki gün farkı (to − from). UTC'de hesaplanır: yaz saati kaymaz.
+export function daysBetween(from, to) {
+  const toUtc = (s) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((toUtc(to) - toUtc(from)) / 86_400_000);
+}

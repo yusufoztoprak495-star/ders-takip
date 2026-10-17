@@ -143,3 +143,15 @@ export const MoreIcon = () => (
     <path d="M14 14h5v5h-5z" />
   </Icon>
 );
+
+// Denemeler: kenarı işaretli optik form (cevap kâğıdı)
+export const ExamIcon = () => (
+  <Icon>
+    <path d="M5.5 3.5h13v17h-13z" />
+    <circle cx="9.5" cy="8.5" r="1.4" />
+    <circle cx="14.5" cy="8.5" r="1.4" />
+    <circle cx="9.5" cy="13" r="1.4" />
+    <circle cx="14.5" cy="13" r="1.4" />
+    <path d="M8.5 17.5h7" />
+  </Icon>
+);

@@ -18,12 +18,14 @@ import ProgressSubject from './pages/ProgressSubject.jsx';
 import ProgressTopic from './pages/ProgressTopic.jsx';
 import ClassSchedule from './pages/ClassSchedule.jsx';
 import WeeklyPlan from './pages/WeeklyPlan.jsx';
+import Exams from './pages/Exams.jsx';
 import Backdrop from './components/Backdrop.jsx';
 import ThemePicker from './components/ThemePicker.jsx';
 import { useTheme } from './hooks/useTheme.js';
 
 import {
   HomeIcon,
+  ExamIcon,
   LogIcon,
   ProgressIcon,
   QuestionsIcon,
@@ -44,6 +46,7 @@ const NAV_ITEMS = [
   // questions: true olanlar yalnızca sınav hedeflerinde (YKS, DGS) görünür
   { to: '/sorular', label: 'Soru Kaydı', short: 'Soru', Icon: QuestionsIcon, questions: true },
   { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon, questions: true },
+  { to: '/denemeler', label: 'Denemeler', short: 'Deneme', Icon: ExamIcon, questions: true },
   { to: '/konular', label: 'Dersler ve Konular', short: 'Dersler', Icon: TopicsIcon },
   { to: '/ders-programi', label: 'Ders Programı', short: 'Program', Icon: TimetableIcon },
   { to: '/haftalik', label: 'Haftalık Program', short: 'Hafta', Icon: WeekIcon, primary: true },
@@ -158,6 +161,7 @@ function Pages() {
         <Route path="/gunluk" element={<StudyLog />} />
         <Route path="/sorular" element={examOnly(<Questions />)} />
         <Route path="/kaynaklar" element={examOnly(<Resources />)} />
+        <Route path="/denemeler" element={examOnly(<Exams />)} />
         <Route path="/konular" element={<Topics />} />
         <Route path="/ders-programi" element={<ClassSchedule />} />
         <Route path="/haftalik" element={<WeeklyPlan />} />

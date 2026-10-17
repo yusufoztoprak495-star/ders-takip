@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getDatabase } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import TrackSwitcher from '../components/TrackSwitcher.jsx';
+import GoalsForm from '../components/GoalsForm.jsx';
 import { useTrack } from '../context/TrackContext.jsx';
 import { useBackup } from '../context/BackupContext.jsx';
 import { parseBackupText } from '../data/validation.js';
@@ -79,6 +80,10 @@ export default function Settings() {
             hedefin kayıtları silinmez, yalnızca gizlenir; geri dönünce yerinde durur.
           </p>
           <TrackSwitcher detailed />
+        </article>
+        <article className="panel panel-wide">
+          <h2 className="panel-label">Hedefler</h2>
+          <GoalsForm />
         </article>
         <article className="panel panel-wide">
           <h2 className="panel-label">Veri güvenliği</h2>
