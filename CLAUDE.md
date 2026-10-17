@@ -11,6 +11,7 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal), DGS ya da üniversit
 - Çözülen soru sayısı kaydı (ders, konu, doğru/yanlış/boş)
 - Kaynak takibi: test kitapları (kitap, yayınevi, ders, çözülen test sayısı, son çözüm tarihi, elimde/bitirdim)
 - Grafiklerle ilerleme takibi (günlük, haftalık, ders bazında)
+- Ders programı (okul/üniversite ders saatleri, boş zaman şeridi) ve saat saat haftalık program
 
 ### Kapsam Dışı (şimdilik YAPILMAYACAK)
 
@@ -82,4 +83,5 @@ Sunucusuz, tamamen statik bir web uygulaması (PWA olarak yayınlanacak): React 
 - **Önce test:** veri katmanı mantığı ve saf arayüz fonksiyonları için önce başarısız test yazılır. Sayfaların görünümü tarayıcıda gerçekten açılıp denenir (testler görsel hataları yakalamaz).
 - Silinen konu/kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır (veri katmanı bağlantıyı `null` yapar). Kaydı olan ders silinmez.
 - **Çalışma hedefi:** `state.settings.track` (`yks`/`dgs`/`uni`, `client/src/lib/tracks.js`). Her dersin `track` alanı vardır; listeler ve istatistikler `activeSubjectIds` ile seçili hedefe süzülür. Hazır listeler `seedData.js` → `SEED_BY_TRACK`, göç `seed.js` → `prepareState`.
+- **Program:** saatler dakika olarak saklanır (08:30 = 510, gün sonu 1440; 5 dk adım). `classes` (ders programı) ve `plans` (haftalık bloklar) hedefe bağlıdır. Ders haftalık programa kopyalanmaz; haftalık sayfa iki tabloyu birlikte okur. Saf yardımcılar `client/src/lib/schedule.js`, uçlar `client/src/data/routes/schedule.js`.
 - Kapsam dışı: PDF'ten soru üretme (ileride).

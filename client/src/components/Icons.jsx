@@ -112,3 +112,24 @@ export const SettingsIcon = () => (
     <path d="M15 13v6" />
   </Icon>
 );
+
+// Ders programı: çizelge (üst bant ve hücre çizgileri)
+export const TimetableIcon = () => (
+  <Icon>
+    <path d="M3.5 5.5h17v14h-17z" />
+    <path d="M3.5 9.5h17" />
+    <path d="M9 9.5v10" />
+    <path d="M14.5 9.5v10" />
+    <path d="M3.5 14.5h17" />
+  </Icon>
+);
+
+// Haftalık program: halkalı ajanda sayfası ve tek blok
+export const WeekIcon = () => (
+  <Icon>
+    <path d="M4.5 5.5h15v15h-15z" />
+    <path d="M8.5 3v4" />
+    <path d="M15.5 3v4" />
+    <path d="M8 11h4v5.5H8z" />
+  </Icon>
+);

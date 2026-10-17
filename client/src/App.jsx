@@ -16,6 +16,8 @@ import Topics from './pages/Topics.jsx';
 import Progress from './pages/Progress.jsx';
 import ProgressSubject from './pages/ProgressSubject.jsx';
 import ProgressTopic from './pages/ProgressTopic.jsx';
+import ClassSchedule from './pages/ClassSchedule.jsx';
+import WeeklyPlan from './pages/WeeklyPlan.jsx';
 import Decor from './components/Decor.jsx';
 import { useTheme } from './hooks/useTheme.js';
 
@@ -29,7 +31,9 @@ import {
   SettingsIcon,
   SunIcon,
   TimerIcon,
+  TimetableIcon,
   TopicsIcon,
+  WeekIcon,
 } from './components/Icons.jsx';
 
 // Menü öğeleri: her yeni sayfa eklendiğinde buraya bir satır ve aşağıya bir <Route> eklenir
@@ -41,6 +45,8 @@ const NAV_ITEMS = [
   { to: '/sorular', label: 'Soru Kaydı', short: 'Soru', Icon: QuestionsIcon, questions: true },
   { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon, questions: true },
   { to: '/konular', label: 'Dersler ve Konular', short: 'Dersler', Icon: TopicsIcon },
+  { to: '/ders-programi', label: 'Ders Programı', short: 'Program', Icon: TimetableIcon },
+  { to: '/haftalik', label: 'Haftalık Program', short: 'Hafta', Icon: WeekIcon },
   { to: '/ilerleme', label: 'İlerleme', short: 'İlerleme', Icon: ProgressIcon },
   { to: '/ayarlar', label: 'Ayarlar', short: 'Ayarlar', Icon: SettingsIcon },
 ];
@@ -96,6 +102,8 @@ function Pages() {
       <Route path="/sorular" element={examOnly(<Questions />)} />
       <Route path="/kaynaklar" element={examOnly(<Resources />)} />
       <Route path="/konular" element={<Topics />} />
+      <Route path="/ders-programi" element={<ClassSchedule />} />
+      <Route path="/haftalik" element={<WeeklyPlan />} />
       <Route path="/ilerleme" element={<Progress />} />
       <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
       <Route path="/ilerleme/ders/:subjectId/konu/:topicId" element={<ProgressTopic />} />

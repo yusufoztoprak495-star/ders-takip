@@ -11,6 +11,7 @@ import './progress.css';
 import './decor.css';
 import './luxe.css';
 import './tracks.css';
+import './schedule.css';
 import './theme.css';
 
 createRoot(document.getElementById('root')).render(

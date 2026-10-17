@@ -24,6 +24,8 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | ✍️ **Soru kaydı** | Doğru / yanlış / boş gir; net (`doğru − yanlış / 4`) ve doğruluk otomatik hesaplanır. |
 | 📚 **Kaynaklar** | Test kitaplarında kaçıncı testte olduğun ve son çözüm tarihi. |
 | 📈 **İlerleme** | Günlük ve haftalık süre, net değişimi, derse göre karşılaştırma; derse ve konuya inip **en zayıf konunu** gör. |
+| 🗓️ **Ders programı** | Okul, kurs ya da üniversite ders saatlerini haftalık gir (aynı saati birden çok güne tek seferde). Her günün şeridinde dersler ve 45 dakikadan uzun boşluklar süresiyle görünür. |
+| 🕘 **Haftalık program** | Haftayı saat saat planla: ders programındaki dersler ızgaraya kendiliğinden gelir, boş saate tıklayıp çalışma / mola / diğer bloğu ekle, bir günü başka günlere kopyala. Gün başlığında planlanan ve gerçekten kaydedilen çalışma süresi yan yana. |
 | 🗂️ **Dersler ve konular** | YKS sayısalın 15 dersi (TYT: Türkçe, Matematik, Geometri, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din Kültürü; AYT: Matematik, Geometri, Fizik, Kimya, Biyoloji) tüm konularıyla, müfredat sırasında hazır gelir. Listeyi düzenle ya da kendi derslerini (dönemiyle) ekle. |
 | 🌗 **Açık / koyu tema** | Gerçek beyaz açık tema ve gece mavisi koyu tema; masaüstünde sol menü, telefonda alt menü. |
 | 💾 **Yedekleme** | Yedeği indir/yükle, haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek. |
@@ -43,6 +45,14 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | Soru kaydı | Kaynaklar |
 | --- | --- |
 | ![Soru kaydı formu ve son kayıtlar](docs/screenshots/soru-kaydi.png) | ![Test kitapları](docs/screenshots/kaynaklar.png) |
+
+| Haftalık program | Haftalık program (telefon) |
+| --- | --- |
+| ![Saat saat haftalık ızgara: taralı dersler, çalışma ve mola blokları](docs/screenshots/haftalik-program.png) | ![Telefonda tek gün görünümü](docs/screenshots/haftalik-telefon.png) |
+
+| Ders programı |
+| --- |
+| ![Gün şeritleri: dersler ve boş zaman](docs/screenshots/ders-programi.png) |
 
 | Açık tema | Hedef seçimi |
 | --- | --- |
@@ -95,10 +105,10 @@ Sunucu, veritabanı ya da `.env` yoktur. `master` dalına her gönderimde GitHub
 client/
   public/            manifest, simge, servis çalışanı
   src/
-    pages/           Ana sayfa, Pomodoro, Günlük, Soru Kaydı, Kaynaklar, Dersler ve Konular, İlerleme, Ayarlar
+    pages/           Ana sayfa, Pomodoro, Günlük, Soru Kaydı, Kaynaklar, Dersler ve Konular, Ders Programı, Haftalık Program, İlerleme, Ayarlar
     components/      ortak parçalar, hedef seçici, Pomodoro kadranı, SVG grafikler, çizimler
     context/         Pomodoro sayacı, çalışma hedefi, klasör yedeği
-    hooks/, lib/     saf yardımcılar (tarih, süre, grafik, tema, hedefler, yedek)
+    hooks/, lib/     saf yardımcılar (tarih, süre, grafik, tema, hedefler, yedek, ders saatleri)
     data/            tarayıcıdaki veri katmanı (aşağıda)
     api.js           apiFetch('/api/...') çağrılarını yerel veri katmanına yönlendirir
   tests/             arayüz yardımcıları; tests/data/ veri katmanı
@@ -117,6 +127,9 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 | `/api/sessions` | Çalışma kayıtları |
 | `/api/questions` | Soru kayıtları (net hesaplanarak döner) |
 | `/api/resources` | Test kitapları |
+| `/api/classes` | Ders programı (seçili hedefin); bir dersi birden çok güne ekle / düzenle / sil. Aynı gün çakışan ders reddedilir |
+| `/api/plans`, `/api/plans/copy` | Haftalık programın blokları (çalışma, mola, diğer); ders saatine ya da başka bloğa denk gelen blok reddedilir. Bir günü başka günlere kopyalama |
+| `/api/schedule` | Gün aralığı (varsayılan 08:00–23:00): şerit ve ızgara bu saatlere göre çizilir |
 | `/api/stats/daily`, `by-subject`, `by-topic`, `topic/:id` | İstatistikler |
 
 <details>
