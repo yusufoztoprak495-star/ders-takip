@@ -11,6 +11,8 @@ import RangeFilter from '../components/RangeFilter.jsx';
 import StatList from '../components/StatList.jsx';
 import TimeSeriesCharts from '../components/TimeSeriesCharts.jsx';
 import Heatmap from '../components/Heatmap.jsx';
+import HourlyCard from '../components/HourlyCard.jsx';
+import Outlook from '../components/Outlook.jsx';
 import { useDailyStats } from '../hooks/useDailyStats.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDuration, formatNet, formatPercent } from '../lib/format.js';
@@ -77,6 +79,7 @@ export default function Progress() {
       <h1>İlerleme</h1>
       <ErrorBanner message={error || subjectError} />
       <Heatmap />
+      <Outlook showExams={exam} />
 
       <div className="filters">
         <RangeFilter range={range} onChange={setRange} />
@@ -159,6 +162,7 @@ export default function Progress() {
           <h2>Grafikler</h2>
           <div className="chart-grid">
             <TimeSeriesCharts view={view} range={range} scope={scope} totalNote={chosen ? '' : ' (toplam)'} showNet={exam} />
+            <HourlyCard range={range} subjectId={highlightId} scope={scope} />
 
             {rows && (
               <>

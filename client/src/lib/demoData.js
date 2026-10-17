@@ -166,8 +166,9 @@ export function buildDemoState(today, seed = 2027) {
   };
   for (let i = 0; i < 12; i++) {
     const back = 160 - i * 14;
-    state.exams.push(examRow("TYT", addDays(today, -back), i / 11));
-    if (i % 2 === 1) state.exams.push(examRow("AYT", addDays(today, -back + 1), i / 11));
+    const level = 0.4 + (i / 11) * 0.5; // gerçekçi bir yükseliş: aylar içinde birkaç net
+    state.exams.push(examRow("TYT", addDays(today, -back), level));
+    if (i % 2 === 1) state.exams.push(examRow("AYT", addDays(today, -back + 1), level));
   }
   const branch = [
     [tur, 40, "Paragraf"],

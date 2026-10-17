@@ -65,6 +65,30 @@ export function dailyStats(state, { from, to, subjectId = null }) {
     .map((d) => ({ ...d, net: netOf(d.correct, d.wrong) }));
 }
 
+// Günün saatlerine göre toplam çalışma (yerel saat): 24 satır, {hour, seconds}.
+// Saat sınırını aşan bir çalışma saatlere bölünür; gece yarısını geçen kısım 0. saate taşar.
+export function hourlyStats(state, { from, to, subjectId = null }) {
+  const active = activeSubjectIds(state);
+  const hours = Array.from({ length: 24 }, (_, hour) => ({ hour, seconds: 0 }));
+  for (const s of state.sessions) {
+    const matches = subjectId === null ? active.has(s.subjectId) : s.subjectId === subjectId;
+    if (!matches || !inRange(sessionDay(s), from, to)) continue;
+    const start = new Date(s.startedAt);
+    // Saatin içinde kaçıncı saniyedeyiz; oradan saat saat ilerlenir
+    let hour = start.getHours();
+    let offset = start.getMinutes() * 60 + start.getSeconds();
+    let left = s.durationSeconds;
+    while (left > 0) {
+      const chunk = Math.min(left, 3600 - offset);
+      hours[hour].seconds += chunk;
+      left -= chunk;
+      offset = 0;
+      hour = (hour + 1) % 24;
+    }
+  }
+  return hours;
+}
+
 // Seçili hedefin her dersi için toplamlar; verisi olmayan dersler de sıfırlarla döner
 export function subjectStats(state, { from, to }) {
   const active = activeSubjectIds(state);

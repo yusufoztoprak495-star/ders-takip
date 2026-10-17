@@ -1,5 +1,5 @@
 import { HttpError } from "../errors.js";
-import { dailyStats, subjectStats, topicDetail, topicStats } from "../stats.js";
+import { dailyStats, hourlyStats, subjectStats, topicDetail, topicStats } from "../stats.js";
 import { parseId, requireDate, requireInt } from "../validation.js";
 
 // from ve to zorunlu; from, to'dan büyük olamaz (YYYY-MM-DD metin olarak da sıralanır)
@@ -18,6 +18,13 @@ export function getDaily({ state, query }) {
     ? requireInt(Number(query.get("subjectId")), "Ders")
     : null;
   return { status: 200, body: dailyStats(state, { ...range, subjectId }) };
+}
+
+// Günün saatlerine göre çalışma (İlerleme → "Verimli saatler")
+export function getHourly({ state, query }) {
+  const range = parseRange(query);
+  const subjectId = query.has("subjectId") ? requireInt(Number(query.get("subjectId")), "Ders") : null;
+  return { status: 200, body: hourlyStats(state, { ...range, subjectId }) };
 }
 
 export function getBySubject({ state, query }) {

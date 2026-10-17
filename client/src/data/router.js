@@ -53,6 +53,7 @@ import {
   getBySubject,
   getByTopic,
   getDaily,
+  getHourly,
   getTopicDetail,
 } from "./routes/stats.js";
 
@@ -104,6 +105,7 @@ const ROUTES = [
   ["GET", "/api/schedule", getSchedule],
   ["PUT", "/api/schedule", updateSchedule],
   ["GET", "/api/stats/daily", getDaily],
+  ["GET", "/api/stats/hourly", getHourly],
   ["GET", "/api/stats/by-subject", getBySubject],
   ["GET", "/api/stats/by-topic", getByTopic],
   ["GET", "/api/stats/topic/:id", getTopicDetail],

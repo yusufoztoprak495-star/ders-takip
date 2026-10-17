@@ -506,3 +506,36 @@ rect.hm-cell {
     animation: none;
   }
 }
+
+/* --- İlerleme: gidişat kartları --- */
+.outlook {
+  margin-top: 18px;
+}
+
+.outlook .value small {
+  font-size: 0.45em;
+  font-family: var(--font-ui);
+}
+
+.outlook-meter {
+  height: 6px;
+  margin: 10px 0 4px;
+  border-radius: 999px;
+  background: var(--series-dim);
+  overflow: hidden;
+}
+
+.outlook-meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--series-2);
+  transform-origin: left;
+  animation: bar-grow 0.9s var(--ease-out) both 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outlook-meter i {
+    animation: none;
+  }
+}
