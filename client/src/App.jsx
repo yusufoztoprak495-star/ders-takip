@@ -22,6 +22,7 @@ import Exams from './pages/Exams.jsx';
 import Backdrop from './components/Backdrop.jsx';
 import ThemePicker from './components/ThemePicker.jsx';
 import Celebration from './components/Celebration.jsx';
+import Shortcuts from './components/Shortcuts.jsx';
 import { useTheme } from './hooks/useTheme.js';
 
 import {
@@ -198,6 +199,7 @@ export default function App() {
         <Pages />
       </main>
       <Celebration />
+      <Shortcuts />
     </TrackProvider>
     </PomodoroProvider>
     </BackupProvider>

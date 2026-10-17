@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom';
 import { apiFetch } from '../api.js';
 import DayPicker from '../components/DayPicker.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
-import { subjectLabel } from '../lib/tracks.js';
+import { subjectLabel, trackInfo } from '../lib/tracks.js';
+import { useTrack } from '../context/TrackContext.jsx';
+import { toLocalDateString } from '../lib/dates.js';
+import { buildIcs } from '../lib/ics.js';
+import { downloadBlob } from '../lib/download.js';
 import { formatDuration } from '../lib/format.js';
 import {
   DAYS,
@@ -255,6 +259,7 @@ function Block({ item, range, onOpen }) {
 }
 
 export default function WeeklyPlan() {
+  const { track } = useTrack();
   const narrow = useNarrow();
   const now = useNow();
   const today = dayIndexOf(now);
@@ -322,6 +327,30 @@ export default function WeeklyPlan() {
     } catch (e) {
       setDialogError(e.message);
       return false;
+    }
+  }
+
+  // Dersler ve bloklar her hafta tekrarlanan etkinlikler, sınav tarihi tüm gün süren bir etkinlik olur.
+  // Dosya takvim uygulamasına bir kez aktarılır; programı sonradan değiştirirsen yeniden indirmen gerekir.
+  async function handleExport() {
+    setError(null);
+    try {
+      const goals = await apiFetch('/api/goals');
+      const events = [
+        ...view.classes.map((c) => ({
+          uid: `class-${c.id}`,
+          title: c.title,
+          location: c.place,
+          weekly: { day: c.day, start: c.start, end: c.end },
+        })),
+        ...view.plans.map((p) => ({ uid: `plan-${p.id}`, title: p.label, weekly: { day: p.day, start: p.start, end: p.end } })),
+      ];
+      if (goals.examDate) events.push({ uid: `exam-${track}`, title: `Sınav günü (${trackInfo(track).title})`, date: goals.examDate });
+      const ics = buildIcs(events, { today: toLocalDateString(new Date()) });
+      downloadBlob(new Blob([ics], { type: 'text/calendar;charset=utf-8' }), 'ders-takip-program.ics');
+      setNotice('Takvim dosyası indirildi. Açınca takvim uygulaman programı her hafta tekrarlanan etkinlikler olarak ekler.');
+    } catch (e) {
+      setError(e.message || 'Takvim dosyası hazırlanamadı');
     }
   }
 
@@ -441,6 +470,14 @@ export default function WeeklyPlan() {
           )}
         </p>
         <div className="actions">
+          <button
+            type="button"
+            className="secondary"
+            onClick={handleExport}
+            title="Haftalık programı ve sınav tarihini Google/Apple Takvim'e aktarmak için .ics dosyası indirir"
+          >
+            Takvime aktar
+          </button>
           <button
             type="button"
             className="secondary"

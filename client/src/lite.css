@@ -1,0 +1,25 @@
+/* --- Hafif mod (<html data-lite>): arka plan sahnesi, animasyon ve geçişler, bulanık cam kapanır ---
+   Ekran aynı kalır; yalnızca işlemciyi/ekran kartını yoran süsler gider. Ayarlar → Görünüm. */
+:root[data-lite] .backdrop {
+  display: none;
+}
+
+:root[data-lite] *,
+:root[data-lite] *::before,
+:root[data-lite] *::after {
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Animasyonla çizilen çizgi grafikler, animasyon kapanınca baştan çizili görünsün */
+:root[data-lite] .trend-path {
+  stroke-dashoffset: 0;
+}
+
+/* Düğmelerin üzerinden geçen ışık */
+:root[data-lite] button::after,
+:root[data-lite] .button-link::after {
+  display: none;
+}

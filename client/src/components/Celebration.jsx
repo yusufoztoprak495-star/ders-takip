@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CELEBRATE_EVENT } from '../lib/celebrate.js';
+import { prefersLessMotion } from '../lib/lite.js';
 
 const PIECES = 30;
 const SHAPES = ['dot', 'bar', 'tri'];
@@ -44,7 +45,7 @@ export default function Celebration() {
     };
     function onCelebrate(event) {
       const { x, y, message } = event.detail;
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      const reduce = prefersLessMotion();
       if (!reduce) {
         const id = ++counter;
         setBursts((list) => [...list, makeBurst(id, x, y)]);

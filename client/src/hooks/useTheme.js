@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import { THEME_BAR_COLORS, THEME_KEY, isForcedDarkCanvas, resolveTheme } from "../lib/theme.js";
+import { prefersLessMotion } from "../lib/lite.js";
 
 // localStorage kapalı olabilir (gizli pencere vb.): hata verirse sessizce geçilir
 function readStored() {
@@ -65,7 +66,7 @@ export function useTheme() {
         // kayıt yapılamazsa tema yine bu oturumda değişir
       }
     };
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduce = prefersLessMotion();
     if (!document.startViewTransition || reduce || !origin) {
       root.classList.add("theme-switching");
       window.setTimeout(() => root.classList.remove("theme-switching"), 450);

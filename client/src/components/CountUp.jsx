@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { prefersLessMotion } from '../lib/lite.js';
 
 // Sayıyı 0'dan (ya da önceki değerinden) hedefe kısa bir sürede sayarak gösterir.
 // format: ekrandaki yazı (örn. formatNet, formatDuration). "Hareketi azalt" açıksa doğrudan hedef yazılır.
@@ -7,7 +8,7 @@ export default function CountUp({ value, format = (n) => String(Math.round(n)), 
   const from = useRef(0);
 
   useEffect(() => {
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const reduce = prefersLessMotion();
     if (reduce || typeof value !== 'number' || !Number.isFinite(value)) {
       setShown(value);
       from.current = value;

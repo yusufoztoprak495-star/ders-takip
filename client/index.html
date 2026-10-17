@@ -47,6 +47,10 @@
           if (c && c.length >= 3 && (+c[0] + +c[1] + +c[2]) / 3 < 100 && !darkThemes[t]) t = "dark";
         } catch (e) {}
         document.documentElement.dataset.theme = t;
+        // Hafif mod (Ayarlar → Görünüm): src/lib/lite.js ile aynı anahtar
+        try {
+          if (localStorage.getItem("hafif-mod") === "1") document.documentElement.setAttribute("data-lite", "");
+        } catch (e) {}
         var m = document.querySelector('meta[name="theme-color"]');
         if (m) m.content = bars[t];
       })();

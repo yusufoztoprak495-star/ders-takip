@@ -10,9 +10,12 @@ import { useBackup } from '../context/BackupContext.jsx';
 import { MAX_BACKUP_BYTES, parseBackupText } from '../data/validation.js';
 import { backupFileName, readLastBackup, writeLastBackup } from '../lib/backup.js';
 import { persistenceLabel, requestPersistence } from '../lib/persistence.js';
+import { applyLite, readLite } from '../lib/lite.js';
+import { downloadBlob } from '../lib/download.js';
 
 // Ayarlar: çalışma hedefi ve veri güvenliği ile ilgili durum ve işlemler
 export default function Settings() {
+  const [lite, setLite] = useState(readLite);
   const track = useTrack();
   const [persistence, setPersistence] = useState('checking');
   const [lastBackup, setLastBackup] = useState(readLastBackup);
@@ -40,13 +43,7 @@ export default function Settings() {
     try {
       const data = await getDatabase().snapshot();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = backupFileName(new Date());
-      link.click();
-      // Bazı tarayıcılar indirmeyi hemen iptal etmesin diye adres biraz sonra bırakılır
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      downloadBlob(blob, backupFileName(new Date()));
       writeLastBackup();
       setLastBackup(readLastBackup());
     } catch (e) {
@@ -105,6 +102,30 @@ export default function Settings() {
         <article className="panel panel-wide">
           <h2 className="panel-label">Hedefler</h2>
           <GoalsForm />
+        </article>
+        <article className="panel panel-wide">
+          <h2 className="panel-label">Görünüm</h2>
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={lite}
+              onChange={(e) => {
+                applyLite(e.target.checked);
+                setLite(e.target.checked);
+              }}
+            />
+            <span>
+              <b>Hafif mod</b>
+              <span className="muted">
+                {' '}
+                Arka plan sahnesi, animasyonlar ve bulanık cam efektleri kapanır. Eski ya da yavaş cihazlarda ve
+                pil tasarrufu için. Yalnızca bu cihazda geçerli.
+              </span>
+            </span>
+          </label>
+          <p className="muted">
+            Klavye kısayolları: sayfalar arasında tek harfle geçebilirsin. Listeyi görmek için <kbd>?</kbd> tuşuna bas.
+          </p>
         </article>
         <article className="panel panel-wide">
           <h2 className="panel-label">Veri güvenliği</h2>

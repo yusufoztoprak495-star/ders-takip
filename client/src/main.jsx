@@ -18,6 +18,7 @@ import './animations.css';
 import './theme.css';
 import './themes.css';
 import './backdrop.css';
+import './lite.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
