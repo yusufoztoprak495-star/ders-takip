@@ -591,3 +591,181 @@ kbd {
   align-items: center;
   gap: 10px;
 }
+
+/* --- Konu notu (konu sayfası) --- */
+.topic-note {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 18px 0 8px;
+}
+
+.topic-note textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 12px 14px;
+  font: 0.97rem/1.6 var(--font-ui);
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+}
+
+.topic-note-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: flex-end;
+  font-size: 0.85rem;
+}
+
+.topic-note-footer > .muted:first-child {
+  margin-right: auto;
+}
+
+/* Konular listesinde notu olan konunun yanındaki küçük işaret */
+.note-mark {
+  display: inline-flex;
+  margin-left: 6px;
+  color: var(--gold-text, var(--accent));
+  vertical-align: -2px;
+}
+
+/* --- Denemeler: yanlış konuları penceresi ve özeti --- */
+.wrong-topics {
+  width: min(620px, calc(100vw - 24px));
+}
+
+.wrong-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.wrong-rows li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 72px auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.wrong-rows select,
+.wrong-rows input {
+  width: 100%;
+  min-width: 0;
+}
+
+.wrong-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 560px) {
+  .wrong-rows li {
+    grid-template-columns: minmax(0, 1fr) 64px auto;
+  }
+
+  .wrong-rows li select:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.wrong-summary {
+  margin: 22px 0 8px;
+}
+
+.wrong-summary ol {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  counter-reset: wrong;
+}
+
+.wrong-summary li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(60px, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: wrong;
+}
+
+.wrong-summary li:last-child {
+  border-bottom: 0;
+}
+
+.wrong-name {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.wrong-name::before {
+  content: counter(wrong) '.';
+  display: inline-block;
+  width: 1.8em;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.wrong-name:hover {
+  text-decoration: underline;
+}
+
+.wrong-name .muted {
+  font-weight: 400;
+  font-size: 0.85em;
+}
+
+.wrong-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--series-dim);
+  overflow: hidden;
+}
+
+.wrong-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--series-3);
+  transform-origin: left;
+  animation: bar-grow 0.9s var(--ease-out) both 0.2s;
+}
+
+.wrong-count {
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .wrong-summary li {
+    grid-template-columns: 1fr auto;
+  }
+
+  .wrong-bar {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrong-bar i {
+    animation: none;
+  }
+}
+
+.note-link {
+  align-self: center;
+  margin-right: 4px;
+  font-size: 0.85rem;
+}

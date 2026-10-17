@@ -69,7 +69,12 @@ function parseBranch(state, body) {
 }
 
 function withTotals(exam, state) {
-  const out = { ...exam, results: structuredClone(exam.results), totals: examTotals(exam) };
+  const out = {
+    ...exam,
+    results: structuredClone(exam.results),
+    wrongTopics: (exam.wrongTopics ?? []).map((w) => ({ ...w })),
+    totals: examTotals(exam),
+  };
   if (exam.type === BRANCH_TYPE) {
     const subject = state.subjects.find((s) => s.id === exam.subjectId);
     out.subjectName = subject?.name ?? "";
@@ -112,4 +117,58 @@ export function deleteExam({ state, params }) {
   const exam = findOwn(state, params.id);
   state.exams = state.exams.filter((e) => e !== exam);
   return { status: 204, body: null };
+}
+
+// --- Deneme sonrası analiz: yanlış (ya da boş) yapılan soruların konuları ---
+// exam.wrongTopics: [{ topicId, count }]. Aynı konu birleşir, 0 olanlar atılır; toplam, denemedeki
+// yanlış + boş sayısını aşamaz. Konu seçili hedefin bir dersine ait olmalı.
+const WRONG_TOPICS_MAX = 80;
+
+export function setWrongTopics({ state, params, body }) {
+  const exam = findOwn(state, params.id);
+  const items = requireBody(body).items;
+  if (!Array.isArray(items)) throw new HttpError(400, "Konu listesi eksik");
+  if (items.length > WRONG_TOPICS_MAX) throw new HttpError(400, `En fazla ${WRONG_TOPICS_MAX} konu işlenebilir`);
+  const active = activeSubjectIds(state);
+  const merged = new Map();
+  for (const item of items) {
+    if (item === null || typeof item !== "object") throw new HttpError(400, "Konu satırı geçersiz");
+    const topicId = requireInt(item.topicId, "Konu");
+    const count = requireInt(item.count, "Soru sayısı", { min: 0, max: 200 });
+    const topic = state.topics.find((t) => t.id === topicId);
+    if (!topic || !active.has(topic.subjectId)) throw new HttpError(400, "Konu bulunamadı");
+    if (count > 0) merged.set(topicId, (merged.get(topicId) ?? 0) + count);
+  }
+  const { wrong, blank } = examTotals(exam);
+  const total = [...merged.values()].reduce((a, b) => a + b, 0);
+  if (total > wrong + blank) {
+    throw new HttpError(400, `Bu denemede ${wrong} yanlış ve ${blank} boş var; en fazla ${wrong + blank} soru işlenebilir`);
+  }
+  exam.wrongTopics = [...merged].map(([topicId, count]) => ({ topicId, count }));
+  return { status: 200, body: withTotals(exam, state) };
+}
+
+// Tüm denemelerden konu başına toplam: hangi konular sürekli soru kaybettiriyor
+export function listWrongTopics({ state }) {
+  const track = state.settings.track;
+  const byTopic = new Map();
+  for (const exam of state.exams) {
+    if (exam.track !== track) continue;
+    for (const w of exam.wrongTopics ?? []) {
+      const row = byTopic.get(w.topicId) ?? { topicId: w.topicId, count: 0, exams: 0, lastDate: "" };
+      row.count += w.count;
+      row.exams += 1;
+      if (exam.date > row.lastDate) row.lastDate = exam.date;
+      byTopic.set(w.topicId, row);
+    }
+  }
+  const rows = [];
+  for (const row of byTopic.values()) {
+    const topic = state.topics.find((t) => t.id === row.topicId);
+    const subject = topic && state.subjects.find((s) => s.id === topic.subjectId);
+    if (!subject) continue;
+    rows.push({ ...row, topicName: topic.name, subjectId: subject.id, subjectName: subject.name, examType: subject.examType ?? "" });
+  }
+  rows.sort((a, b) => b.count - a.count || b.exams - a.exams || a.topicName.localeCompare(b.topicName, "tr"));
+  return { status: 200, body: rows };
 }

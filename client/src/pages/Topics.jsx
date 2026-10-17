@@ -109,7 +109,7 @@ function SubjectSection({ subject, groupLabel, placeholder, onAdd, onRename, onD
       {subject.topics.length === 0 && <p className="muted">Bu derste henüz konu yok.</p>}
       <ul className="list topics">
         {subject.topics.map((topic) => (
-          <TopicRow key={topic.id} topic={topic} onRename={onRename} onDelete={onDelete} onToggleDone={onToggleDone} />
+          <TopicRow key={topic.id} topic={topic} noteTo={`/ilerleme/ders/${subject.id}/konu/${topic.id}`} onRename={onRename} onDelete={onDelete} onToggleDone={onToggleDone} />
         ))}
       </ul>
       <form className="inline-form" onSubmit={handleAdd}>

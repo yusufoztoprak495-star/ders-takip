@@ -163,10 +163,21 @@ function cleanResults(value) {
   return out;
 }
 
+// Denemede yanlış yapılan konular: [{ topicId, count }] — yalnızca bu iki alan, tam sayı olarak alınır
+function cleanWrongTopics(value) {
+  if (!Array.isArray(value) || value.length > 200) return undefined;
+  const out = [];
+  for (const w of value) {
+    if (!isPlainObject(w) || !isInt(w.topicId) || !isInt(w.count)) return undefined;
+    out.push({ topicId: w.topicId, count: w.count });
+  }
+  return out;
+}
+
 // Tablo başına alanlar ve denetleyicileri. Denetleyici true/false ya da (temizleyen) bir değer döndürür.
 const ROW_SCHEMAS = {
   subjects: { name: isText, examType: isText, track: isText },
-  topics: { subjectId: isInt, name: isText, doneAt: isText, reviewStep: isInt, nextReview: textOrNull },
+  topics: { subjectId: isInt, name: isText, doneAt: isText, reviewStep: isInt, nextReview: textOrNull, note: isText },
   sessions: { subjectId: isInt, topicId: intOrNull, startedAt: isText, durationSeconds: isInt, entryType: isText },
   questions: {
     subjectId: isInt,
@@ -196,6 +207,7 @@ const ROW_SCHEMAS = {
     results: "results",
     subjectId: isInt,
     questionCount: isInt,
+    wrongTopics: "wrongTopics",
   },
 };
 
@@ -212,6 +224,12 @@ function cleanRow(row, schema) {
       const results = cleanResults(value);
       if (!results) throw new BadField(field);
       clean[field] = results;
+      continue;
+    }
+    if (check === "wrongTopics") {
+      const list = cleanWrongTopics(value);
+      if (!list) throw new BadField(field);
+      clean[field] = list;
       continue;
     }
     if (!check(value)) throw new BadField(typeof value === "string" ? `${field}:uzun` : field);

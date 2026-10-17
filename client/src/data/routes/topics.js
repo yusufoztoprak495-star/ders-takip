@@ -11,6 +11,7 @@ import {
 } from "../validation.js";
 
 const NAME_MAX = 100;
+export const NOTE_MAX = 2000;
 
 export function createTopic({ state, body }) {
   const data = requireBody(body);
@@ -43,7 +44,23 @@ export function deleteTopic({ state, params }) {
   for (const row of [...state.sessions, ...state.questions]) {
     if (row.topicId === id) row.topicId = null;
   }
+  // Denemelerde "yanlış yapılan konular" listesinden de düşer (sayısız bir konu satırı anlamsız)
+  for (const exam of state.exams) {
+    if (exam.wrongTopics) exam.wrongTopics = exam.wrongTopics.filter((w) => w.topicId !== id);
+  }
   return { status: 204, body: null };
+}
+
+// Konu notu: formül, püf noktası, sık yapılan hata. Boş not silinir.
+export function setTopicNote({ state, params, body }) {
+  const topic = findTopic(state, params.id);
+  const raw = requireBody(body).note;
+  if (typeof raw !== "string") throw new HttpError(400, "Not metin olmalı");
+  const note = raw.trim();
+  if (note.length > NOTE_MAX) throw new HttpError(400, `Not en fazla ${NOTE_MAX} karakter olabilir`);
+  if (note) topic.note = note;
+  else delete topic.note;
+  return { status: 200, body: { id: topic.id, note } };
 }
 
 // --- Konu bitirme ve aralıklı tekrar ---

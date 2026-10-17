@@ -204,6 +204,7 @@ export function topicDetail(state, topicId) {
   return {
     topicId: topic.id,
     topicName: topic.name,
+    note: topic.note ?? "",
     subjectId: topic.subjectId,
     subjectName: subject.name,
     examType: subject.examType ?? "",

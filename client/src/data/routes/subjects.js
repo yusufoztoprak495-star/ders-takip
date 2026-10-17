@@ -22,7 +22,9 @@ export function listSubjects({ state }) {
       // Bitmiş konularda tekrar bilgisi de gelir; bitmemişlerde yalnızca kimlik ve ad
       topics: sortTopics(s, state.topics.filter((t) => t.subjectId === s.id)).map((t) => {
         const status = topicStatus(t);
-        return status.done ? { id: t.id, name: t.name, ...status } : { id: t.id, name: t.name };
+        // Not metni listede taşınmaz (uzun olabilir); yalnızca var olduğu söylenir
+        const base = t.note ? { id: t.id, name: t.name, hasNote: true } : { id: t.id, name: t.name };
+        return status.done ? { ...base, ...status } : base;
       }),
     })),
   };

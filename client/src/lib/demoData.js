@@ -192,6 +192,34 @@ export function buildDemoState(today, seed = 2027) {
     });
   }
 
+  // Denemelerde yanlış yapılan konular: hep aynı birkaç zayıf konu öne çıksın (analiz bir şey göstersin)
+  const weakPool = (group) => state.subjects.filter((x) => x.examType === group).flatMap((x) => topicsOf(x.id)).slice(0, 60);
+  const pools = { TYT: weakPool("TYT"), AYT: weakPool("AYT") };
+  const favorites = { TYT: pools.TYT.filter((_, i) => i % 9 === 2).slice(0, 4), AYT: pools.AYT.filter((_, i) => i % 7 === 3).slice(0, 4) };
+  for (const exam of state.exams) {
+    if (exam.type === "BRANS") continue;
+    let budget = Object.values(exam.results).reduce((n, x) => n + x.wrong + x.blank, 0);
+    const merged = new Map();
+    for (let k = 0; k < 6 && budget > 0; k++) {
+      const topic = r() < 0.6 ? pick(favorites[exam.type]) : pick(pools[exam.type]);
+      const count = Math.min(budget, 1 + Math.floor(r() * 3));
+      merged.set(topic.id, (merged.get(topic.id) ?? 0) + count);
+      budget -= count;
+    }
+    exam.wrongTopics = [...merged].map(([topicId, count]) => ({ topicId, count }));
+  }
+
+  // Birkaç konuya not
+  const noted = [
+    ["Türev", "Zincir kuralı: (f∘g)' = f'(g)·g'. Bölümün türevinde payda karesini unutma."],
+    ["Logaritma", "log_a(b·c) = log_a b + log_a c. Taban değiştirme: log_a b = ln b / ln a."],
+    ["Paragraf", "Önce soru kökünü oku. 'Değinilmemiştir' sorularında şıkları metinde tek tek ara."],
+  ];
+  for (const [name, note] of noted) {
+    const topic = state.topics.find((t) => t.name.startsWith(name));
+    if (topic) topic.note = note;
+  }
+
   state.settings.examDates = { yks: "2027-06-19" };
   state.settings.dailyGoal = 240;
   return state;

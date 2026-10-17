@@ -11,6 +11,8 @@ import { BRANCH_MAX_QUESTIONS, BRANCH_TYPE, examShortLabel, examTotals, examType
 import { formatDate, formatNet } from '../lib/format.js';
 import { subjectLabel } from '../lib/tracks.js';
 import { celebrate } from '../lib/celebrate.js';
+import WrongTopicsDialog from '../components/WrongTopicsDialog.jsx';
+import WrongTopicsSummary from '../components/WrongTopicsSummary.jsx';
 
 const FIELDS = [
   ['correct', 'doğru', 'Doğru'],
@@ -268,7 +270,7 @@ function BranchForm({ subjects, editing, onSave, onCancel }) {
   );
 }
 
-function ExamList({ exams, editingId, onEdit, onRemove }) {
+function ExamList({ exams, editingId, onEdit, onRemove, onTopics }) {
   return (
     <ul className="list exam-list">
       {exams.map((e) => (
@@ -290,6 +292,16 @@ function ExamList({ exams, editingId, onEdit, onRemove }) {
             {e.type === BRANCH_TYPE && <small> %{netPercent(e)}</small>}
           </strong>
           <span className="actions">
+            {e.totals.wrong + e.totals.blank > 0 && (
+              <button
+                type="button"
+                className="secondary small"
+                title="Yanlış ve boş soruların konularını işle"
+                onClick={() => onTopics(e)}
+              >
+                Konular{e.wrongTopics.length > 0 && <span className="tab-count">{e.wrongTopics.length}</span>}
+              </button>
+            )}
             <button type="button" className="secondary small" onClick={() => onEdit(e)}>
               Düzenle
             </button>
@@ -466,12 +478,21 @@ export default function Exams() {
   const [subjects, setSubjects] = useState([]);
   const [error, setError] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [topicsFor, setTopicsFor] = useState(null); // konuları işlenen deneme
+  const [topicsError, setTopicsError] = useState(null);
+  const [wrongTopics, setWrongTopics] = useState([]);
+  const [justSaved, setJustSaved] = useState(null); // yeni eklenen deneme: konuları işlemeyi öner
 
   const load = useCallback(async () => {
     try {
-      const [list, subjectList] = await Promise.all([apiFetch('/api/exams'), apiFetch('/api/subjects')]);
+      const [list, subjectList, wrong] = await Promise.all([
+        apiFetch('/api/exams'),
+        apiFetch('/api/subjects'),
+        apiFetch('/api/exams/wrong-topics'),
+      ]);
       setExams(list);
       setSubjects(subjectList);
+      setWrongTopics(wrong);
     } catch (e) {
       setError(e.message);
     }
@@ -496,6 +517,7 @@ export default function Exams() {
       if (!editing && Number.isFinite(previousBest) && saved.totals.net > previousBest) {
         celebrate(event?.nativeEvent?.submitter ?? null, 'Yeni rekor net!');
       }
+      if (!editing && saved.totals.wrong + saved.totals.blank > 0) setJustSaved(saved);
       setEditing(null);
       await load();
       return true;
@@ -514,6 +536,23 @@ export default function Exams() {
       await load();
     } catch (e) {
       setError(e.message);
+    }
+  }
+
+  function openTopics(exam) {
+    setTopicsError(null);
+    setJustSaved(null);
+    setTopicsFor(exam);
+  }
+
+  async function saveTopics(items) {
+    setTopicsError(null);
+    try {
+      await apiFetch(`/api/exams/${topicsFor.id}/wrong-topics`, { method: 'PUT', body: { items } });
+      setTopicsFor(null);
+      await load();
+    } catch (e) {
+      setTopicsError(e.message);
     }
   }
 
@@ -539,6 +578,15 @@ export default function Exams() {
         </button>
       </div>
       <ErrorBanner message={error} />
+      {justSaved && (
+        <p className="notice" role="status">
+          Deneme kaydedildi. Yanlış ve boş bıraktığın soruların konularını da işlersen hangi konuların sana soru
+          kaybettirdiği ortaya çıkar.{' '}
+          <button type="button" className="link-button" onClick={() => openTopics(justSaved)}>
+            Konuları işle
+          </button>
+        </p>
+      )}
 
       {tab === 'general' ? (
         <ExamForm key={editing ? `edit-${editing.id}` : 'new'} types={types} editing={editing} onSave={save} onCancel={() => setEditing(null)} />
@@ -549,8 +597,9 @@ export default function Exams() {
       {exams && shown.length > 0 && (
         <>
           {tab === 'general' ? <GeneralStats key={general.length} types={types} exams={general} /> : <BranchStats key={branch.length} exams={branch} />}
+          <WrongTopicsSummary rows={wrongTopics} />
           <h2>{tab === 'general' ? 'Geçmiş genel denemeler' : 'Geçmiş branş denemeleri'}</h2>
-          <ExamList exams={shown} editingId={editing?.id} onEdit={setEditing} onRemove={remove} />
+          <ExamList exams={shown} editingId={editing?.id} onEdit={setEditing} onRemove={remove} onTopics={openTopics} />
         </>
       )}
 
@@ -563,6 +612,16 @@ export default function Exams() {
               ? 'İlk denemenin sonuçlarını yukarıdan gir; netinin gidişatı burada çizilir.'
               : 'Paragraf, problem ya da fizik gibi tek derslik denemelerini buraya gir; ders ders ortalaman çıkar.'
           }
+        />
+      )}
+      {topicsFor && (
+        <WrongTopicsDialog
+          key={topicsFor.id}
+          exam={topicsFor}
+          subjects={subjects}
+          error={topicsError}
+          onSave={saveTopics}
+          onClose={() => setTopicsFor(null)}
         />
       )}
     </section>

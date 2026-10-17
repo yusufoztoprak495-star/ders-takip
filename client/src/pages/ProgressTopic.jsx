@@ -15,6 +15,7 @@ import { accuracyOf } from '../lib/charts.js';
 import { questionCount } from '../lib/topics.js';
 import EmptyState from '../components/EmptyState.jsx';
 import { EmptyNote } from '../components/Doodles.jsx';
+import TopicNote from '../components/TopicNote.jsx';
 
 const SERIES = [
   { key: 'correct', label: 'Doğru', color: 'var(--series-2)' },
@@ -136,6 +137,7 @@ export default function ProgressTopic() {
         <span className="muted">En son çalıştığın gün: </span>
         <strong>{formatLastStudied(detail.lastStudiedAt, today)}</strong>
       </p>
+      <TopicNote key={detail.topicId} topicId={detail.topicId} initial={detail.note} />
 
       {!exam ? null : !hasQuestions ? (
         <EmptyState
