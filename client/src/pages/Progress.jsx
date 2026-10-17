@@ -13,6 +13,7 @@ import TimeSeriesCharts from '../components/TimeSeriesCharts.jsx';
 import Heatmap from '../components/Heatmap.jsx';
 import HourlyCard from '../components/HourlyCard.jsx';
 import Outlook from '../components/Outlook.jsx';
+import ReportCard from '../components/ReportCard.jsx';
 import { useDailyStats } from '../hooks/useDailyStats.js';
 import { daysAgo, toLocalDateString } from '../lib/dates.js';
 import { formatDuration, formatNet, formatPercent } from '../lib/format.js';
@@ -31,6 +32,7 @@ export default function Progress() {
   const [subjectId, setSubjectId] = useState('all');
   const [bySubject, setBySubject] = useState(null);
   const [subjectError, setSubjectError] = useState(null);
+  const [report, setReport] = useState(false);
 
   useEffect(() => {
     apiFetch('/api/subjects')
@@ -76,7 +78,13 @@ export default function Progress() {
 
   return (
     <section>
-      <h1>İlerleme</h1>
+      <div className="page-head">
+        <h1>İlerleme</h1>
+        <button type="button" className="secondary" onClick={() => setReport(true)}>
+          Haftalık rapor kartı
+        </button>
+      </div>
+      {report && <ReportCard onClose={() => setReport(false)} />}
       <ErrorBanner message={error || subjectError} />
       <Heatmap />
       <Outlook showExams={exam} />
