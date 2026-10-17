@@ -27,6 +27,15 @@ function contentSecurityPolicy() {
         "worker-src 'self'",
         "manifest-src 'self'",
         "object-src 'none'",
+        // Uygulama ne çerçeve (iframe) açar ne ses/video dosyası yükler (odak sesi Web Audio ile üretilir)
+        "frame-src 'none'",
+        "media-src 'none'",
+        // DOM'a ham HTML yazmak (innerHTML vb.) tarayıcı düzeyinde yasak: XSS'e karşı ikinci kilit.
+        // Uygulama HTML'i yalnızca React ile kurar, böyle bir yazıma ihtiyacı yok.
+        "require-trusted-types-for 'script'",
+        // Yalnızca uygulamanın kendi tek kalıbı (main.jsx: servis çalışanı adresi) oluşturulabilir
+        "trusted-types ders-takip",
+        "upgrade-insecure-requests",
         "base-uri 'self'",
         "form-action 'self'",
       ].join("; ");

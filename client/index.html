@@ -17,6 +17,12 @@
     <!-- Tema, sayfa çizilmeden önce ayarlanır: açık temada koyu bir an görünmez -->
     <script>
       (function () {
+        // Başka bir site uygulamayı görünmez bir çerçevenin içine koyup tıklatmaya çalışırsa (clickjacking)
+        // sayfa çizilmez. GitHub Pages "frame-ancestors" başlığı ekletmediği için bu betik onun yerini tutar.
+        if (window.top !== window.self) {
+          document.documentElement.style.display = "none";
+          return;
+        }
         var t = null;
         try {
           t = localStorage.getItem("tema");

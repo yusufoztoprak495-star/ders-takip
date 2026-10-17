@@ -29,6 +29,14 @@ createRoot(document.getElementById('root')).render(
 // Servis çalışanı: uygulamanın kurulabilmesi ve çevrimdışı açılması için (yalnızca derlenmiş hâlde)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // Güvenlik politikası betik adreslerini yalnızca "Trusted Types" kalıbından geçerse kabul eder.
+    // Bu kalıp tek bir adrese izin verir: uygulamanın kendi servis çalışanı. Başka her adres reddedilir.
+    const policy = window.trustedTypes?.createPolicy('ders-takip', {
+      createScriptURL: (url) => {
+        if (url === './sw.js') return url;
+        throw new TypeError('İzin verilmeyen betik adresi');
+      },
+    });
+    navigator.serviceWorker.register(policy ? policy.createScriptURL('./sw.js') : './sw.js').catch(() => {});
   });
 }

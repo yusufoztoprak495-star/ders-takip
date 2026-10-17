@@ -1,0 +1,12 @@
+# Bağımlılıkların ve GitHub eylemlerinin güvenlik güncellemelerini haftada bir çekme isteği olarak açar
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

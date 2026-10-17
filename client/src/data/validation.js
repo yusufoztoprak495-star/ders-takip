@@ -135,46 +135,127 @@ export function assertTopicMatchesSubject(state, topicId, subjectId) {
   }
 }
 
-// Yedek dosyasındaki tablolar: hepsi dizi olmalı, başka alanlar atılır
-const BACKUP_TABLES = ["subjects", "topics", "sessions", "questions", "resources", "classes", "plans", "exams"];
+// --- Yedek dosyasının denetimi ---
+// Yedek dosyası dışarıdan gelir (başkası gönderebilir, elle düzenlenebilir), bu yüzden güvenilmez sayılır:
+// - Yalnızca bilinen tablolar ve bilinen alanlar alınır; diğer her şey (__proto__, constructor gibi
+//   prototipi kirletmeye çalışan anahtarlar dahil) atılır. Kayıtlar sıfırdan, düz nesne olarak kurulur.
+// - Bir alan VARSA türü doğru olmalı (eski sürüm yedeklerinde eksik alan olabilir, o yüzden zorunlu değil).
+// - Metinler uzunluk sınırını aşamaz; dosyanın kendisi de MAX_BACKUP_BYTES'tan büyük olamaz.
 
-// Yedek verisini doğrular ve yalnızca bilinen tabloları içeren temiz bir kopya verir.
+export const MAX_BACKUP_BYTES = 20 * 1024 * 1024; // 20 MB: yıllarca kayıt bile bunun çok altında kalır
+const MAX_TEXT = 2000;
+
+const isInt = (v) => Number.isSafeInteger(v);
+const isText = (v) => typeof v === "string" && v.length <= MAX_TEXT;
+const intOrNull = (v) => v === null || isInt(v);
+const textOrNull = (v) => v === null || isText(v);
+const isPlainObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+
+// Deneme sonuçları: { bölümId: { correct, wrong, blank } } — iç içe olduğu için ayrıca temizlenir
+function cleanResults(value) {
+  if (!isPlainObject(value)) return undefined;
+  const out = {};
+  for (const [key, r] of Object.entries(value)) {
+    if (!/^[a-z]{1,20}$/.test(key) || !isPlainObject(r)) return undefined;
+    if (![r.correct, r.wrong, r.blank].every((n) => n === undefined || isInt(n))) return undefined;
+    out[key] = { correct: r.correct ?? 0, wrong: r.wrong ?? 0, blank: r.blank ?? 0 };
+  }
+  return out;
+}
+
+// Tablo başına alanlar ve denetleyicileri. Denetleyici true/false ya da (temizleyen) bir değer döndürür.
+const ROW_SCHEMAS = {
+  subjects: { name: isText, examType: isText, track: isText },
+  topics: { subjectId: isInt, name: isText, doneAt: isText, reviewStep: isInt, nextReview: textOrNull },
+  sessions: { subjectId: isInt, topicId: intOrNull, startedAt: isText, durationSeconds: isInt, entryType: isText },
+  questions: {
+    subjectId: isInt,
+    topicId: intOrNull,
+    resourceId: intOrNull,
+    date: isText,
+    correct: isInt,
+    wrong: isInt,
+    blank: isInt,
+  },
+  resources: {
+    name: isText,
+    publisher: isText,
+    subjectId: isInt,
+    status: isText,
+    solvedTests: isInt,
+    lastSolvedAt: textOrNull,
+  },
+  classes: { track: isText, day: isInt, start: isInt, end: isInt, title: isText, place: isText, subjectId: intOrNull },
+  plans: { track: isText, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull },
+  exams: { track: isText, date: isText, name: isText, type: isText, results: "results" },
+};
+
+const BACKUP_TABLES = Object.keys(ROW_SCHEMAS);
+
+class BadField extends Error {}
+
+function cleanRow(row, schema) {
+  const clean = { id: row.id };
+  for (const [field, check] of Object.entries(schema)) {
+    if (!Object.prototype.hasOwnProperty.call(row, field) || row[field] === undefined) continue;
+    const value = row[field];
+    if (check === "results") {
+      const results = cleanResults(value);
+      if (!results) throw new BadField(field);
+      clean[field] = results;
+      continue;
+    }
+    if (!check(value)) throw new BadField(typeof value === "string" ? `${field}:uzun` : field);
+    clean[field] = value;
+  }
+  return clean;
+}
+
+// Yedek verisini doğrular ve yalnızca bilinen tabloları ve alanları içeren temiz bir kopya verir.
 // En az bir tablo bulunmalı; bulunan her tablo dizi olmalı (eksik tablolar sonradan boş dizi olur).
 export function validateBackup(data) {
-  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+  if (!isPlainObject(data)) {
     throw new HttpError(400, "Yedek dosyası geçersiz: veri bir nesne olmalı");
   }
   const clean = {};
   for (const table of BACKUP_TABLES) {
-    if (!(table in data)) continue;
+    if (!Object.prototype.hasOwnProperty.call(data, table)) continue;
     if (!Array.isArray(data[table])) {
       throw new HttpError(400, `Yedek dosyası geçersiz: "${table}" bir liste olmalı`);
     }
-    // Her kayıt bir nesne ve tamsayı id'li olmalı: aksi hâlde sayfalar yüklemeden sonra çöker
-    const bad = data[table].findIndex(
-      (row) => row === null || typeof row !== "object" || Array.isArray(row) || !Number.isSafeInteger(row.id),
-    );
-    if (bad !== -1) {
-      throw new HttpError(400, `Yedek dosyası geçersiz: "${table}" listesinin ${bad + 1}. kaydı bozuk`);
-    }
-    clean[table] = data[table];
+    clean[table] = data[table].map((row, i) => {
+      // Her kayıt bir nesne ve tamsayı id'li olmalı: aksi hâlde sayfalar yüklemeden sonra çöker
+      if (!isPlainObject(row) || !isInt(row.id)) {
+        throw new HttpError(400, `Yedek dosyası geçersiz: "${table}" listesinin ${i + 1}. kaydı bozuk`);
+      }
+      try {
+        return cleanRow(row, ROW_SCHEMAS[table]);
+      } catch (e) {
+        if (!(e instanceof BadField)) throw e;
+        const [field] = e.message.split(":");
+        const reason = `"${field}" alanı geçersiz: türü yanlış ya da çok uzun`;
+        throw new HttpError(400, `Yedek dosyası geçersiz: "${table}" listesinin ${i + 1}. kaydı bozuk (${reason})`);
+      }
+    });
   }
   if (Object.keys(clean).length === 0) {
     throw new HttpError(400, "Yedek dosyası geçersiz: tanıdığımız hiçbir veri yok");
   }
-  // Ayarlar (çalışma hedefi) isteğe bağlıdır; varsa nesne olmalı. İçeriği yüklenirken temizlenir.
-  if ("settings" in data) {
-    const s = data.settings;
-    if (s === null || typeof s !== "object" || Array.isArray(s)) {
+  // Ayarlar (çalışma hedefi) isteğe bağlıdır; varsa nesne olmalı. İçeriği yüklenirken cleanSettings temizler.
+  if (Object.prototype.hasOwnProperty.call(data, "settings")) {
+    if (!isPlainObject(data.settings)) {
       throw new HttpError(400, "Yedek dosyası geçersiz: ayarlar bir nesne olmalı");
     }
-    clean.settings = s;
+    clean.settings = data.settings;
   }
   return clean;
 }
 
 // Yedek dosyasının metnini okur ve doğrular (JSON değilse de aynı türde hata verir)
 export function parseBackupText(text) {
+  if (typeof text !== "string" || text.length > MAX_BACKUP_BYTES) {
+    throw new HttpError(400, "Yedek dosyası çok büyük (en fazla 20 MB)");
+  }
   let data;
   try {
     data = JSON.parse(text);

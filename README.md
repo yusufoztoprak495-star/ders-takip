@@ -21,13 +21,16 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | 🎯 **Üç hedef** | YKS (TYT/AYT), DGS (sayısal/sözel) ya da üniversite dersleri. Her hedefin dersleri ve kayıtları ayrı tutulur; hedef değiştirince öbürü silinmez, gizlenir. |
 | ⏱️ **Pomodoro** | Ders ve konu seçip sayacı başlat; süre dolunca çalışma kendiliğinden kaydedilir. Arkada odak sesi çalabilir: dört ölçülük cümlelerle sakin piyano, müzik kutusu, gece sentezi (arpej + bas + pad), derin ambiyans, damlalı yağmur ya da kahverengi gürültü. Hepsi tarayıcıda anlık üretilir, ses dosyası yok. |
 | 📒 **Çalışma günlüğü** | Pomodoro dışındaki çalışmaları elle ekle. |
+| 📝 **Denemeler** | TYT/AYT (YKS) ve DGS denemelerini bölüm bölüm gir; net, toplam net grafiği, bir önceki denemeye göre değişim ve en zayıf bölüm. |
+| 🎯 **Hedefler ve geri sayım** | Sınav tarihine kalan gün ana sayfada; günlük çalışma hedefi bugünün özetinde çubuk olarak. |
+| 🔁 **Konu tekrarı** | Bitirdiğin konuyu işaretle; 1, 3, 7 ve 30 gün sonra ana sayfadaki tekrar listesine düşer. |
 | ✍️ **Soru kaydı** | Doğru / yanlış / boş gir; net (`doğru − yanlış / 4`) ve doğruluk otomatik hesaplanır. |
 | 📚 **Kaynaklar** | Test kitaplarında kaçıncı testte olduğun ve son çözüm tarihi. |
 | 📈 **İlerleme** | Günlük ve haftalık süre, net değişimi, derse göre karşılaştırma; derse ve konuya inip **en zayıf konunu** gör. |
 | 🗓️ **Ders programı** | Okul, kurs ya da üniversite ders saatlerini haftalık gir (aynı saati birden çok güne tek seferde). Her günün şeridinde dersler ve 45 dakikadan uzun boşluklar süresiyle görünür. |
 | 🕘 **Haftalık program** | Haftayı saat saat planla: ders programındaki dersler ızgaraya kendiliğinden gelir, boş saate tıklayıp çalışma / mola / diğer bloğu ekle, bir günü başka günlere kopyala. Gün başlığında planlanan ve gerçekten kaydedilen çalışma süresi yan yana. |
 | 🗂️ **Dersler ve konular** | YKS sayısalın 15 dersi (TYT: Türkçe, Matematik, Geometri, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din Kültürü; AYT: Matematik, Geometri, Fizik, Kimya, Biyoloji) tüm konularıyla, müfredat sırasında hazır gelir. Listeyi düzenle ya da kendi derslerini (dönemiyle) ekle. |
-| 🎨 **Dört tema** | Gece (yıldız haritası, dönen usturlap), Kâğıt (milimetrik kenar, iletki, kalemle beliren notlar), Neon (şehir silueti, kayan ızgara, matematik sembolü yağmuru) ve Pastel (süzülen renk bulutları, kâğıt şekiller). Yeni tema, tema düğmesinden daire hâlinde yayılarak gelir; "hareketi azalt" açıksa arka planlar durur. Masaüstünde sol menü, telefonda 4 ana sekme + Diğer paneli. |
+| 🎨 **Dört tema** | Gece (yıldız haritası, dönen usturlap), Kâğıt (milimetrik kenar, iletki, kalemle beliren notlar), Neon (devre kartında akan ışık paketleri, HUD radarı) ve Pastel (kalın çizgili çıkartma kartlar, kareli defter, fosforlu başlık). Yeni tema, tema düğmesinden daire hâlinde yayılarak gelir; "hareketi azalt" açıksa arka planlar durur. Masaüstünde sol menü, telefonda 4 ana sekme + Diğer paneli. |
 | 💾 **Yedekleme** | Yedeği indir/yükle, haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek. |
 
 > Üniversite hedefinde sınav mantığı yoktur: soru kaydı, kaynaklar, net ve doğruluk gizlenir; yalnızca Pomodoro ve çalışma süresi tutulur.
@@ -162,10 +165,13 @@ Veriler tarayıcının deposunda (IndexedDB) durur; site verileri temizlenirse k
 
 ### Güvenlik
 
-- Derlenmiş sayfada **içerik güvenlik politikası (CSP)** vardır: sayfa yalnızca kendi dosyalarını yükler, dışarıdaki bir adrese bağlanamaz. Tek satır içi betik (tema) özetiyle (hash) izinlidir.
-- Yedek dosyasındaki her tablo ve ayar doğrulanır, bilinmeyen alanlar atılır.
-- Servis çalışanı yalnızca başarılı cevapları önbelleğe alır.
-- Bağımlılıklarda bilinen açık yok (`npm audit`).
+Ayrıntılı tehdit modeli ve alınan önlemler: [SECURITY.md](SECURITY.md). Kısaca:
+
+- **CSP:** sayfa yalnızca kendi dosyalarını yükler, dışarıya bağlanamaz, çerçeve ve medya açamaz. Tek satır içi betik (tema) özetiyle (hash) izinlidir.
+- **Trusted Types:** DOM'a ham HTML/betik adresi yazmak tarayıcı düzeyinde yasak; tek izinli kalıp servis çalışanının adresi.
+- **Clickjacking:** uygulama başka bir sitenin çerçevesinde açılırsa çizilmez.
+- **Yedek dosyası güvenilmez sayılır:** en fazla 20 MB; yalnızca bilinen tablolar ve alanlar alınır, alan türleri ve metin uzunlukları denetlenir, `__proto__` gibi anahtarlar atılır.
+- **Yayın hattı:** GitHub eylemleri commit özetiyle sabitlenmiş, işler en az yetkiyle çalışır, `npm audit` ciddi açıkta yayını durdurur, Dependabot haftalık güncelleme açar.
 
 ### Testler
 

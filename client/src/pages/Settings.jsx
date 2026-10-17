@@ -5,7 +5,7 @@ import TrackSwitcher from '../components/TrackSwitcher.jsx';
 import GoalsForm from '../components/GoalsForm.jsx';
 import { useTrack } from '../context/TrackContext.jsx';
 import { useBackup } from '../context/BackupContext.jsx';
-import { parseBackupText } from '../data/validation.js';
+import { MAX_BACKUP_BYTES, parseBackupText } from '../data/validation.js';
 import { backupFileName, readLastBackup, writeLastBackup } from '../lib/backup.js';
 import { persistenceLabel, requestPersistence } from '../lib/persistence.js';
 
@@ -58,6 +58,11 @@ export default function Settings() {
     event.target.value = '';
     if (!file) return;
     setError(null);
+    // Dev bir dosya okunmaya çalışılırsa sekme donar: boyut, içeriği okumadan önce denetlenir
+    if (file.size > MAX_BACKUP_BYTES) {
+      setError('Yedek dosyası çok büyük (en fazla 20 MB)');
+      return;
+    }
     try {
       const data = parseBackupText(await file.text());
       if (!window.confirm('Mevcut verilerin yerine geçecek. Devam edilsin mi?')) return;
