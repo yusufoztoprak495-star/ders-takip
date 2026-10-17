@@ -215,6 +215,19 @@ button:not(.secondary):not(.small):not(.theme-toggle):not(.theme-option):not(.da
   }
 }
 
+/* Yeni söz gelince yumuşakça belirir */
+.daily-quote blockquote {
+  animation: quote-in 0.55s var(--ease-out) both;
+}
+
+@keyframes quote-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+}
+
 /* Geri sayım rakamı gelirken hafif büyür */
 .countdown {
   animation: card-in 0.6s var(--ease-out) both;
@@ -355,6 +368,7 @@ button:not(.secondary):not(.small):not(.theme-toggle):not(.theme-option):not(.da
   .dial.running .tick.leading,
   .topic-check input:checked,
   .countdown,
+  .daily-quote blockquote,
   .exam-list li:first-child,
   .review-list li,
   .nav a.active .icon,

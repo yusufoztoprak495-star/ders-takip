@@ -1,7 +1,7 @@
 import { useTrack } from '../context/TrackContext.jsx';
 import { tracksQuestions } from '../lib/tracks.js';
 import TrackIntro from '../components/TrackIntro.jsx';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../api.js';
 import { EmptyChart } from '../components/Doodles.jsx';
@@ -13,7 +13,7 @@ import { daysAgo, daysBetween, toLocalDateString } from '../lib/dates.js';
 import { trackInfo } from '../lib/tracks.js';
 import { formatDate, formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
 import { addDays, studyStreak, topSubjectOfDay, weeklyChange } from '../lib/insights.js';
-import { quoteOfDay } from '../lib/quotes.js';
+import { QUOTES, drawQuote } from '../lib/quotes.js';
 import CountUp from '../components/CountUp.jsx';
 import { celebrate } from '../lib/celebrate.js';
 
@@ -60,20 +60,56 @@ function changeText(change) {
   return 'Değişmedi';
 }
 
-// Günün sözü: her gün farklı bir söz; "Başka söz" ile sıradakine geçilir
-function DailyQuote({ date }) {
-  const [offset, setOffset] = useState(0);
-  const quote = quoteOfDay(date, offset);
+// Sözün destesi tarayıcıda saklanır: sayfaya her girişte desteden yeni bir söz çekilir.
+// Depolama kapalıysa (gizli pencere) her açılışta yeni karışık bir desteyle başlanır.
+const QUOTE_DECK_KEY = 'soz-destesi';
+
+function readDeck() {
+  try {
+    return JSON.parse(localStorage.getItem(QUOTE_DECK_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function saveDeck(deck) {
+  try {
+    localStorage.setItem(QUOTE_DECK_KEY, JSON.stringify(deck));
+  } catch {
+    // kaydedilemezse yalnızca bu oturumda sürer
+  }
+}
+
+// Bir söz çeker ve desteyi kaydeder
+function drawAndSave() {
+  const { index, deck } = drawQuote(readDeck(), QUOTES.length);
+  saveDeck(deck);
+  return index;
+}
+
+// Bir söz: her girişte yeni, "Başka söz" ile rastgele bir sonraki (deste bitene kadar tekrar yok)
+function DailyQuote() {
+  const [index, setIndex] = useState(null);
+  const drawn = useRef(false);
+  // Çekiliş bir kez, efektte yapılır: React geliştirme modunda efekti iki kez çalıştırsa bile
+  // (drawn bayrağı sayesinde) desteden fazladan söz harcanmaz
+  useEffect(() => {
+    if (drawn.current) return;
+    drawn.current = true;
+    setIndex(drawAndSave());
+  }, []);
+  if (index === null) return <figure className="daily-quote" aria-hidden="true" />;
+  const quote = QUOTES[index];
   return (
     <figure className="daily-quote">
       <span className="panel-label">Günün sözü</span>
-      <blockquote>{quote.text}</blockquote>
+      <blockquote key={index}>{quote.text}</blockquote>
       <figcaption>
         <span>
           {quote.author}
           {quote.source && <cite>, {quote.source}</cite>}
         </span>
-        <button type="button" className="secondary small" onClick={() => setOffset((o) => o + 1)}>
+        <button type="button" className="secondary small" onClick={() => setIndex(drawAndSave())}>
           Başka söz
         </button>
       </figcaption>
@@ -236,7 +272,7 @@ export default function Home() {
       <h1>Bugün</h1>
       {goals && <Countdown examDate={goals.examDate} today={today} track={track} />}
       <TrackIntro />
-      <DailyQuote date={today} />
+      <DailyQuote />
       <ErrorBanner message={error} />
       <BackupReminder />
 
