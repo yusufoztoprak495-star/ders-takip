@@ -3,7 +3,6 @@ import { getDatabase } from '../api.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import TrackSwitcher from '../components/TrackSwitcher.jsx';
 import GoalsForm from '../components/GoalsForm.jsx';
-import { buildDemoState } from '../lib/demoData.js';
 import { toLocalDateString } from '../lib/dates.js';
 import { useTrack } from '../context/TrackContext.jsx';
 import { useBackup } from '../context/BackupContext.jsx';
@@ -82,6 +81,8 @@ export default function Settings() {
     );
     if (!ok) return;
     try {
+      // Örnek veri üreticisi yalnızca gerekince indirilir
+      const { buildDemoState } = await import('../lib/demoData.js');
       await getDatabase().replaceAll(buildDemoState(toLocalDateString(new Date())));
       await getImageStore().replaceAll({}); // önceki hata defteri fotoğrafları da gider
       window.location.reload();

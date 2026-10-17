@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { BackupProvider } from './context/BackupContext.jsx';
 import { PomodoroProvider, usePomodoro } from './context/PomodoroContext.jsx';
@@ -6,23 +6,8 @@ import { TrackProvider, useTrack } from './context/TrackContext.jsx';
 import { trackInfo, tracksQuestions } from './lib/tracks.js';
 import { formatTime } from './lib/pomodoro.js';
 import { requestPersistence } from './lib/persistence.js';
-import Settings from './pages/Settings.jsx';
 import Home from './pages/Home.jsx';
 import Pomodoro from './pages/Pomodoro.jsx';
-import StudyLog from './pages/StudyLog.jsx';
-import Questions from './pages/Questions.jsx';
-import Resources from './pages/Resources.jsx';
-import Topics from './pages/Topics.jsx';
-import Progress from './pages/Progress.jsx';
-import ProgressSubject from './pages/ProgressSubject.jsx';
-import ProgressTopic from './pages/ProgressTopic.jsx';
-import ClassSchedule from './pages/ClassSchedule.jsx';
-import WeeklyPlan from './pages/WeeklyPlan.jsx';
-import Exams from './pages/Exams.jsx';
-import Mistakes from './pages/Mistakes.jsx';
-import Cards from './pages/Cards.jsx';
-import Achievements from './pages/Achievements.jsx';
-import Term from './pages/Term.jsx';
 import Backdrop from './components/Backdrop.jsx';
 import ThemePicker from './components/ThemePicker.jsx';
 import Celebration from './components/Celebration.jsx';
@@ -47,6 +32,45 @@ import {
   TopicsIcon,
   WeekIcon,
 } from './components/Icons.jsx';
+
+// Sık açılmayan sayfalar ayrı dosyalara bölünür (ilk açılış hızlı olsun); ana sayfa ve sayaç hemen gelir.
+// Açılıştan sonra boşta kalınca hepsi arka planda indirilir: servis çalışanı önbelleğe alır, çevrimdışı da açılır.
+const PAGES = {
+  Settings: () => import('./pages/Settings.jsx'),
+  StudyLog: () => import('./pages/StudyLog.jsx'),
+  Questions: () => import('./pages/Questions.jsx'),
+  Resources: () => import('./pages/Resources.jsx'),
+  Topics: () => import('./pages/Topics.jsx'),
+  Progress: () => import('./pages/Progress.jsx'),
+  ProgressSubject: () => import('./pages/ProgressSubject.jsx'),
+  ProgressTopic: () => import('./pages/ProgressTopic.jsx'),
+  ClassSchedule: () => import('./pages/ClassSchedule.jsx'),
+  WeeklyPlan: () => import('./pages/WeeklyPlan.jsx'),
+  Exams: () => import('./pages/Exams.jsx'),
+  Mistakes: () => import('./pages/Mistakes.jsx'),
+  Cards: () => import('./pages/Cards.jsx'),
+  Achievements: () => import('./pages/Achievements.jsx'),
+  Term: () => import('./pages/Term.jsx'),
+};
+const Settings = lazy(PAGES.Settings);
+const StudyLog = lazy(PAGES.StudyLog);
+const Questions = lazy(PAGES.Questions);
+const Resources = lazy(PAGES.Resources);
+const Topics = lazy(PAGES.Topics);
+const Progress = lazy(PAGES.Progress);
+const ProgressSubject = lazy(PAGES.ProgressSubject);
+const ProgressTopic = lazy(PAGES.ProgressTopic);
+const ClassSchedule = lazy(PAGES.ClassSchedule);
+const WeeklyPlan = lazy(PAGES.WeeklyPlan);
+const Exams = lazy(PAGES.Exams);
+const Mistakes = lazy(PAGES.Mistakes);
+const Cards = lazy(PAGES.Cards);
+const Achievements = lazy(PAGES.Achievements);
+const Term = lazy(PAGES.Term);
+
+export function prefetchPages() {
+  for (const load of Object.values(PAGES)) load().catch(() => {});
+}
 
 // Menü öğeleri: her yeni sayfa eklendiğinde buraya bir satır ve aşağıya bir <Route> eklenir
 const NAV_ITEMS = [
@@ -170,6 +194,7 @@ function Pages() {
   return (
     // Sayfa değişince kap yeniden kurulur ve kısa bir giriş hareketiyle gelir (route.css)
     <div className="route" key={pathname}>
+      <Suspense fallback={<p className="muted page-loading">Yükleniyor…</p>}>
       <Routes key={track}>
         <Route path="/" element={<Home />} />
         <Route path="/pomodoro" element={<Pomodoro />} />
@@ -189,6 +214,7 @@ function Pages() {
         <Route path="/basarilar" element={<Achievements />} />
         <Route path="/ayarlar" element={<Settings />} />
       </Routes>
+      </Suspense>
     </div>
   );
 }
@@ -198,6 +224,9 @@ export default function App() {
   // Açılışta kalıcı depolama izni istenir (sonuç Ayarlar sayfasında gösterilir)
   useEffect(() => {
     requestPersistence();
+    // İlk çizimden sonra, tarayıcı boşta kalınca diğer sayfaları da indir (çevrimdışı açılabilsinler)
+    const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 1500));
+    idle(() => prefetchPages());
   }, []);
   return (
     <BackupProvider>

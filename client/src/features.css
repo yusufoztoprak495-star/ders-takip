@@ -749,7 +749,12 @@ kbd {
 
 @media (max-width: 640px) {
   .wrong-summary li {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .wrong-count {
+    white-space: normal;
   }
 
   .wrong-bar {
