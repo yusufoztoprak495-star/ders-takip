@@ -53,6 +53,10 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | --- | --- |
 | ![Saat saat haftalık ızgara: taralı dersler, çalışma ve mola blokları](docs/screenshots/haftalik-program.png) | ![Telefonda tek gün görünümü](docs/screenshots/haftalik-telefon.png) |
 
+| Denemeler |
+| --- |
+| ![Deneme girişi, net grafiği ve geçmiş denemeler](docs/screenshots/denemeler.png) |
+
 | Ders programı |
 | --- |
 | ![Gün şeritleri: dersler ve boş zaman](docs/screenshots/ders-programi.png) |
@@ -63,7 +67,7 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 
 | Neon | Pastel |
 | --- | --- |
-| ![Neon teması: şehir silueti ve ızgara](docs/screenshots/tema-neon.png) | ![Pastel teması: Pomodoro](docs/screenshots/tema-pastel.png) |
+| ![Neon teması: devre kartı](docs/screenshots/tema-neon.png) | ![Pastel teması: çıkartma kartlar](docs/screenshots/tema-pastel.png) |
 
 | Açık tema | Hedef seçimi |
 | --- | --- |
