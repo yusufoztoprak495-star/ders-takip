@@ -245,6 +245,44 @@ export function buildDemoState(today, seed = 2027) {
     });
   });
 
+  // Bilgi kartları: formüller ve tanımlar; bir kısmı bugün tekrar edilecek
+  const cardRows = [
+    [fiz, "Newton'un 2. yasası", "F = m·a"],
+    [fiz, "Kinetik enerji", "Ek = ½·m·v²"],
+    [fiz, "Potansiyel enerji (yer çekimi)", "Ep = m·g·h"],
+    [fiz, "Ohm yasası", "V = I·R"],
+    [fiz, "Elektriksel güç", "P = V·I"],
+    [fiz, "Dalga hızı", "v = λ·f"],
+    [mat, "sin²x + cos²x", "1"],
+    [mat, "(a + b)²", "a² + 2ab + b²"],
+    [mat, "a² − b²", "(a − b)(a + b)"],
+    [mat, "log_a(b·c)", "log_a b + log_a c"],
+    [mat, "Aritmetik dizinin n. terimi", "a_n = a_1 + (n − 1)·r"],
+    [mat, "Türev: (xⁿ)'", "n·xⁿ⁻¹"],
+    [kim, "Avogadro sayısı", "6,02·10²³"],
+    [kim, "NŞA'da 1 mol gazın hacmi", "22,4 L"],
+    [kim, "pH + pOH (25 °C)", "14"],
+    [kim, "İdeal gaz denklemi", "P·V = n·R·T"],
+    [tur, "Ünlü düşmesi örneği", "ağız → ağzı"],
+    [tur, "Ünsüz benzeşmesi örneği", "kitapçı (kitap + cı)"],
+  ];
+  cardRows.forEach(([subject, front, back], i) => {
+    const box = 1 + (i % 5);
+    state.cards.push({
+      id: i + 1,
+      track: "yks",
+      subjectId: subject.id,
+      topicId: null,
+      front,
+      back,
+      createdAt: addDays(today, -30 + i),
+      box,
+      nextReview: i % 3 === 0 ? today : addDays(today, 1 + (i % 6)),
+      reviews: box * 2,
+      lapses: i % 4 === 0 ? 1 : 0,
+    });
+  });
+
   state.settings.examDates = { yks: "2027-06-19" };
   state.settings.dailyGoal = 240;
   return state;

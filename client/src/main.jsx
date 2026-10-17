@@ -15,6 +15,7 @@ import './schedule.css';
 import './motion.css';
 import './features.css';
 import './mistakes.css';
+import './cards.css';
 import './animations.css';
 import './theme.css';
 import './themes.css';

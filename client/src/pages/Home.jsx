@@ -203,20 +203,40 @@ function DueReviews({ reviews, onReviewed, today }) {
   );
 }
 
-// Hata defterinde tekrarı gelen sorular: yalnızca sayısı ve bağlantı (sorular kendi sayfasında çözülür)
-function MistakesDue({ count }) {
-  if (!count) return null;
+// Hata defterinde ve bilgi kartlarında tekrarı gelenler: yalnızca sayıları ve bağlantı
+function MistakesDue({ mistakes, cards }) {
+  if (!mistakes && !cards) return null;
   return (
     <article className="panel panel-wide mistakes-due">
       <div>
-        <h2 className="panel-label">Hata defteri</h2>
+        <h2 className="panel-label">Bugünkü tekrarlar</h2>
         <p className="panel-note">
-          <b>{count}</b> soru bugün yeniden çözülmeyi bekliyor.
+          {mistakes > 0 && (
+            <>
+              Hata defterinde <b>{mistakes}</b> soru
+            </>
+          )}
+          {mistakes > 0 && cards > 0 && ', '}
+          {cards > 0 && (
+            <>
+              <b>{cards}</b> bilgi kartı
+            </>
+          )}{' '}
+          seni bekliyor.
         </p>
       </div>
-      <Link className="button-link" to="/hata-defteri">
-        Soruları çöz
-      </Link>
+      <span className="due-links">
+        {mistakes > 0 && (
+          <Link className="button-link" to="/hata-defteri">
+            Soruları çöz
+          </Link>
+        )}
+        {cards > 0 && (
+          <Link className={mistakes > 0 ? 'text-link' : 'button-link'} to="/kartlar">
+            Kartlara geç
+          </Link>
+        )}
+      </span>
     </article>
   );
 }
@@ -228,6 +248,7 @@ export default function Home() {
   const [goals, setGoals] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [mistakesDue, setMistakesDue] = useState(0);
+  const [cardsDue, setCardsDue] = useState(0);
   const [history, setHistory] = useState(null);
   const [todaySubjects, setTodaySubjects] = useState(null);
   const [error, setError] = useState(null);
@@ -249,6 +270,9 @@ export default function Home() {
     apiFetch(`/api/reviews?date=${to}`).then(setReviews).catch(() => {});
     apiFetch('/api/mistakes')
       .then((rows) => setMistakesDue(rows.filter((m) => m.nextReview !== null && m.nextReview <= to).length))
+      .catch(() => {});
+    apiFetch('/api/cards')
+      .then((rows) => setCardsDue(rows.filter((c) => c.nextReview <= to).length))
       .catch(() => {});
   }, []);
 
@@ -350,7 +374,7 @@ export default function Home() {
             <TodayPlan today={today} />
 
             <DueReviews reviews={reviews} onReviewed={handleReviewed} today={today} />
-            <MistakesDue count={mistakesDue} />
+            <MistakesDue mistakes={mistakesDue} cards={cardsDue} />
 
             <article className="panel">
               <h2 className="panel-label">Haftalık değişim</h2>

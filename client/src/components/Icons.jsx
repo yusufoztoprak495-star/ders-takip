@@ -164,3 +164,12 @@ export const MistakeIcon = () => (
     <path d="M9.5 11.5l5 5M14.5 11.5l-5 5" />
   </Icon>
 );
+
+// Bilgi kartları: üst üste iki kart
+export const CardsIcon = () => (
+  <Icon>
+    <path d="M7.5 6.5h12v12h-12z" />
+    <path d="M4.5 15.5v-12h12" />
+    <path d="M10.5 12.5h6" />
+  </Icon>
+);

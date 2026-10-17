@@ -234,3 +234,9 @@
 .mistakes-due .panel-note {
   margin: 4px 0 0;
 }
+
+.due-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}

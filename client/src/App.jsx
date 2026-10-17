@@ -20,6 +20,7 @@ import ClassSchedule from './pages/ClassSchedule.jsx';
 import WeeklyPlan from './pages/WeeklyPlan.jsx';
 import Exams from './pages/Exams.jsx';
 import Mistakes from './pages/Mistakes.jsx';
+import Cards from './pages/Cards.jsx';
 import Backdrop from './components/Backdrop.jsx';
 import ThemePicker from './components/ThemePicker.jsx';
 import Celebration from './components/Celebration.jsx';
@@ -30,6 +31,7 @@ import {
   HomeIcon,
   ExamIcon,
   MistakeIcon,
+  CardsIcon,
   LogIcon,
   ProgressIcon,
   QuestionsIcon,
@@ -52,6 +54,7 @@ const NAV_ITEMS = [
   { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon, questions: true },
   { to: '/denemeler', label: 'Denemeler', short: 'Deneme', Icon: ExamIcon, questions: true },
   { to: '/hata-defteri', label: 'Hata Defteri', short: 'Hatalar', Icon: MistakeIcon },
+  { to: '/kartlar', label: 'Bilgi Kartları', short: 'Kartlar', Icon: CardsIcon },
   { to: '/konular', label: 'Dersler ve Konular', short: 'Dersler', Icon: TopicsIcon },
   { to: '/ders-programi', label: 'Ders Programı', short: 'Program', Icon: TimetableIcon },
   { to: '/haftalik', label: 'Haftalık Program', short: 'Hafta', Icon: WeekIcon, primary: true },
@@ -168,6 +171,7 @@ function Pages() {
         <Route path="/kaynaklar" element={examOnly(<Resources />)} />
         <Route path="/denemeler" element={examOnly(<Exams />)} />
         <Route path="/hata-defteri" element={<Mistakes />} />
+        <Route path="/kartlar" element={<Cards />} />
         <Route path="/konular" element={<Topics />} />
         <Route path="/ders-programi" element={<ClassSchedule />} />
         <Route path="/haftalik" element={<WeeklyPlan />} />

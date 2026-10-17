@@ -41,7 +41,7 @@ export function deleteTopic({ state, params }) {
   const index = state.topics.findIndex((t) => t.id === id);
   if (index === -1) throw new HttpError(404, "Bulunamadı");
   state.topics.splice(index, 1);
-  for (const row of [...state.sessions, ...state.questions, ...(state.mistakes ?? [])]) {
+  for (const row of [...state.sessions, ...state.questions, ...(state.mistakes ?? []), ...(state.cards ?? [])]) {
     if (row.topicId === id) row.topicId = null;
   }
   // Denemelerde "yanlış yapılan konular" listesinden de düşer (sayısız bir konu satırı anlamsız)
