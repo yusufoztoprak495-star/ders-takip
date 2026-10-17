@@ -8,6 +8,7 @@ import { useTrack } from '../context/TrackContext.jsx';
 import { toLocalDateString } from '../lib/dates.js';
 import { buildIcs } from '../lib/ics.js';
 import { downloadBlob } from '../lib/download.js';
+import SuggestDialog from '../components/SuggestDialog.jsx';
 import { formatDuration } from '../lib/format.js';
 import {
   DAYS,
@@ -273,6 +274,7 @@ export default function WeeklyPlan() {
   const [dialogError, setDialogError] = useState(null);
   const [editor, setEditor] = useState(null); // açık blok penceresi
   const [copying, setCopying] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
   const [shownDay, setShownDay] = useState(today); // telefonda gösterilen gün
 
   const load = useCallback(async () => {
@@ -470,6 +472,9 @@ export default function WeeklyPlan() {
           )}
         </p>
         <div className="actions">
+          <button type="button" className="secondary" onClick={() => setSuggesting(true)} title="Boş saatlere zayıf konulardan blok öner">
+            Akıllı öneri
+          </button>
           <button
             type="button"
             className="secondary"
@@ -602,6 +607,19 @@ export default function WeeklyPlan() {
           onSave={savePlan}
           onDelete={deletePlan}
           onClose={() => setEditor(null)}
+        />
+      )}
+      {suggesting && (
+        <SuggestDialog
+          classes={view.classes}
+          plans={view.plans}
+          window={data.win}
+          onClose={() => setSuggesting(false)}
+          onAdded={async (n) => {
+            setSuggesting(false);
+            await load();
+            setNotice(`${n} çalışma bloğu eklendi.`);
+          }}
         />
       )}
       {copying && (

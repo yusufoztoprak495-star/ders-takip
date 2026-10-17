@@ -1,5 +1,5 @@
 import { HttpError } from "../errors.js";
-import { achievementFacts, dailyStats, hourlyStats, subjectStats, topicDetail, topicStats } from "../stats.js";
+import { achievementFacts, dailyStats, hourlyStats, weakTopics, subjectStats, topicDetail, topicStats } from "../stats.js";
 import { parseId, requireDate, requireInt } from "../validation.js";
 
 // from ve to zorunlu; from, to'dan büyük olamaz (YYYY-MM-DD metin olarak da sıralanır)
@@ -51,4 +51,10 @@ export function getTopicDetail({ state, params }) {
 // Rozetler için sayılar
 export function getAchievements({ state }) {
   return { status: 200, body: achievementFacts(state) };
+}
+
+// Akıllı plan önerisi için zayıf konular (date: yerel bugün)
+export function getWeakTopics({ state, query }) {
+  const today = requireDate(query.get("date") ?? undefined, "Tarih");
+  return { status: 200, body: weakTopics(state, today) };
 }

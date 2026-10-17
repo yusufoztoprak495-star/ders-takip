@@ -264,3 +264,86 @@ export function achievementFacts(state) {
     lateSessions: late,
   };
 }
+
+// Akıllı plan önerisi için zayıf konular (en zayıf önce). Puan kaynakları:
+// denemelerde kaybettirdiği soru (son 90 gün), hata defterinde öğrenilmemiş soru, son 60 günde doğruluğu
+// %70'in altında kalan (en az 8 soru) ve tekrarı bu hafta gelen konular. Hiçbiri yoksa (ya da azsa)
+// son 14 günde en az çalışılan derslerin bitmemiş konuları eklenir (ders başına en fazla 3).
+export function weakTopics(state, today) {
+  const active = activeSubjectIds(state);
+  const track = state.settings.track;
+  const topicsById = new Map(state.topics.filter((t) => active.has(t.subjectId)).map((t) => [t.id, t]));
+  const score = new Map(); // topicId → { points, reasons: [{points, text}] }
+  const add = (topicId, points, text) => {
+    if (!topicsById.has(topicId) || points <= 0) return;
+    const row = score.get(topicId) ?? { points: 0, reasons: [] };
+    row.points += points;
+    row.reasons.push({ points, text });
+    score.set(topicId, row);
+  };
+  const daysAgoDate = (n) => {
+    const [y, m, d] = today.split("-").map(Number);
+    return toLocalDateString(new Date(y, m - 1, d - n));
+  };
+
+  const examLost = new Map();
+  for (const exam of state.exams ?? []) {
+    if (exam.track !== track || exam.date < daysAgoDate(90)) continue;
+    for (const w of exam.wrongTopics ?? []) examLost.set(w.topicId, (examLost.get(w.topicId) ?? 0) + w.count);
+  }
+  for (const [id, lost] of examLost) add(id, lost * 3, `Denemelerde ${lost} soru kaybettirdi`);
+
+  const mistakes = new Map();
+  for (const m of state.mistakes ?? []) {
+    if (m.track === track && !m.learnedAt && m.topicId !== null) mistakes.set(m.topicId, (mistakes.get(m.topicId) ?? 0) + 1);
+  }
+  for (const [id, n] of mistakes) add(id, n * 4, `Hata defterinde ${n} soru`);
+
+  const recent = new Map();
+  for (const q of state.questions) {
+    if (q.topicId === null || q.date < daysAgoDate(60)) continue;
+    const t = recent.get(q.topicId) ?? { correct: 0, wrong: 0, blank: 0 };
+    t.correct += q.correct;
+    t.wrong += q.wrong;
+    t.blank += q.blank;
+    recent.set(q.topicId, t);
+  }
+  for (const [id, t] of recent) {
+    const total = t.correct + t.wrong + t.blank;
+    const accuracy = accuracyOf(t.correct, t.wrong, t.blank);
+    if (total >= 8 && accuracy < 70) add(id, ((70 - accuracy) / 10) * 2, `Doğruluk %${accuracy} (${total} soru)`);
+  }
+
+  const weekEnd = (() => {
+    const [y, m, d] = today.split("-").map(Number);
+    return toLocalDateString(new Date(y, m - 1, d + 6));
+  })();
+  for (const t of topicsById.values()) if (t.nextReview && t.nextReview <= weekEnd) add(t.id, 5, "Tekrar zamanı geldi");
+
+  const describe = (topic, reason) => {
+    const subject = state.subjects.find((s) => s.id === topic.subjectId);
+    return { topicId: topic.id, topicName: topic.name, subjectId: subject.id, subjectName: subject.name, examType: subject.examType ?? "", reason };
+  };
+  const ranked = [...score]
+    .sort((a, b) => b[1].points - a[1].points || a[0] - b[0])
+    .map(([id, row]) => describe(topicsById.get(id), row.reasons.sort((a, b) => b.points - a.points)[0].text));
+
+  // Tamamlayıcı: az çalışılan derslerin bitmemiş konuları (müfredat sırasıyla)
+  if (ranked.length < 12) {
+    const studied = new Map();
+    const since = daysAgoDate(13);
+    for (const s of state.sessions) {
+      if (active.has(s.subjectId) && sessionDay(s) >= since) studied.set(s.subjectId, (studied.get(s.subjectId) ?? 0) + s.durationSeconds);
+    }
+    const taken = new Set(ranked.map((r) => r.topicId));
+    const subjects = state.subjects
+      .filter((s) => active.has(s.id))
+      .sort((a, b) => (studied.get(a.id) ?? 0) - (studied.get(b.id) ?? 0) || a.id - b.id);
+    for (const subject of subjects) {
+      const open = state.topics.filter((t) => t.subjectId === subject.id && !t.doneAt && !taken.has(t.id)).slice(0, 3);
+      for (const t of open) ranked.push(describe(t, "Henüz bitmedi"));
+      if (ranked.length >= 30) break;
+    }
+  }
+  return ranked.slice(0, 30);
+}

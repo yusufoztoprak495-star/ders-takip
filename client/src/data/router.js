@@ -59,6 +59,7 @@ import {
   getDaily,
   getHourly,
   getTopicDetail,
+  getWeakTopics,
 } from "./routes/stats.js";
 
 // [yöntem, yol, işleyici]. ':id' yol parametresidir. GET dışındakiler veriyi değiştirir.
@@ -122,6 +123,7 @@ const ROUTES = [
   ["GET", "/api/schedule", getSchedule],
   ["PUT", "/api/schedule", updateSchedule],
   ["GET", "/api/achievements", getAchievements],
+  ["GET", "/api/weak-topics", getWeakTopics],
   ["GET", "/api/stats/daily", getDaily],
   ["GET", "/api/stats/hourly", getHourly],
   ["GET", "/api/stats/by-subject", getBySubject],

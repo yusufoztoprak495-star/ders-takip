@@ -929,3 +929,53 @@ kbd {
 .report-canvas.is-loading {
   opacity: 0.4;
 }
+
+/* --- Haftalık program: akıllı öneri penceresi --- */
+.suggest-dialog {
+  width: min(640px, calc(100vw - 24px));
+}
+
+.suggest-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 26px 26px;
+}
+
+.suggest-body h2,
+.suggest-body p {
+  margin: 0;
+}
+
+.suggest-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.suggest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+
+.suggest-list li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.suggest-when {
+  display: inline-block;
+  min-width: 108px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.suggest-reason {
+  display: block;
+  margin-top: 2px;
+}
