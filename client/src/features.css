@@ -979,3 +979,76 @@ kbd {
   display: block;
   margin-top: 2px;
 }
+
+/* --- Denemeler → Puan ve sıralama --- */
+.score-calc {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.score-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.score-head,
+.score-sub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.score-sub {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.net-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.placed-check {
+  align-self: flex-end;
+  padding-bottom: 8px;
+}
+
+.score-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.score-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.score-card .panel-note {
+  margin: 0;
+}
+
+.score-rank {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+}
+
+.score-rank b {
+  font-size: 1.2rem;
+  color: var(--gold-text, var(--accent));
+}
+
+.score-disclaimer {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}

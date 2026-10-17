@@ -13,6 +13,7 @@ import { subjectLabel } from '../lib/tracks.js';
 import { celebrate } from '../lib/celebrate.js';
 import WrongTopicsDialog from '../components/WrongTopicsDialog.jsx';
 import WrongTopicsSummary from '../components/WrongTopicsSummary.jsx';
+import ScoreCalculator from '../components/ScoreCalculator.jsx';
 
 const FIELDS = [
   ['correct', 'doğru', 'Doğru'],
@@ -576,6 +577,11 @@ export default function Exams() {
         <button type="button" role="tab" aria-selected={tab === 'branch'} className={tab === 'branch' ? 'active' : undefined} onClick={() => switchTab('branch')}>
           Branş denemeleri <span className="tab-count">{branch.length}</span>
         </button>
+        {track === 'yks' && (
+          <button type="button" role="tab" aria-selected={tab === 'score'} className={tab === 'score' ? 'active' : undefined} onClick={() => switchTab('score')}>
+            Puan ve sıralama
+          </button>
+        )}
       </div>
       <ErrorBanner message={error} />
       {justSaved && (
@@ -588,13 +594,15 @@ export default function Exams() {
         </p>
       )}
 
-      {tab === 'general' ? (
+      {tab === 'score' && exams && <ScoreCalculator exams={general} />}
+
+      {tab === 'score' ? null : tab === 'general' ? (
         <ExamForm key={editing ? `edit-${editing.id}` : 'new'} types={types} editing={editing} onSave={save} onCancel={() => setEditing(null)} />
       ) : (
         <BranchForm key={editing ? `edit-${editing.id}` : `new-${subjects.length}`} subjects={subjects} editing={editing} onSave={save} onCancel={() => setEditing(null)} />
       )}
 
-      {exams && shown.length > 0 && (
+      {tab !== 'score' && exams && shown.length > 0 && (
         <>
           {tab === 'general' ? <GeneralStats key={general.length} types={types} exams={general} /> : <BranchStats key={branch.length} exams={branch} />}
           <WrongTopicsSummary rows={wrongTopics} />
@@ -603,7 +611,7 @@ export default function Exams() {
         </>
       )}
 
-      {exams && shown.length === 0 && (
+      {tab !== 'score' && exams && shown.length === 0 && (
         <EmptyState
           Doodle={EmptyNote}
           title={tab === 'general' ? 'Henüz genel deneme yok' : 'Henüz branş denemesi yok'}
