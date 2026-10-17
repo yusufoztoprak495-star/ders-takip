@@ -12,6 +12,8 @@ import { backupFileName, readLastBackup, writeLastBackup } from '../lib/backup.j
 import { persistenceLabel, requestPersistence } from '../lib/persistence.js';
 import { applyLite, readLite } from '../lib/lite.js';
 import { downloadBlob } from '../lib/download.js';
+import { collectBackup, restoreBackupText } from '../data/backupData.js';
+import { getImageStore } from '../data/images.js';
 
 // Ayarlar: çalışma hedefi ve veri güvenliği ile ilgili durum ve işlemler
 export default function Settings() {
@@ -41,7 +43,7 @@ export default function Settings() {
   async function handleDownload() {
     setError(null);
     try {
-      const data = await getDatabase().snapshot();
+      const data = await collectBackup(getDatabase(), getImageStore());
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       downloadBlob(blob, backupFileName(new Date()));
       writeLastBackup();
@@ -59,13 +61,14 @@ export default function Settings() {
     setError(null);
     // Dev bir dosya okunmaya çalışılırsa sekme donar: boyut, içeriği okumadan önce denetlenir
     if (file.size > MAX_BACKUP_BYTES) {
-      setError('Yedek dosyası çok büyük (en fazla 20 MB)');
+      setError('Yedek dosyası çok büyük (en fazla 80 MB)');
       return;
     }
     try {
-      const data = parseBackupText(await file.text());
+      const text = await file.text();
+      parseBackupText(text); // önce denetle: bozuksa onay sormadan hata göster
       if (!window.confirm('Mevcut verilerin yerine geçecek. Devam edilsin mi?')) return;
-      await getDatabase().replaceAll(data);
+      await restoreBackupText(text, getDatabase(), getImageStore());
       window.location.reload();
     } catch (e) {
       setError(e.message || 'Yedek yüklenemedi');
@@ -80,6 +83,7 @@ export default function Settings() {
     if (!ok) return;
     try {
       await getDatabase().replaceAll(buildDemoState(toLocalDateString(new Date())));
+      await getImageStore().replaceAll({}); // önceki hata defteri fotoğrafları da gider
       window.location.reload();
     } catch (e) {
       setError(e.message || 'Örnek veriler yüklenemedi');

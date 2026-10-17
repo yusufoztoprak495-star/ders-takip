@@ -14,6 +14,7 @@ import './tracks.css';
 import './schedule.css';
 import './motion.css';
 import './features.css';
+import './mistakes.css';
 import './animations.css';
 import './theme.css';
 import './themes.css';

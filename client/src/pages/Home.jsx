@@ -203,12 +203,31 @@ function DueReviews({ reviews, onReviewed, today }) {
   );
 }
 
+// Hata defterinde tekrarı gelen sorular: yalnızca sayısı ve bağlantı (sorular kendi sayfasında çözülür)
+function MistakesDue({ count }) {
+  if (!count) return null;
+  return (
+    <article className="panel panel-wide mistakes-due">
+      <div>
+        <h2 className="panel-label">Hata defteri</h2>
+        <p className="panel-note">
+          <b>{count}</b> soru bugün yeniden çözülmeyi bekliyor.
+        </p>
+      </div>
+      <Link className="button-link" to="/hata-defteri">
+        Soruları çöz
+      </Link>
+    </article>
+  );
+}
+
 // Karşılama sayfası: bugünün özeti, haftalık değişim, çalışma serisi, günün dersi ve son haftanın ritmi
 export default function Home() {
   const { track } = useTrack();
   const exam = tracksQuestions(track);
   const [goals, setGoals] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [mistakesDue, setMistakesDue] = useState(0);
   const [history, setHistory] = useState(null);
   const [todaySubjects, setTodaySubjects] = useState(null);
   const [error, setError] = useState(null);
@@ -228,6 +247,9 @@ export default function Home() {
       .catch((e) => setError(e.message));
     apiFetch('/api/goals').then(setGoals).catch(() => {});
     apiFetch(`/api/reviews?date=${to}`).then(setReviews).catch(() => {});
+    apiFetch('/api/mistakes')
+      .then((rows) => setMistakesDue(rows.filter((m) => m.nextReview !== null && m.nextReview <= to).length))
+      .catch(() => {});
   }, []);
 
   async function handleReviewed(topic, button) {
@@ -328,6 +350,7 @@ export default function Home() {
             <TodayPlan today={today} />
 
             <DueReviews reviews={reviews} onReviewed={handleReviewed} today={today} />
+            <MistakesDue count={mistakesDue} />
 
             <article className="panel">
               <h2 className="panel-label">Haftalık değişim</h2>

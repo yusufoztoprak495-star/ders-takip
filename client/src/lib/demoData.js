@@ -220,6 +220,31 @@ export function buildDemoState(today, seed = 2027) {
     if (topic) topic.note = note;
   }
 
+  // Hata defteri: fotoğrafsız (yalnızca notlu) birkaç soru; ikisinin tekrarı bugün
+  const mistakeRows = [
+    [mat, "Limit TYT 3, soru 27", "x² − 4x + 3 ifadesinin en küçük değeri kaçtır? (Tepe noktasını yanlış buldum.)", "B", 2, 0],
+    [fiz, "Palme AYT Fizik, test 12", "Eğik atışta tepe noktasında hız sıfır değil, yatay bileşen kalır.", "D", 6, 1],
+    [tur, "Paragraf Kampı, test 41", "Ana fikir sorusunda şıkları metinde tek tek aramadım.", "A", 9, 2],
+    [kim, "Orbital AYT Kimya, deneme 3", "Mol kavramı: hacmi NŞA'da 22,4 ile bölmeyi unuttum.", "", 20, 3],
+  ];
+  mistakeRows.forEach(([subject, source, note, answer, ago, step], i) => {
+    state.mistakes.push({
+      id: i + 1,
+      track: "yks",
+      subjectId: subject.id,
+      topicId: null,
+      source,
+      note,
+      answer,
+      imageId: null,
+      createdAt: addDays(today, -ago),
+      reviewStep: step,
+      nextReview: i < 2 ? today : addDays(today, 2 + i),
+      learnedAt: null,
+      wrongCount: i === 1 ? 1 : 0,
+    });
+  });
+
   state.settings.examDates = { yks: "2027-06-19" };
   state.settings.dailyGoal = 240;
   return state;

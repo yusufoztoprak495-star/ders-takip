@@ -6,6 +6,7 @@ export const SHORTCUTS = [
   { key: "g", to: "/gunluk", label: "Çalışma günlüğü" },
   { key: "s", to: "/sorular", label: "Soru kaydı", questions: true },
   { key: "d", to: "/denemeler", label: "Denemeler", questions: true },
+  { key: "e", to: "/hata-defteri", label: "Hata defteri" },
   { key: "k", to: "/konular", label: "Dersler ve konular" },
   { key: "h", to: "/haftalik", label: "Haftalık program" },
   { key: "i", to: "/ilerleme", label: "İlerleme" },

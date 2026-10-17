@@ -15,6 +15,7 @@ import {
   setTopicDone,
   setTopicNote,
 } from "./routes/topics.js";
+import { createMistake, deleteMistake, listMistakes, reviewMistake, updateMistake } from "./routes/mistakes.js";
 import { createExam, deleteExam, listExams, listWrongTopics, setWrongTopics, updateExam } from "./routes/exams.js";
 import { getGoals, updateGoals } from "./routes/goals.js";
 import {
@@ -74,6 +75,11 @@ const ROUTES = [
   ["PUT", "/api/topics/:id/note", setTopicNote],
   ["POST", "/api/topics/:id/review", reviewTopic],
   ["GET", "/api/reviews", listDueReviews],
+  ["GET", "/api/mistakes", listMistakes],
+  ["POST", "/api/mistakes", createMistake],
+  ["POST", "/api/mistakes/:id/review", reviewMistake],
+  ["PUT", "/api/mistakes/:id", updateMistake],
+  ["DELETE", "/api/mistakes/:id", deleteMistake],
   ["GET", "/api/exams/wrong-topics", listWrongTopics],
   ["GET", "/api/exams", listExams],
   ["PUT", "/api/exams/:id/wrong-topics", setWrongTopics],

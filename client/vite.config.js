@@ -20,8 +20,8 @@ function contentSecurityPolicy() {
         `script-src 'self' ${hashes.join(" ")}`,
         // React bazı öğelere style="" yazar (grafik çubuk genişlikleri gibi)
         "style-src 'self' 'unsafe-inline'",
-        // Kâğıt dokusu CSS içinde data: SVG olarak gömülü
-        "img-src 'self' data:",
+        // Kâğıt dokusu CSS içinde data: SVG olarak gömülü; hata defteri fotoğrafları blob: adresiyle gösterilir
+        "img-src 'self' data: blob:",
         "font-src 'self'",
         "connect-src 'self'",
         "worker-src 'self'",

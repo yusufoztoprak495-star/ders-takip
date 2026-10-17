@@ -155,3 +155,12 @@ export const ExamIcon = () => (
     <path d="M8.5 17.5h7" />
   </Icon>
 );
+
+// Hata defteri: köşesi kıvrık kâğıt ve çarpı
+export const MistakeIcon = () => (
+  <Icon>
+    <path d="M5.5 3.5h9l4 4v13h-13z" />
+    <path d="M14.5 3.5v4h4" />
+    <path d="M9.5 11.5l5 5M14.5 11.5l-5 5" />
+  </Icon>
+);

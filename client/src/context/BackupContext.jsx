@@ -7,6 +7,8 @@ import {
   saveFolderHandle,
 } from '../data/backupFolder.js';
 import { writeLastBackup } from '../lib/backup.js';
+import { collectBackup } from '../data/backupData.js';
+import { getImageStore } from '../data/images.js';
 
 // Klasör yedeğinin durumu uygulama düzeyinde tutulur: açılışta bir kez günlük yedek denenir,
 // Ayarlar ve Ana sayfa aynı durumu okur.
@@ -49,7 +51,7 @@ export function BackupProvider({ children }) {
     const task = async () => {
       const result = await backupIfDue({
         loadHandle: loadFolderHandle,
-        getSnapshot: () => getDatabase().snapshot(),
+        getSnapshot: () => collectBackup(getDatabase(), getImageStore()),
         markBackedUp: writeLastBackup,
         requestPermission,
       });

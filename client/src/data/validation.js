@@ -142,13 +142,16 @@ export function assertTopicMatchesSubject(state, topicId, subjectId) {
 // - Bir alan VARSA türü doğru olmalı (eski sürüm yedeklerinde eksik alan olabilir, o yüzden zorunlu değil).
 // - Metinler uzunluk sınırını aşamaz; dosyanın kendisi de MAX_BACKUP_BYTES'tan büyük olamaz.
 
-export const MAX_BACKUP_BYTES = 20 * 1024 * 1024; // 20 MB: yıllarca kayıt bile bunun çok altında kalır
+// 80 MB: yıllarca kayıt birkaç MB tutar; payın çoğu hata defterindeki fotoğraflar için (~200 KB/fotoğraf)
+export const MAX_BACKUP_BYTES = 80 * 1024 * 1024;
 const MAX_TEXT = 2000;
 
 const isInt = (v) => Number.isSafeInteger(v);
 const isText = (v) => typeof v === "string" && v.length <= MAX_TEXT;
 const intOrNull = (v) => v === null || isInt(v);
 const textOrNull = (v) => v === null || isText(v);
+// Hata defteri fotoğraf kimliği: yalnızca küçük harf, rakam ve tire (görsel deposundaki anahtar)
+const imageIdOrNull = (v) => v === null || (typeof v === "string" && /^[a-z0-9-]{8,40}$/.test(v));
 const isPlainObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 
 // Deneme sonuçları: { bölümId: { correct, wrong, blank } } — iç içe olduğu için ayrıca temizlenir
@@ -199,6 +202,20 @@ const ROW_SCHEMAS = {
   classes: { track: isText, day: isInt, start: isInt, end: isInt, title: isText, place: isText, subjectId: intOrNull },
   plans: { track: isText, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull },
   planChecks: { planId: isInt, date: isText },
+  mistakes: {
+    track: isText,
+    subjectId: isInt,
+    topicId: intOrNull,
+    source: isText,
+    note: isText,
+    answer: isText,
+    imageId: imageIdOrNull,
+    createdAt: isText,
+    reviewStep: isInt,
+    nextReview: textOrNull,
+    learnedAt: textOrNull,
+    wrongCount: isInt,
+  },
   exams: {
     track: isText,
     date: isText,
@@ -281,7 +298,7 @@ export function validateBackup(data) {
 // Yedek dosyasının metnini okur ve doğrular (JSON değilse de aynı türde hata verir)
 export function parseBackupText(text) {
   if (typeof text !== "string" || text.length > MAX_BACKUP_BYTES) {
-    throw new HttpError(400, "Yedek dosyası çok büyük (en fazla 20 MB)");
+    throw new HttpError(400, "Yedek dosyası çok büyük (en fazla 80 MB)");
   }
   let data;
   try {

@@ -65,13 +65,13 @@ export function deleteSubject({ state, params }) {
   const id = parseId(params.id);
   const index = state.subjects.findIndex((s) => s.id === id);
   if (index === -1) throw new HttpError(404, "Bulunamadı");
-  const used = [...state.sessions, ...state.questions, ...state.resources, ...state.exams].some(
+  const used = [...state.sessions, ...state.questions, ...state.resources, ...state.exams, ...(state.mistakes ?? [])].some(
     (row) => row.subjectId === id,
   );
   if (used) {
     throw new HttpError(
       400,
-      "Bu derse bağlı çalışma, soru, kitap ya da branş denemesi kaydı var; önce o kayıtları silmelisin",
+      "Bu derse bağlı çalışma, soru, kitap, branş denemesi ya da hata defteri kaydı var; önce o kayıtları silmelisin",
     );
   }
   state.subjects.splice(index, 1);
