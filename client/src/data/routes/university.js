@@ -30,7 +30,11 @@ export function listCourses({ state }) {
     .filter((s) => active.has(s.id))
     .map((s) => {
       const info = (state.courses ?? []).find((c) => c.subjectId === s.id);
-      const weeklyHours = classes.filter((c) => c.subjectId === s.id).reduce((n, c) => n + lessonHours(c.start, c.end), 0);
+      // Program satırı derse bağlıysa ya da (bağlı değilse) adı dersin adıyla aynıysa o dersin saatidir
+      const sameName = (title) => title.trim().toLocaleLowerCase("tr") === s.name.trim().toLocaleLowerCase("tr");
+      const weeklyHours = classes
+        .filter((c) => c.subjectId === s.id || (c.subjectId === null && sameName(c.title)))
+        .reduce((n, c) => n + lessonHours(c.start, c.end), 0);
       const absenceLimit = info?.absenceLimit ?? null;
       return {
         subjectId: s.id,

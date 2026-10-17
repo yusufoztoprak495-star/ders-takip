@@ -6,6 +6,7 @@ import EmptyState from '../components/EmptyState.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import { EmptyNote } from '../components/Doodles.jsx';
 import { useTrack } from '../context/TrackContext.jsx';
+import { subjectLabel } from '../lib/tracks.js';
 import {
   DAYS,
   STUDY_GAP_MIN,
@@ -35,7 +36,8 @@ const COPY = {
   },
 };
 
-const EMPTY_FORM = { title: '', place: '', start: '', end: '', days: [] };
+const EMPTY_FORM = { title: '', place: '', start: '', end: '', days: [], subjectId: '' };
+const sameName = (a, b) => a.trim().toLocaleLowerCase('tr') === b.trim().toLocaleLowerCase('tr');
 
 // Ekranda saat kutusuna yazılacak metin (gece yarısı bitişi kutuda 00:00 görünür)
 const toInput = (minutes) => (minutes === 1440 ? '00:00' : formatClock(minutes));
@@ -189,15 +191,21 @@ export default function ClassSchedule() {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [subjects, setSubjects] = useState([]);
   // Düzenlenen ders (null: yeni ders ekleniyor)
   const [editing, setEditing] = useState(null);
   const formRef = useRef(null);
 
   const load = useCallback(async () => {
     try {
-      const [list, schedule] = await Promise.all([apiFetch('/api/classes'), apiFetch('/api/schedule')]);
+      const [list, schedule, subjectList] = await Promise.all([
+        apiFetch('/api/classes'),
+        apiFetch('/api/schedule'),
+        apiFetch('/api/subjects'),
+      ]);
       setClasses(list);
       setWin(schedule);
+      setSubjects(subjectList);
     } catch (e) {
       setError(e.message);
     }
@@ -247,7 +255,7 @@ export default function ClassSchedule() {
     const span = spanFromInputs(form.start, form.end);
     // Saat boşsa veri katmanı kendi mesajıyla reddetsin diye geçersiz değer gider
     const times = span ?? { start: null, end: null };
-    const base = { title: form.title, place: form.place, ...times };
+    const base = { title: form.title, place: form.place, subjectId: form.subjectId ? Number(form.subjectId) : null, ...times };
     const ok = editing
       ? await run(
           () => apiFetch(`/api/classes/${editing.id}`, { method: 'PUT', body: { ...base, day: form.days[0] } }),
@@ -260,13 +268,13 @@ export default function ClassSchedule() {
     if (ok) {
       setEditing(null);
       // Yeni derste saatler ve günler kalır: aynı saatteki bir sonraki ders hızlıca girilir
-      setForm((f) => (editing ? EMPTY_FORM : { ...f, title: '', place: '' }));
+      setForm((f) => (editing ? EMPTY_FORM : { ...f, title: '', place: '', subjectId: '' }));
     }
   }
 
   function startEdit(c) {
     setEditing(c);
-    setForm({ title: c.title, place: c.place, start: toInput(c.start), end: toInput(c.end), days: [c.day] });
+    setForm({ title: c.title, place: c.place, start: toInput(c.start), end: toInput(c.end), days: [c.day], subjectId: c.subjectId ? String(c.subjectId) : '' });
     setNotice(null);
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     formRef.current?.querySelector('input')?.focus({ preventScroll: true });
@@ -331,11 +339,38 @@ export default function ClassSchedule() {
             <input
               type="text"
               value={form.title}
-              onChange={(e) => set('title')(e.target.value)}
+              onChange={(e) => {
+                const title = e.target.value;
+                // Yazılan ad bir dersle aynıysa ders bağlantısı kendiliğinden seçilir
+                const match = subjects.find((s) => sameName(s.name, title));
+                setForm((f) => ({ ...f, title, subjectId: match ? String(match.id) : f.subjectId }));
+              }}
               placeholder={copy.title}
               maxLength={60}
             />
           </label>
+          {subjects.length > 0 && (
+            <label className="span-2">
+              <span>
+                Bağlı ders <span className="optional">isteğe bağlı · devamsızlık hakkı ve istatistikler için</span>
+              </span>
+              <select
+                value={form.subjectId}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  const subject = subjects.find((s) => String(s.id) === id);
+                  setForm((f) => ({ ...f, subjectId: id, title: f.title || subject?.name || '' }));
+                }}
+              >
+                <option value="">Bağlama</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {subjectLabel(s.name, s.examType)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="span-2">
             <span>
               Yer <span className="optional">isteğe bağlı</span>

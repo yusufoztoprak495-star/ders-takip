@@ -206,7 +206,7 @@ function Attendance({ courses, absences, classes, today, onChanged }) {
                 {unknown ? ' saat' : ` / ${c.allowance} saat`}
                 {!unknown && (
                   <small className="muted">
-                    {level === 'over' ? ' · hakkın doldu!' : ` · ${Math.max(0, c.allowance - c.absent)} saat kaldı`}
+                    {level === 'over' ? 'hakkın doldu!' : `${Math.max(0, c.allowance - c.absent)} saat kaldı`}
                   </small>
                 )}
               </span>

@@ -35,6 +35,14 @@ describe("Dersler: kredi, not bileşenleri, devamsızlık hakkı (/api/courses)"
     });
   });
 
+  it("derse bağlanmamış ama adı aynı olan program satırları da sayılır (büyük/küçük harf fark etmez)", async () => {
+    const { app } = await setup();
+    const other = (await request(app).post("/api/subjects").send({ name: "Olasılık", examType: "" })).body;
+    await request(app).post("/api/classes").send({ title: "OLASILIK", place: "", days: [4], start: 600, end: 700, subjectId: null });
+    const course = (await request(app).get("/api/courses")).body.find((c) => c.subjectId === other.id);
+    expect(course.weeklyHours).toBe(2);
+  });
+
   it("ders bilgisi kaydedilir; ağırlıklar toplamı 100 olmalı, not 0-100", async () => {
     const { app, subject } = await setup();
     const body = { credits: 5, absenceLimit: 10, components: [{ name: "Vize", weight: 30, score: 65.5 }, { name: "Proje", weight: 20, score: null }, { name: "Final", weight: 50, score: null }] };

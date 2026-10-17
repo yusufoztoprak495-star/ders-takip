@@ -118,7 +118,7 @@
 
 .absence-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(80px, 1fr) auto;
+  grid-template-columns: minmax(0, 1.2fr) minmax(80px, 1fr) minmax(110px, max-content);
   gap: 14px;
   align-items: center;
   padding: 12px 0;
@@ -160,6 +160,11 @@
 .absence-count {
   white-space: nowrap;
   font-size: 0.9rem;
+  text-align: right;
+}
+
+.absence-count small {
+  display: block;
 }
 
 .absence-today,
