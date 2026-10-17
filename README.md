@@ -1,56 +1,66 @@
-# Ders Takip
+<p align="center"><img src="docs/social-preview.png" alt="Ders Takip: dört temada ana sayfa" width="860"></p>
 
-**YKS, DGS ve üniversite dersleri için kişisel çalışma takip uygulaması.** Pomodoro ile çalış, süreni ve çözdüğün soruları kaydet, test kitaplarında nerede kaldığını takip et, ilerlemeni grafiklerle gör.
+<h1 align="center">Ders Takip</h1>
 
-[![Yayın](https://github.com/yusufoztoprak495-star/ders-takip/actions/workflows/pages.yml/badge.svg)](https://github.com/yusufoztoprak495-star/ders-takip/actions/workflows/pages.yml)
-![React](https://img.shields.io/badge/React-19-149eca)
-![Vite](https://img.shields.io/badge/Vite-8-646cff)
-![PWA](https://img.shields.io/badge/PWA-çevrimdışı%20çalışır-5a0fc8)
-![Testler](https://img.shields.io/badge/test-572%20geçiyor-2ea44f)
+<p align="center"><b>YKS, DGS ve üniversite için kişisel, çevrimdışı çalışan ders çalışma uygulaması.</b><br>
+Pomodoro ile çalış, denemelerini ve netini takip et, yanlışlarını hata defterine at, haftanı planla, gidişatını gör.</p>
 
-### 👉 [Uygulamayı aç](https://yusufoztoprak495-star.github.io/ders-takip/)
+<p align="center">
+<a href="https://github.com/yusufoztoprak495-star/ders-takip/actions/workflows/pages.yml"><img src="https://github.com/yusufoztoprak495-star/ders-takip/actions/workflows/pages.yml/badge.svg" alt="Yayın"></a>
+<img src="https://img.shields.io/badge/React-19-149eca" alt="React 19">
+<img src="https://img.shields.io/badge/Vite-8-646cff" alt="Vite 8">
+<img src="https://img.shields.io/badge/PWA-çevrimdışı%20çalışır-5a0fc8" alt="PWA">
+<img src="https://img.shields.io/badge/test-573%20geçiyor-2ea44f" alt="573 test">
+<img src="https://img.shields.io/badge/sunucu-yok-555" alt="Sunucu yok">
+</p>
+
+<h3 align="center">👉 <a href="https://yusufoztoprak495-star.github.io/ders-takip/">Uygulamayı aç</a></h3>
 
 Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sunucuya gönderilmez. Telefonda "Ana ekrana ekle" ile uygulama gibi kurulur ve internetsiz de açılır.
 
-Önce nasıl göründüğüne bakmak istersen: **Ayarlar → Örnek verilerle dene** 200 günlük örnek bir YKS çalışma geçmişi yükler (kendi verin varsa önce yedek al).
+> **Önce bir bak:** Ayarlar → **Örnek verilerle dene**, 200 günlük örnek bir YKS çalışma geçmişi yükler (kendi verin varsa önce yedek al).
 
-![Ana sayfa: günün sözü, bugünün özeti, haftalık değişim, seri ve günün dersi](docs/screenshots/ana-sayfa.png)
+![Ana sayfa: geri sayım, günün sözü, bugünün özeti ve bugünün programı](docs/screenshots/ana-sayfa.png)
 
 ## Neler yapabilir?
 
-| | |
-| --- | --- |
-| 🎯 **Üç hedef** | YKS (TYT/AYT), DGS (sayısal/sözel) ya da üniversite dersleri. Her hedefin dersleri ve kayıtları ayrı tutulur; hedef değiştirince öbürü silinmez, gizlenir. |
-| ⏱️ **Pomodoro** | Ders ve konu seçip sayacı başlat; süre dolunca çalışma kendiliğinden kaydedilir. Arkada odak sesi çalabilir: dört ölçülük cümlelerle sakin piyano, müzik kutusu, gece sentezi (arpej + bas + pad), derin ambiyans, damlalı yağmur ya da kahverengi gürültü. Hepsi tarayıcıda anlık üretilir, ses dosyası yok. |
-| 📒 **Çalışma günlüğü** | Pomodoro dışındaki çalışmaları elle ekle. |
-| 📝 **Denemeler** | Genel denemeler: TYT, AYT Sayısal / Eşit Ağırlık / Sözel ve DGS, bölüm bölüm; net grafiği, bir önceki denemeye göre değişim, en zayıf bölüm. Branş denemeleri: tek ders, kendi soru sayısıyla; ders başına ortalama ve net yüzdesi grafiği. |
-| 🎯 **Hedefler ve geri sayım** | Sınav tarihine kalan gün ana sayfada; günlük çalışma hedefi bugünün özetinde çubuk olarak. |
-| 🔁 **Konu tekrarı** | Bitirdiğin konuyu işaretle; 1, 3, 7 ve 30 gün sonra ana sayfadaki tekrar listesine düşer. |
-| ✍️ **Soru kaydı** | Doğru / yanlış / boş gir; net (`doğru − yanlış / 4`) ve doğruluk otomatik hesaplanır. |
-| 📚 **Kaynaklar** | Test kitaplarında kaçıncı testte olduğun ve son çözüm tarihi. |
-| 📈 **İlerleme** | Günlük ve haftalık süre, net değişimi, derse göre karşılaştırma; derse ve konuya inip **en zayıf konunu** gör. |
-| 🗓️ **Ders programı** | Okul, kurs ya da üniversite ders saatlerini haftalık gir (aynı saati birden çok güne tek seferde). Her günün şeridinde dersler ve 45 dakikadan uzun boşluklar süresiyle görünür. |
-| 🕘 **Haftalık program** | Haftayı saat saat planla: ders programındaki dersler ızgaraya kendiliğinden gelir, boş saate tıklayıp çalışma / mola / diğer bloğu ekle, bir günü başka günlere kopyala. Gün başlığında planlanan ve gerçekten kaydedilen çalışma süresi yan yana. |
-| 🗂️ **Dersler ve konular** | YKS sayısalın 15 dersi (TYT: Türkçe, Matematik, Geometri, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din Kültürü; AYT: Matematik, Geometri, Fizik, Kimya, Biyoloji) tüm konularıyla, müfredat sırasında hazır gelir. Listeyi düzenle ya da kendi derslerini (dönemiyle) ekle. |
-| ✨ **Canlılık** | Kartlar sırayla gelir, sayılar sayarak dolar, grafikler çizilerek açılır; pomodoro bitince, konu ya da ders tamamlanınca, yeni rekor nette ve günlük hedefe ulaşınca konfetili kutlama. "Hareketi azalt" açıksa hepsi kapanır. |
-| 🎨 **Dört tema** | Gece (Samanyolu, Türkçe adlı takımyıldızlar, gezegen yörüngeleri, kayan yıldızlar), Kâğıt (teknik çizim paftası: antet, gönye, grafikler, kalemle beliren notlar), Neon (yağmurlu neon gece, bokeh ışıklar, yanıp sönen ODAK tabelası) ve Pastel (kalın çizgili çıkartma kartlar, kareli defter, fosforlu başlık). Yeni tema, tema düğmesinden daire hâlinde yayılarak gelir; "hareketi azalt" açıksa arka planlar durur. Masaüstünde sol menü, telefonda 4 ana sekme + Diğer paneli. |
-| 📆 **Bugünün programı** | Ana sayfada bugünün dersleri ve çalışma blokları, şu anki blok vurgulu; bir bloktan tek dokunuşla Pomodoro başlat, tur bitince blok "yapıldı" olur. |
-| 🔥 **Isı haritası** | Son bir yılın her günü bir kare (ana sayfada son dört ay): kaç gün çalıştın, en uzun günün. |
-| 🔮 **Gidişat** | Deneme netinin tavana yaklaştıkça yavaşlayan eğriyle 3 aya kadar tahmini; konu bitirme hızına göre bitiş tarihi ve sınava yetişmek için haftada kaç konu gerektiği; günün hangi saatlerinde çalıştığın (verimli saatler). |
-| 🧮 **Puan ve sıralama tahmini** | TYT ve SAY / EA / SÖZ netlerinden (son 3 deneme ortalamasıyla doldurulabilir) ve diploma notundan tahmini ham ve yerleştirme puanı; 2025-YKS puan dağılımından tahmini başarı sırası; hedef sıra için gereken puan. Katsayılar yaklaşıktır, ekranda tahmin olduğu yazar. |
-| 🎯 **Yanlış konu analizi** | Denemeden sonra yanlış/boş soruların konusunu işle; "soru kaybettiren konular" sıralaması çıkar. |
-| 📸 **Hata defteri** | Yanlış yaptığın sorunun fotoğrafını çek (tarayıcıda küçültülür), cevabı ve notunu ekle; 1-3-7-30 gün arayla yeniden karşına çıkar, dört kez üst üste doğru çözünce öğrenilmiş sayılır. |
-| 🃏 **Bilgi kartları** | Formül ve tanımlar için çevrilen kartlar, Leitner kutularıyla (1-2-4-8-16 gün) tekrar; kartlardan 4 şıklı mini test. |
-| 🗒️ **Konu notları** | Her konuya formül / püf noktası notu. |
-| 🧠 **Akıllı plan önerisi** | Haftalık programdaki boş saatlere zayıf konulardan (denemede soru kaybettiren, doğruluğu düşük, tekrarı gelen) çalışma blokları önerir; istemediklerini çıkarıp ekle. |
-| 🧘 **Odak modu ve mola sağlığı** | Tam ekran sade sayaç; turda sekmeden kaç kez çıktığın sayılır. Her 4 turda uzun mola, molada kısa öneriler, uzun turlarda 20-20-20 göz molası hatırlatması. |
-| 🏅 **Başarılar** | 20 rozet (seri, saat, soru, deneme, odak, erkenci kuş…) ve her pomodoroda büyüyen, temaya göre değişen koleksiyon: Gece'de yıldızlar, Kâğıt'ta mürekkep yapraklar, Neon'da ışıklar, Pastel'de çıkartmalar. |
-| 🖼️ **Haftalık rapor kartı** | Haftanın özetini temanın renkleriyle 1080×1920 PNG olarak indir ya da paylaş. |
-| 🎓 **Dönem (üniversite)** | Ders başına kredi ve not bileşenleri, harf notu, hedef harf için finalden kaç alman gerektiği, dönem ortalaması; ders programından hesaplanan devamsızlık hakkı ve "Gitmedim" düğmesi; ödev teslimlerine geri sayım. |
-| ⌨️ **Kısayollar ve hafif mod** | Tek harfle sayfa değiştir (`?` listeyi açar); haftalık programı ve sınav gününü `.ics` olarak takvimine aktar; eski cihazlar için animasyonları ve arka planı kapatan hafif mod; ana ekran simgesinde Pomodoro / Soru / Hafta kısayolları. |
-| 💾 **Yedekleme** | Yedeği indir/yükle (hata defteri fotoğrafları dahil), haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek. |
+### ⏱️ Çalış
+- **Pomodoro:** ders ve konu seç, sayaç bitince çalışma kendiliğinden kaydedilir. Tarayıcıda anlık üretilen odak sesleri (piyano, müzik kutusu, gece sentezi, yağmur, kahverengi gürültü…), ses dosyası yok.
+- **Odak modu:** tam ekran sade sayaç; turda sekmeden kaç kez çıktığın sayılır.
+- **Mola sağlığı:** her 4 turda uzun mola, molada kısa öneriler, uzun turlarda 20-20-20 göz molası hatırlatması.
+- **Çalışma günlüğü:** Pomodoro dışındaki çalışmaları elle ekle.
 
-> Üniversite hedefinde sınav mantığı yoktur: soru kaydı, kaynaklar, net ve doğruluk gizlenir; onların yerine Dönem sayfası (not, devamsızlık, ödev) gelir.
+### 🗓️ Planla
+- **Bugünün programı:** ana sayfada bugünün dersleri ve blokları; bir bloktan tek dokunuşla Pomodoro başlat, tur bitince blok "yapıldı" olur.
+- **Ders programı:** okul, kurs ya da üniversite ders saatleri; her günün şeridinde dersler ve boş zaman.
+- **Haftalık program:** haftayı saat saat planla, bir günü başka günlere kopyala, planlanan ve gerçekleşen süre yan yana.
+- **Akıllı öneri:** boş saatlere en çok zorlandığın konulardan (denemede soru kaybettiren, doğruluğu düşük, tekrarı gelen) bloklar önerir.
+- **Takvime aktar:** programı ve sınav gününü `.ics` olarak Google / Apple Takvim'e aktar.
+- **Sınav geri sayımı ve günlük hedef.**
+
+### 📝 Ölç
+- **Soru kaydı ve kaynaklar:** doğru / yanlış / boş; net (`doğru − yanlış / 4`) ve doğruluk kendiliğinden. Test kitaplarında nerede kaldığın.
+- **Denemeler:** TYT, AYT SAY / EA / SÖZ ve DGS bölüm bölüm; branş denemeleri ayrı sekmede. Denemeden sonra yanlış/boş soruların konusunu işle, **soru kaybettiren konular** sıralaması çıkar.
+- **Puan ve sıralama tahmini:** netlerinden ve diploma notundan tahmini puan, 2025 dağılımından tahmini başarı sırası, hedef sıra için gereken puan (yaklaşık katsayılarla; ekranda tahmin olduğu yazar).
+- **İlerleme:** yıllık ısı haritası; günlük/haftalık süre, net değişimi, derse ve konuya inip en zayıf konu; verimli saatler; net gidişatı ve konu bitiş tahmini.
+- **Haftalık rapor kartı:** haftanın özeti, temanın renkleriyle 1080×1920 PNG.
+
+### 🔁 Tekrar et
+- **Konu tekrarı:** bitirdiğin konu 1, 3, 7 ve 30 gün sonra tekrar listesine düşer; her konuya not.
+- **Hata defteri:** yanlış yaptığın sorunun fotoğrafını çek (tarayıcıda küçültülür); aynı aralıklarla yeniden karşına çıkar.
+- **Bilgi kartları:** çevrilen kartlar ve Leitner kutuları (1-2-4-8-16 gün); kartlardan 4 şıklı mini test.
+
+### 🎓 Üniversite
+- **Dönem sayfası:** ders başına kredi ve not bileşenleri, harf notu, hedef harf için finalden kaç alman gerektiği, dönem ortalaması.
+- **Devamsızlık:** hakkın ders programından (14 haftanın %30'u) hesaplanır; bugünkü derslerden tek tıkla "Gitmedim".
+- **Ödevler:** teslim tarihine geri sayım, ana sayfada yaklaşan teslimler.
+
+### ✨ Ve ayrıca
+- **Dört tema:** Gece (yıldız haritası), Kâğıt (teknik çizim paftası), Neon (yağmurlu neon gece), Pastel (çıkartmalı defter); tema düğmesinden daire hâlinde yayılarak gelir.
+- **Başarılar:** 20 rozet ve her pomodoroda büyüyen, temaya göre değişen koleksiyon (yıldız, mürekkep yaprak, neon ışık, çıkartma).
+- **Klavye kısayolları** (`?` listeyi açar), ana ekran simgesinde kısayollar, eski cihazlar için **hafif mod**.
+- **Üç hedef:** YKS, DGS ya da üniversite; her hedefin dersleri ve kayıtları ayrı, hedef değişince öbürü gizlenir, silinmez.
+- **Yedekleme:** yedeği indir/yükle (fotoğraflar dahil), haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek.
 
 ## Ekran görüntüleri
 
@@ -110,7 +120,11 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | --- | --- |
 | ![Açık temada ana sayfa](docs/screenshots/ana-sayfa-acik.png) | ![Ayarlar: YKS, DGS, Üniversite](docs/screenshots/hedef-secimi.png) |
 
-| Üniversite: dersler | Üniversite: yalnızca süre |
+| Üniversite: Dönem (notlar) | Üniversite: devamsızlık |
+| --- | --- |
+| ![Dönem sayfası: ortalama, sıradaki teslim, ders notları ve finalden kaç](docs/screenshots/donem.png) | ![Ders programından hesaplanan devamsızlık hakları](docs/screenshots/donem-devamsizlik.png) |
+
+| Üniversite: dersler | Üniversite: İlerleme |
 | --- | --- |
 | ![Kendi eklenen üniversite dersleri](docs/screenshots/universite-dersler.png) | ![Üniversite modunda İlerleme](docs/screenshots/universite-ilerleme.png) |
 
