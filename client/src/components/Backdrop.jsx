@@ -9,11 +9,15 @@ import { seeded } from '../lib/random.js';
 const VIEW_W = 1600;
 const VIEW_H = 1000;
 
-// --- Gece: altın yıldız haritası ve yavaş dönen usturlap ---
+// Masaüstünde sol 258 birim (viewBox) menünün arkasında kalır; içerik yaklaşık 440–1350 arasındadır.
+// Bu yüzden ayrıntılar sağ sütuna (1350–1600) ve menü ile içerik arasındaki şeride (260–440) yerleşir.
+
+// --- Gece: yıldız haritası. Samanyolu, takımyıldızlar (Türkçe adlarıyla), Ülker kümesi, gezegen
+// yörüngeleri (orrery), kenarlarda harita ölçeği, dönen usturlap, ara sıra kayan yıldız ---
 
 const NIGHT = (() => {
   const r = seeded(1946);
-  const stars = Array.from({ length: 170 }, (_, i) => ({
+  const stars = Array.from({ length: 190 }, (_, i) => ({
     x: r() * VIEW_W,
     y: r() * VIEW_H,
     size: 0.35 + r() ** 3 * 1.5,
@@ -21,15 +25,31 @@ const NIGHT = (() => {
     twinkle: i % 9 === 0,
     delay: r() * 6,
   }));
-  // Takımyıldızlar: kenar boşluklarında birkaç yıldızı birleştiren ince çizgiler
-  const constellations = [
-    [[120, 160], [190, 120], [260, 175], [330, 140], [365, 215]],
-    [[1330, 120], [1410, 190], [1480, 150], [1455, 260], [1380, 300]],
-    [[90, 640], [170, 700], [140, 790], [230, 840]],
-    [[1270, 520], [1340, 560], [1310, 640]],
-  ];
-  return { stars, constellations };
+  // Samanyolu: sağ üstten sol alta uzanan çapraz bant boyunca sık, küçük yıldızlar
+  const milky = Array.from({ length: 420 }, () => {
+    const t = r();
+    const spread = (r() + r() + r() - 1.5) * 90; // banda dik yönde, ortada yoğun (yaklaşık normal dağılım)
+    return {
+      x: 1700 - t * 1900 + spread * 0.45,
+      y: -80 + t * 1150 + spread * 0.9,
+      size: 0.25 + r() * 0.7,
+      alpha: 0.1 + r() * 0.35,
+    };
+  });
+  return { stars, milky };
 })();
+
+// Takımyıldızlar: [ad, etiket konumu, yıldızlar]
+const CONSTELLATIONS = [
+  ['Büyük Ayı', [1390, 300], [[1352, 230], [1400, 250], [1446, 248], [1490, 266], [1520, 320], [1580, 310], [1566, 256]]],
+  ['Kuğu', [300, 560], [[340, 470], [352, 540], [360, 610], [300, 530], [410, 552]]],
+  ['Kraliçe', [1440, 690], [[1380, 640], [1418, 670], [1450, 632], [1488, 664], [1530, 628]]],
+];
+
+// Ülker (Pleiades): yedi kardeş yıldız
+const PLEIADES = [
+  [320, 180], [336, 172], [346, 186], [330, 196], [352, 202], [318, 206], [340, 214],
+];
 
 function Astrolabe() {
   // Derece çentikleri: her 5°'de bir, 15°'lerde uzun, 45°'lerde en uzun
@@ -40,7 +60,7 @@ function Astrolabe() {
     return { x1: Math.cos(a) * 250, y1: Math.sin(a) * 250, x2: Math.cos(a) * (250 - len), y2: Math.sin(a) * (250 - len) };
   });
   return (
-    <g className="astrolabe" transform="translate(1430 900)">
+    <g className="astrolabe" transform="translate(1520 930)">
       <g className="astrolabe-ring">
         <circle r="262" />
         <circle r="250" />
@@ -60,52 +80,175 @@ function Astrolabe() {
   );
 }
 
-function NightBackdrop() {
+// Gezegen yörüngeleri: güneş ve üç gezegen, her biri kendi hızıyla döner
+function Orrery() {
+  const orbits = [
+    { r: 36, size: 3, dur: 24 },
+    { r: 62, size: 4.5, dur: 52 },
+    { r: 94, size: 3.5, dur: 96, moon: true },
+  ];
   return (
-    <svg className="bd-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid slice">
-      {/* Gök kubbe yayları: haritanın enlem çizgileri */}
-      <g className="meridians">
-        <ellipse cx="800" cy="1180" rx="1150" ry="560" />
-        <ellipse cx="800" cy="1180" rx="1450" ry="760" />
-        <ellipse cx="800" cy="-260" rx="1300" ry="420" />
-      </g>
-      <g className="constellations">
-        {NIGHT.constellations.map((pts, i) => (
-          <g key={i}>
-            <polyline points={pts.map((p) => p.join(',')).join(' ')} />
-            {pts.map(([x, y]) => (
-              <circle key={`${x}-${y}`} cx={x} cy={y} r="2.2" />
-            ))}
+    <g className="orrery" transform="translate(1480 110)">
+      <circle r="7" className="sun" />
+      {orbits.map((o) => (
+        <g key={o.r}>
+          <ellipse rx={o.r} ry={o.r * 0.42} className="orbit" />
+          {/* Gezegen elips üzerinde değil, eğik çember üzerinde döner: grup y'de basık */}
+          <g transform="scale(1 0.42)">
+            <g className="planet-arm" style={{ animationDuration: `${o.dur}s` }}>
+              <circle cx={o.r} cy="0" r={o.size} className="planet" />
+            </g>
           </g>
-        ))}
-      </g>
-      <g className="stars">
-        {NIGHT.stars.map((s, i) => (
-          <circle
-            key={i}
-            cx={s.x}
-            cy={s.y}
-            r={s.size}
-            opacity={s.alpha}
-            className={s.twinkle ? 'twinkle' : undefined}
-            style={s.twinkle ? { animationDelay: `${s.delay}s` } : undefined}
-          />
-        ))}
-      </g>
-      <Astrolabe />
-    </svg>
+        </g>
+      ))}
+    </g>
   );
 }
 
-// --- Kâğıt: çizim masası; milimetrik kenar, iletki, cetvel, pergel izleri ve kenar notları ---
+// Harita kenarı ölçeği: üstte sağ açıklık (0s–24s), sağda yükselim (−90°…+90°)
+function ChartScale() {
+  const top = Array.from({ length: 25 }, (_, h) => ({ x: 260 + h * 55, h }));
+  const right = Array.from({ length: 19 }, (_, i) => ({ y: 40 + i * 50, d: 90 - i * 10 }));
+  return (
+    <g className="chart-scale">
+      <line x1="260" y1="14" x2="1580" y2="14" />
+      {top.map((t) => (
+        <g key={t.h}>
+          <line x1={t.x} y1="14" x2={t.x} y2={t.h % 6 === 0 ? 26 : 20} />
+          {t.h % 3 === 0 && (
+            <text x={t.x + 3} y="36">
+              {t.h}s
+            </text>
+          )}
+        </g>
+      ))}
+      <line x1="1586" y1="14" x2="1586" y2="990" />
+      {right.map((t) => (
+        <g key={t.d}>
+          <line x1="1586" y1={t.y} x2={t.d % 30 === 0 ? 1572 : 1578} y2={t.y} />
+          {t.d % 30 === 0 && (
+            <text x="1566" y={t.y + 4} textAnchor="end">
+              {t.d > 0 ? `+${t.d}` : t.d}°
+            </text>
+          )}
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function NightBackdrop() {
+  return (
+    <>
+      <svg className="bd-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="milky-glow">
+            <stop offset="0" stopColor="#e9dfc4" stopOpacity="0.07" />
+            <stop offset="0.6" stopColor="#e9dfc4" stopOpacity="0.03" />
+            <stop offset="1" stopColor="#e9dfc4" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="nebula-a">
+            <stop offset="0" stopColor="#5fa89e" stopOpacity="0.12" />
+            <stop offset="1" stopColor="#5fa89e" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="nebula-b">
+            <stop offset="0" stopColor="#cdb07a" stopOpacity="0.1" />
+            <stop offset="1" stopColor="#cdb07a" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        {/* Bulutsular ve Samanyolu'nun yumuşak ışığı */}
+        <ellipse cx="1450" cy="520" rx="260" ry="200" fill="url(#nebula-a)" />
+        <ellipse cx="330" cy="820" rx="220" ry="180" fill="url(#nebula-b)" />
+        <ellipse cx="750" cy="495" rx="1150" ry="130" transform="rotate(-31.2 750 495)" fill="url(#milky-glow)" />
+        <g className="milky">
+          {NIGHT.milky.map((s, i) => (
+            <circle key={i} cx={s.x} cy={s.y} r={s.size} opacity={s.alpha} />
+          ))}
+        </g>
+        <g className="meridians">
+          <ellipse cx="800" cy="1180" rx="1150" ry="560" />
+          <ellipse cx="800" cy="1180" rx="1450" ry="760" />
+          <ellipse cx="800" cy="-260" rx="1300" ry="420" />
+        </g>
+        <ChartScale />
+        <g className="constellations">
+          {CONSTELLATIONS.map(([name, [lx, ly], pts]) => (
+            <g key={name}>
+              <polyline points={pts.map((p) => p.join(',')).join(' ')} />
+              {pts.map(([x, y]) => (
+                <circle key={`${x}-${y}`} cx={x} cy={y} r="2.4" />
+              ))}
+              <text x={lx} y={ly} className="star-label">
+                {name}
+              </text>
+            </g>
+          ))}
+          <g className="pleiades">
+            {PLEIADES.map(([x, y]) => (
+              <circle key={`${x}-${y}`} cx={x} cy={y} r="1.8" />
+            ))}
+            <circle cx="335" cy="193" r="30" className="ring" />
+            <text x="300" y="246" className="star-label">
+              Ülker
+            </text>
+          </g>
+          <g className="polaris">
+            <path d="M1300 70l4 12 12 4-12 4-4 12-4-12-12-4 12-4z" />
+            <text x="1322" y="104" className="star-label">
+              Kutup Yıldızı
+            </text>
+          </g>
+        </g>
+        <g className="stars">
+          {NIGHT.stars.map((s, i) => (
+            <circle
+              key={i}
+              cx={s.x}
+              cy={s.y}
+              r={s.size}
+              opacity={s.alpha}
+              className={s.twinkle ? 'twinkle' : undefined}
+              style={s.twinkle ? { animationDelay: `${s.delay}s` } : undefined}
+            />
+          ))}
+        </g>
+        <Orrery />
+        <Astrolabe />
+      </svg>
+      {/* Kayan yıldızlar: birkaç saniyede bir, farklı yerlerden */}
+      <span className="shooting s1" />
+      <span className="shooting s2" />
+      <span className="shooting s3" />
+    </>
+  );
+}
+
+// --- Kâğıt: teknik çizim paftası. Milimetrik kenarlar, iletki, gönye, fonksiyon grafiği, iç teğet
+// çemberli üçgen, ölçü çizgisi, antet (başlık kutusu), köşelerde hizalama işaretleri ve kenar notları.
+// Açılışta her şey sırayla kurşun kalemle çiziliyormuş gibi belirir. ---
 
 function PaperBackdrop() {
   const protractor = Array.from({ length: 37 }, (_, i) => {
     const a = Math.PI + (i * Math.PI) / 36;
     const len = i % 9 === 0 ? 18 : i % 3 === 0 ? 11 : 6;
-    return { x1: Math.cos(a) * 170, y1: Math.sin(a) * 170, x2: Math.cos(a) * (170 - len), y2: Math.sin(a) * (170 - len) };
+    return { x1: Math.cos(a) * 150, y1: Math.sin(a) * 150, x2: Math.cos(a) * (150 - len), y2: Math.sin(a) * (150 - len) };
   });
-  const ruler = Array.from({ length: 41 }, (_, i) => ({ x: i * 12, len: i % 10 === 0 ? 18 : i % 5 === 0 ? 12 : 6 }));
+  // y = x² ve y = sin x eğrileri (küçük eksen takımında)
+  const parabola = Array.from({ length: 41 }, (_, i) => {
+    const x = -2 + i * 0.1;
+    return `${i ? 'L' : 'M'}${(x * 34).toFixed(1)} ${(-x * x * 26).toFixed(1)}`;
+  }).join(' ');
+  const sine = Array.from({ length: 61 }, (_, i) => {
+    const x = -Math.PI + (i * 2 * Math.PI) / 60;
+    return `${i ? 'L' : 'M'}${(x * 21.6).toFixed(1)} ${(-Math.sin(x) * 34).toFixed(1)}`;
+  }).join(' ');
+  const corner = (x, y) => (
+    <g transform={`translate(${x} ${y})`} className="reg-mark">
+      <circle r="9" />
+      <line x1="-16" y1="0" x2="16" y2="0" />
+      <line x1="0" y1="-16" x2="0" y2="16" />
+    </g>
+  );
   return (
     <svg className="bd-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid slice">
       <defs>
@@ -119,205 +262,202 @@ function PaperBackdrop() {
         {/* Milimetrik kâğıt yalnızca kenarlarda: ortaya doğru silinir */}
         <linearGradient id="edge-fade" x1="0" x2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="1" />
-          <stop offset="0.24" stopColor="#fff" stopOpacity="0" />
-          <stop offset="0.76" stopColor="#fff" stopOpacity="0" />
-          <stop offset="1" stopColor="#fff" stopOpacity="1" />
+          <stop offset="0.28" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.82" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.9" stopColor="#fff" stopOpacity="1" />
         </linearGradient>
         <mask id="edges">
           <rect width={VIEW_W} height={VIEW_H} fill="url(#edge-fade)" />
         </mask>
       </defs>
       <rect width={VIEW_W} height={VIEW_H} fill="url(#mm-major)" mask="url(#edges)" />
+      {/* Pafta çerçevesi */}
+      <rect x="268" y="16" width="1316" height="968" className="frame" />
 
       <g className="drafting">
         {/* İletki, sağ üst */}
-        <g transform="translate(1420 250)" className="draw-in">
-          <path d="M-170 0A170 170 0 0 1 170 0Z" />
-          <path d="M-120 0A120 120 0 0 1 120 0" className="faint" />
+        <g transform="translate(1460 210)" className="draw-in d1">
+          <path d="M-150 0A150 150 0 0 1 150 0Z" />
+          <path d="M-105 0A105 105 0 0 1 105 0" className="faint" />
           {protractor.map((t, i) => (
             <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />
           ))}
-          <line x1="0" y1="0" x2="-104" y2="-130" className="pencil" />
-          <path d="M-36 0A36 36 0 0 1 -22 -28" className="pencil" />
+          <line x1="0" y1="0" x2="-92" y2="-116" className="pencil" />
+          <path d="M-32 0A32 32 0 0 1 -20 -25" className="pencil" />
         </g>
-        <text x="1352" y="212" className="note">∠ 51°</text>
+        <text x="1396" y="176" className="note">∠ 51°</text>
 
-        {/* Cetvel, sol alt */}
-        <g transform="translate(70 905) rotate(-8)" className="draw-in">
-          <rect x="-8" y="-4" width="500" height="44" />
-          {ruler.map((t) => (
-            <line key={t.x} x1={t.x} y1="-4" x2={t.x} y2={-4 + t.len} />
+        {/* Gönye (45° üçgen cetvel), sağ orta */}
+        <g transform="translate(1400 400)" className="draw-in d2">
+          <path d="M0 0L170 0L0 170Z" />
+          <path d="M28 28L118 28L28 118Z" className="faint" />
+          {Array.from({ length: 17 }, (_, i) => (
+            <line key={i} x1={i * 10} y1="0" x2={i * 10} y2={i % 5 === 0 ? 12 : 6} />
           ))}
         </g>
 
-        {/* Pergel izi ve teğet doğrusu, sol üst */}
-        <g className="draw-in">
-          <circle cx="210" cy="250" r="110" className="pencil" strokeDasharray="1 0" />
-          <circle cx="210" cy="250" r="3" />
-          <line x1="210" y1="250" x2="300" y2="187" className="pencil" />
-          <line x1="40" y1="70" x2="420" y2="330" className="faint" />
-          <text x="252" y="208" className="note small">r</text>
-        </g>
-        <text x="96" y="430" className="note">x² + y² = r²</text>
-
-        {/* Ölçü çizgisi, sağ alt */}
-        <g className="draw-in" transform="translate(1210 820)">
-          <line x1="0" y1="0" x2="300" y2="0" />
-          <path d="M0 0l10 -5M0 0l10 5M300 0l-10 -5M300 0l-10 5" />
+        {/* Ölçü çizgisi */}
+        <g className="draw-in d3" transform="translate(1390 690)">
+          <line x1="0" y1="0" x2="180" y2="0" />
+          <path d="M0 0l10 -5M0 0l10 5M180 0l-10 -5M180 0l-10 5" />
           <line x1="0" y1="-14" x2="0" y2="14" />
-          <line x1="300" y1="-14" x2="300" y2="14" />
-          <text x="132" y="-10" className="note small">
+          <line x1="180" y1="-14" x2="180" y2="14" />
+          <text x="66" y="-10" className="note small">
             12 cm
           </text>
         </g>
-        <text x="1290" y="690" className="note">f′(x) = 2x</text>
+
+        {/* Antet: teknik çizimin başlık kutusu, sağ alt */}
+        <g className="draw-in d4 title-block" transform="translate(1360 810)">
+          <rect width="224" height="174" />
+          <line x1="0" y1="44" x2="224" y2="44" />
+          <line x1="0" y1="88" x2="224" y2="88" />
+          <line x1="0" y1="130" x2="224" y2="130" />
+          <line x1="112" y1="88" x2="112" y2="174" />
+          <text x="12" y="30" className="tb-big">DERS TAKİP</text>
+          <text x="12" y="72" className="tb">Çalışma paftası</text>
+          <text x="12" y="114" className="tb">ÖLÇEK 1:1</text>
+          <text x="124" y="114" className="tb">PAFTA 01</text>
+          <text x="12" y="158" className="tb">ÇİZEN: sen</text>
+          <text x="124" y="158" className="tb">KONTROL: ✓</text>
+        </g>
+
+        {/* Fonksiyon grafiği, sol şerit üstte: y = x² ve y = sin x */}
+        <g className="draw-in d2" transform="translate(352 210)">
+          <line x1="-80" y1="0" x2="80" y2="0" />
+          <line x1="0" y1="-110" x2="0" y2="40" />
+          <path d="M80 0l-7 -4M80 0l-7 4M0 -110l-4 7M0 -110l4 7" />
+          {[-2, -1, 1, 2].map((t) => (
+            <line key={t} x1={t * 34} y1="-3" x2={t * 34} y2="3" />
+          ))}
+          <path d={parabola} className="curve" />
+          <path d={sine} className="pencil" />
+          <text x="20" y="-90" className="note small">y = x²</text>
+          <text x="40" y="30" className="note small">sin x</text>
+        </g>
+
+        {/* İç teğet çemberli üçgen, sol şerit ortada */}
+        <g className="draw-in d3" transform="translate(362 520)">
+          <path d="M-70 60L80 60L-10 -80Z" />
+          <circle cx="-2" cy="15" r="45" className="pencil" />
+          <circle cx="-2" cy="15" r="2.5" />
+          <line x1="-2" y1="15" x2="-2" y2="60" className="faint" />
+          <path d="M-52 60A20 20 0 0 0 -58 44" />
+          <text x="-84" y="78" className="note small">A</text>
+          <text x="78" y="80" className="note small">B</text>
+          <text x="-16" y="-88" className="note small">C</text>
+          <text x="6" y="44" className="note small">r</text>
+        </g>
+
+        {/* Cetvel, sol şerit altta */}
+        <g transform="translate(286 940) rotate(-90)" className="draw-in d4">
+          <rect x="-8" y="-4" width="250" height="40" />
+          {Array.from({ length: 21 }, (_, i) => (
+            <line key={i} x1={i * 12} y1="-4" x2={i * 12} y2={-4 + (i % 10 === 0 ? 18 : i % 5 === 0 ? 12 : 6)} />
+          ))}
+        </g>
+
+        {corner(282, 30)}
+        {corner(1570, 30)}
+        {corner(282, 970)}
+      </g>
+      <g className="notes">
+        <text x="300" y="380" className="note">a² + b² = c²</text>
+        <text x="300" y="640" className="note">Δ = b² − 4ac</text>
+        <text x="1380" y="618" className="note">sin²α + cos²α = 1</text>
+        <text x="1410" y="770" className="note">∫₀¹ x dx = ½</text>
       </g>
     </svg>
   );
 }
 
-// --- Neon: devre kartı. Kenarlardan içeri uzanan iletken yollar, yollar boyunca akan ışık paketleri,
-// yanıp sönen lehim noktaları, bir köşede yavaş tarayan HUD radarı ---
+// --- Neon: yağmurlu neon gece. Odak dışı şehir ışıkları (bokeh), çapraz yağmur, ıslak zeminde ışık
+// yansımaları ve kenarlarda yanıp sönen neon tabelalar: dikey "ODAK" yazısı, halka, oklar. ---
 
 const NEON = (() => {
   const r = seeded(2077);
-  const traces = [];
-  // Yollar dört kenardan başlar, içeriye doğru 45° kırılarak ilerler; ortadaki içerik sütununa girmez
-  const fromEdge = (edge, i) => {
-    let x;
-    let y;
-    let dx;
-    let dy;
-    if (edge === 'left') [x, y, dx, dy] = [0, 60 + r() * 880, 1, 0];
-    else if (edge === 'right') [x, y, dx, dy] = [VIEW_W, 60 + r() * 880, -1, 0];
-    else if (edge === 'top') [x, y, dx, dy] = [r() < 0.5 ? 40 + r() * 300 : 1260 + r() * 300, 0, 0, 1];
-    else [x, y, dx, dy] = [r() < 0.5 ? 40 + r() * 300 : 1260 + r() * 300, VIEW_H, 0, -1];
-    const pts = [[x, y]];
-    const segments = 2 + Math.floor(r() * 3);
-    for (let k = 0; k < segments; k++) {
-      const len = 50 + r() * 150;
-      x += dx * len;
-      y += dy * len;
-      // İçerik sütununa (yaklaşık %24–%76) girmesin
-      x = Math.min(Math.max(x, 0), VIEW_W);
-      if (x > VIEW_W * 0.24 && x < VIEW_W * 0.76) x = dx > 0 ? VIEW_W * 0.24 : VIEW_W * 0.76;
-      pts.push([x, y]);
-      // 45° kırılma ya da düz devam
-      const turn = r();
-      if (dx !== 0 && dy === 0) dy = turn < 0.5 ? (r() < 0.5 ? 1 : -1) : 0;
-      else if (dy !== 0 && dx === 0) dx = turn < 0.5 ? (x < VIEW_W / 2 ? 1 : -1) : 0;
-      else if (turn < 0.5) dy = 0;
-      else dx = 0;
-    }
-    const d = pts.map((p, j) => `${j ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
-    const length = pts.slice(1).reduce((sum, p, j) => sum + Math.hypot(p[0] - pts[j][0], p[1] - pts[j][1]), 0);
+  const colors = ['#ff3fa4', '#2fe6ff', '#ffb03f', '#9b5cff'];
+  // Işıklar ağırlıkla iki kenarda ve altta; ortaya az
+  const bokeh = Array.from({ length: 30 }, (_, i) => {
+    const side = i % 3;
+    const x = side === 0 ? r() * 24 : side === 1 ? 78 + r() * 22 : 20 + r() * 60;
+    const y = side === 2 ? 70 + r() * 30 : r() * 100;
     return {
-      d,
-      end: pts[pts.length - 1],
-      length,
-      tone: i % 3 === 0 ? 'm' : 'c',
-      pulse: r() > 0.35,
-      dur: 3 + r() * 5,
-      delay: -r() * 8,
-      blink: r() * 4,
+      x,
+      y,
+      size: 30 + r() ** 2 * 140,
+      color: colors[Math.floor(r() * colors.length)],
+      alpha: 0.12 + r() * 0.22,
+      dur: 6 + r() * 10,
+      delay: -r() * 10,
     };
-  };
-  const edges = ['left', 'right', 'left', 'right', 'top', 'bottom'];
-  for (let i = 0; i < 34; i++) traces.push(fromEdge(edges[i % edges.length], i));
-  // Küçük çipler: kenar boşluklarında birkaç dikdörtgen, bacaklarıyla
-  const chips = Array.from({ length: 6 }, (_, i) => ({
-    x: (i % 2 === 0 ? 60 + r() * 220 : 1320 + r() * 200),
-    y: 120 + r() * 760,
-    w: 44 + r() * 40,
-    h: 28 + r() * 20,
-  }));
-  return { traces, chips };
+  });
+  return { bokeh };
 })();
 
 function NeonBackdrop() {
   return (
     <>
-      <svg className="bd-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid slice">
-        <defs>
-          {/* Altıgen mikro ızgara: kartın baskı deseni */}
-          <pattern id="hex" width="28" height="48.5" patternUnits="userSpaceOnUse" patternTransform="scale(1.1)">
-            <path d="M14 0L28 8.08V24.25L14 32.33L0 24.25V8.08Z M14 32.33V48.5" className="hex" />
-          </pattern>
-          <radialGradient id="neon-haze" cx="50%" cy="40%" r="75%">
-            <stop offset="0" style={{ stopColor: 'var(--bd-sky-mid)' }} />
-            <stop offset="1" style={{ stopColor: 'var(--bd-sky-top)' }} />
-          </radialGradient>
-        </defs>
-        <rect width={VIEW_W} height={VIEW_H} fill="url(#neon-haze)" />
-        <rect width={VIEW_W} height={VIEW_H} fill="url(#hex)" className="hex-field" />
-        <g className="traces">
-          {NEON.traces.map((t, i) => (
-            <path key={i} d={t.d} className={`trace tone-${t.tone}`} />
+      <div className="neon-sky" />
+      <div className="neon-bokeh">
+        {NEON.bokeh.map((b, i) => (
+          <span
+            key={i}
+            style={{
+              left: `${b.x}%`,
+              top: `${b.y}%`,
+              width: `${b.size}px`,
+              height: `${b.size}px`,
+              '--c': b.color,
+              '--a': b.alpha,
+              animationDuration: `${b.dur}s`,
+              animationDelay: `${b.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+      {/* Neon tabelalar: önce geniş, soluk bir hâle (ışık taşması), üstünde ince parlak tüp */}
+      <svg className="bd-svg neon-signs" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid slice">
+        <g className="sign sign-odak" transform="translate(1480 150)">
+          <rect x="-46" y="-34" width="92" height="420" rx="14" className="frame" />
+          {['O', 'D', 'A', 'K'].map((ch, i) => (
+            <g key={ch}>
+              <text x="0" y={40 + i * 96} className="halo">
+                {ch}
+              </text>
+              <text x="0" y={40 + i * 96} className={i === 2 ? 'tube flicker' : 'tube'}>
+                {ch}
+              </text>
+            </g>
           ))}
         </g>
-        {/* Işık paketleri: aynı yolun üstünde kısa, parlak bir çizgi; yol boyunca akar */}
-        <g className="pulses">
-          {NEON.traces
-            .filter((t) => t.pulse)
-            .map((t, i) => (
-              <path
-                key={i}
-                d={t.d}
-                className={`pulse tone-${t.tone}`}
-                style={{
-                  strokeDasharray: `18 ${Math.ceil(t.length) + 40}`,
-                  '--len': Math.ceil(t.length) + 58,
-                  animationDuration: `${t.dur}s`,
-                  animationDelay: `${t.delay}s`,
-                }}
-              />
-            ))}
+        <g className="sign sign-ring" transform="translate(350 220)">
+          <circle r="62" className="halo" />
+          <circle r="62" className="tube" />
+          <circle r="40" className="tube thin flicker-slow" />
         </g>
-        <g className="pads">
-          {NEON.traces.map((t, i) => (
-            <circle
-              key={i}
-              cx={t.end[0]}
-              cy={t.end[1]}
-              r="3.2"
-              className={`pad tone-${t.tone}`}
-              style={{ animationDelay: `${t.blink}s` }}
-            />
+        <g className="sign sign-arrows" transform="translate(300 600)">
+          {[0, 1, 2].map((i) => (
+            <g key={i} style={{ animationDelay: `${i * 0.25}s` }} className="chevron">
+              <path d={`M${i * 46} 0l30 36l-30 36`} className="halo" />
+              <path d={`M${i * 46} 0l30 36l-30 36`} className="tube" />
+            </g>
           ))}
         </g>
-        <g className="chips">
-          {NEON.chips.map((c, i) => (
-            <g key={i} transform={`translate(${c.x} ${c.y})`}>
-              <rect width={c.w} height={c.h} rx="2" />
-              {Array.from({ length: Math.floor(c.w / 9) }, (_, k) => (
-                <g key={k}>
-                  <line x1={6 + k * 9} y1="-6" x2={6 + k * 9} y2="0" />
-                  <line x1={6 + k * 9} y1={c.h} x2={6 + k * 9} y2={c.h + 6} />
-                </g>
-              ))}
+        <g className="sign sign-bars" transform="translate(1400 760)">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <g key={i}>
+              <line x1={i * 30} y1="0" x2={i * 30} y2={-30 - ((i * 37) % 70)} className="halo" />
+              <line x1={i * 30} y1="0" x2={i * 30} y2={-30 - ((i * 37) % 70)} className="tube eq" style={{ animationDelay: `${i * 0.3}s` }} />
             </g>
           ))}
         </g>
       </svg>
-      {/* HUD radarı: sağ altta, yarısı ekran dışında; tarama ışını yavaşça döner */}
-      <div className="neon-radar">
-        <svg viewBox="-200 -200 400 400" className="radar-rings">
-          <circle r="190" />
-          <circle r="140" />
-          <circle r="90" />
-          <circle r="40" />
-          <line x1="-200" y1="0" x2="200" y2="0" />
-          <line x1="0" y1="-200" x2="0" y2="200" />
-          {Array.from({ length: 36 }, (_, i) => {
-            const a = (i * 10 * Math.PI) / 180;
-            const inner = i % 9 === 0 ? 172 : 182;
-            return <line key={i} x1={Math.cos(a) * inner} y1={Math.sin(a) * inner} x2={Math.cos(a) * 190} y2={Math.sin(a) * 190} />;
-          })}
-        </svg>
-        <div className="radar-sweep" />
-        <span className="radar-blip b1" />
-        <span className="radar-blip b2" />
+      <div className="neon-rain">
+        <span className="rain r1" />
+        <span className="rain r2" />
       </div>
+      <div className="neon-floor-glow" />
       <div className="neon-scan" />
     </>
   );

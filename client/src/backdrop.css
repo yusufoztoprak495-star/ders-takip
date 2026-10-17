@@ -30,7 +30,8 @@
 
 /* ===== Gece: yıldız haritası ===== */
 
-.backdrop-dark .stars circle {
+.backdrop-dark .stars circle,
+.backdrop-dark .milky circle {
   fill: #e9dfc4;
 }
 
@@ -47,12 +48,33 @@
 .backdrop-dark .constellations polyline {
   stroke: var(--gold);
   stroke-width: 1;
-  opacity: 0.22;
+  opacity: 0.28;
 }
 
 .backdrop-dark .constellations circle {
   fill: var(--gold);
-  opacity: 0.55;
+  opacity: 0.6;
+}
+
+.backdrop-dark .pleiades .ring {
+  fill: none;
+  stroke: var(--gold);
+  stroke-dasharray: 2 5;
+  opacity: 0.35;
+}
+
+.backdrop-dark .polaris path {
+  fill: #f4ead0;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 4px rgba(244, 234, 208, 0.8));
+}
+
+.backdrop-dark .star-label {
+  fill: var(--gold);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-style: italic;
+  opacity: 0.5;
 }
 
 .backdrop-dark .meridians ellipse {
@@ -60,6 +82,19 @@
   stroke-width: 1;
   stroke-dasharray: 2 9;
   opacity: 0.16;
+}
+
+.backdrop-dark .chart-scale {
+  stroke: var(--gold);
+  stroke-width: 1;
+  opacity: 0.3;
+}
+
+.backdrop-dark .chart-scale text {
+  fill: var(--gold);
+  stroke: none;
+  font-family: var(--font-ui);
+  font-size: 12px;
 }
 
 .backdrop-dark .astrolabe {
@@ -91,7 +126,76 @@
   }
 }
 
-/* ===== Kâğıt: çizim masası ===== */
+.backdrop-dark .orrery .orbit {
+  stroke: var(--gold);
+  stroke-width: 1;
+  stroke-dasharray: 1 4;
+  opacity: 0.4;
+}
+
+.backdrop-dark .orrery .sun {
+  fill: var(--gold);
+  opacity: 0.8;
+  filter: drop-shadow(0 0 6px var(--gold));
+}
+
+.backdrop-dark .orrery .planet {
+  fill: #e9dfc4;
+  opacity: 0.8;
+}
+
+.backdrop-dark .planet-arm {
+  animation: spin linear infinite;
+}
+
+/* Kayan yıldız: ince, ucu parlak bir çizgi çapraz kayıp söner; her biri farklı aralıkla */
+.shooting {
+  position: absolute;
+  width: 140px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(244, 234, 208, 0), rgba(244, 234, 208, 0.9));
+  border-radius: 999px;
+  opacity: 0;
+  transform: rotate(-24deg);
+  animation: shoot 11s ease-out infinite;
+}
+
+.shooting.s1 {
+  top: 12%;
+  left: 62%;
+}
+
+.shooting.s2 {
+  top: 30%;
+  left: 86%;
+  animation-delay: 4.5s;
+  animation-duration: 15s;
+}
+
+.shooting.s3 {
+  top: 6%;
+  left: 30%;
+  animation-delay: 8s;
+  animation-duration: 19s;
+}
+
+@keyframes shoot {
+  0%,
+  88% {
+    opacity: 0;
+    transform: rotate(-24deg) translateX(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: rotate(-24deg) translateX(-320px);
+  }
+}
+
+/* ===== Kâğıt: teknik çizim paftası ===== */
 
 .backdrop-light .mm-line {
   stroke: rgba(38, 56, 90, 0.06);
@@ -103,9 +207,16 @@
   stroke-width: 1;
 }
 
-.backdrop-light .drafting {
-  stroke: rgba(38, 56, 90, 0.32);
+.backdrop-light .frame {
+  fill: none;
+  stroke: rgba(38, 56, 90, 0.18);
   stroke-width: 1;
+}
+
+.backdrop-light .drafting {
+  stroke: rgba(38, 56, 90, 0.34);
+  stroke-width: 1;
+  fill: none;
 }
 
 .backdrop-light .drafting .faint {
@@ -117,27 +228,81 @@
   stroke-dasharray: 5 3;
 }
 
+.backdrop-light .drafting .curve {
+  stroke: rgba(47, 95, 179, 0.5);
+  stroke-width: 1.5;
+}
+
+.backdrop-light .reg-mark {
+  stroke: rgba(38, 56, 90, 0.3);
+}
+
 .backdrop-light .note {
   fill: rgba(38, 56, 90, 0.42);
   stroke: none;
   font-family: var(--font-display);
-  font-size: 30px;
+  font-size: 28px;
   font-style: italic;
 }
 
 .backdrop-light .note.small {
-  font-size: 22px;
+  font-size: 20px;
 }
 
-/* Açılışta çizimler bir kez kurşun kalemle çiziliyormuş gibi belirir (tek seferlik hareket) */
+.backdrop-light .title-block text {
+  fill: rgba(38, 56, 90, 0.5);
+  stroke: none;
+  font-family: var(--font-ui);
+}
+
+.backdrop-light .tb-big {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.backdrop-light .tb {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+/* Açılışta çizimler sırayla kurşun kalemle çiziliyormuş gibi belirir (tek seferlik hareket) */
 .backdrop-light .draw-in > * {
   stroke-dasharray: 1400;
   stroke-dashoffset: 1400;
-  animation: draw 2.4s var(--ease-out) 0.2s forwards;
+  animation: draw 2.4s var(--ease-out) forwards;
 }
 
 .backdrop-light .draw-in > .pencil {
   stroke-dasharray: 1400;
+}
+
+.backdrop-light .draw-in.d1 > * {
+  animation-delay: 0.1s;
+}
+
+.backdrop-light .draw-in.d2 > * {
+  animation-delay: 0.5s;
+}
+
+.backdrop-light .draw-in.d3 > * {
+  animation-delay: 0.9s;
+}
+
+.backdrop-light .draw-in.d4 > * {
+  animation-delay: 1.3s;
+}
+
+.backdrop-light .draw-in text {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  animation-name: ink-in;
+}
+
+.backdrop-light .notes text {
+  opacity: 0;
+  animation: ink-in 1.2s ease 1.6s forwards;
 }
 
 @keyframes draw {
@@ -146,129 +311,228 @@
   }
 }
 
-/* ===== Neon: devre kartı, ışık paketleri, HUD radarı ===== */
-
-.backdrop-neon .hex {
-  fill: none;
-  stroke: rgba(120, 100, 255, 0.07);
-  stroke-width: 1;
-}
-
-.backdrop-neon .trace {
-  fill: none;
-  stroke-width: 1.4;
-  stroke-linejoin: round;
-  opacity: 0.32;
-}
-
-.backdrop-neon .tone-c {
-  stroke: #2fe6ff;
-}
-
-.backdrop-neon .tone-m {
-  stroke: #ff3fa4;
-}
-
-/* Işık paketi: yolun başından sonuna akan kısa parlak çizgi. Uzunluk her yol için --len ile gelir */
-.backdrop-neon .pulse {
-  fill: none;
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  animation: packet linear infinite;
-}
-
-.backdrop-neon .pulses {
-  filter: drop-shadow(0 0 4px rgba(47, 230, 255, 0.9));
-}
-
-@keyframes packet {
-  from {
-    stroke-dashoffset: 18;
-  }
+@keyframes ink-in {
   to {
-    stroke-dashoffset: calc(var(--len) * -1);
-  }
-}
-
-.backdrop-neon .pad {
-  stroke-width: 1.4;
-  fill: #0d0b1e;
-  animation: pad-blink 4s ease-in-out infinite;
-}
-
-@keyframes pad-blink {
-  0%,
-  70%,
-  100% {
-    opacity: 0.45;
-  }
-  80% {
     opacity: 1;
   }
 }
 
-.backdrop-neon .chips rect {
-  fill: rgba(21, 18, 49, 0.9);
-  stroke: rgba(167, 161, 216, 0.35);
-}
+/* ===== Neon: yağmurlu neon gece ===== */
 
-.backdrop-neon .chips line {
-  stroke: rgba(167, 161, 216, 0.35);
-}
-
-.neon-radar {
-  position: absolute;
-  right: -160px;
-  bottom: -160px;
-  width: 420px;
-  height: 420px;
-  opacity: 0.55;
-}
-
-.radar-rings {
+.neon-sky {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 110%, rgba(255, 63, 164, 0.22), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(47, 230, 255, 0.12), transparent 70%),
+    linear-gradient(to bottom, #0d0b1e, #15102e 60%, #1a0d2a);
+}
+
+/* Odak dışı şehir ışıkları: yumuşak kenarlı daireler, yavaşça nefes alıp kayar */
+.neon-bokeh span {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--c) 0%, transparent 68%);
+  opacity: var(--a);
+  transform: translate(-50%, -50%);
+  animation: bokeh ease-in-out infinite alternate;
+}
+
+@keyframes bokeh {
+  to {
+    opacity: calc(var(--a) * 0.4);
+    transform: translate(-50%, calc(-50% - 18px)) scale(1.12);
+  }
+}
+
+/* Neon tabelalar */
+.neon-signs .halo {
   fill: none;
+  stroke-width: 12;
+  opacity: 0.18;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.neon-signs .tube {
+  fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.neon-signs .thin {
+  stroke-width: 1.4;
+}
+
+.neon-signs text {
+  font-family: var(--font-ui);
+  font-size: 74px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.neon-signs .frame {
+  fill: rgba(13, 11, 30, 0.6);
   stroke: rgba(47, 230, 255, 0.35);
-  stroke-width: 1;
+  stroke-width: 1.4;
 }
 
-.radar-sweep {
+.sign-odak .tube,
+.sign-odak .halo {
+  stroke: #ff3fa4;
+}
+
+.sign-odak .tube {
+  filter: drop-shadow(0 0 6px #ff3fa4);
+}
+
+.sign-ring .tube,
+.sign-ring .halo {
+  stroke: #2fe6ff;
+}
+
+.sign-ring .tube {
+  filter: drop-shadow(0 0 6px #2fe6ff);
+}
+
+.sign-arrows .tube,
+.sign-arrows .halo {
+  stroke: #ffb03f;
+}
+
+.sign-bars .tube,
+.sign-bars .halo {
+  stroke: #9b5cff;
+}
+
+/* Arızalı tüp: ara sıra sönüp yanar */
+.neon-signs .flicker {
+  animation: tube-flicker 7s steps(1) infinite;
+}
+
+.neon-signs .flicker-slow {
+  animation: tube-flicker 11s steps(1) infinite 2s;
+}
+
+@keyframes tube-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  61% {
+    opacity: 0.15;
+  }
+  62% {
+    opacity: 1;
+  }
+  64% {
+    opacity: 0.2;
+  }
+  66% {
+    opacity: 1;
+  }
+}
+
+/* Oklar sırayla yanar (akış yönünü gösterir) */
+.sign-arrows .chevron {
+  animation: chevron 2.4s ease-in-out infinite;
+}
+
+@keyframes chevron {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+/* Ses çubukları gibi yükselip alçalan tüpler */
+.sign-bars .eq {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: eq 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes eq {
+  to {
+    transform: scaleY(0.45);
+  }
+}
+
+/* Yağmur: iki katman ince çapraz çizgi, farklı hızlarda düşer (derinlik) */
+.neon-rain {
   position: absolute;
-  inset: 20px;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, rgba(47, 230, 255, 0.35), rgba(47, 230, 255, 0) 70deg, transparent);
-  animation: spin 7s linear infinite;
+  inset: 0;
+  overflow: hidden;
 }
 
-.radar-blip {
+.rain {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ff3fa4;
-  box-shadow: 0 0 10px #ff3fa4;
-  animation: pad-blink 7s ease-in-out infinite;
+  left: -10%;
+  right: -10%;
+  top: -200px;
+  height: calc(100% + 400px);
+  background-image: repeating-linear-gradient(
+    100deg,
+    transparent 0 18px,
+    rgba(160, 220, 255, 0.16) 18px 19px,
+    transparent 19px 47px
+  );
+  background-size: 100% 200px;
+  -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 26px, transparent 26px 70px);
+  mask-image: repeating-linear-gradient(to bottom, #000 0 26px, transparent 26px 70px);
+  animation: rain-fall 0.9s linear infinite;
 }
 
-.radar-blip.b1 {
-  left: 280px;
-  top: 150px;
+.rain.r2 {
+  opacity: 0.6;
+  background-image: repeating-linear-gradient(
+    100deg,
+    transparent 0 31px,
+    rgba(255, 140, 210, 0.14) 31px 32px,
+    transparent 32px 77px
+  );
+  animation-duration: 1.5s;
 }
 
-.radar-blip.b2 {
-  left: 310px;
-  top: 250px;
-  animation-delay: 2.4s;
+@keyframes rain-fall {
+  to {
+    transform: translate(-24px, 140px);
+  }
+}
+
+/* Islak zemin: altta ışıkların yansıması gibi dikey, titreyen ışık süzmeleri */
+.neon-floor-glow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 60px, rgba(255, 63, 164, 0.08) 60px 64px, transparent 64px 140px,
+      rgba(47, 230, 255, 0.07) 140px 143px, transparent 143px 210px),
+    linear-gradient(to top, rgba(255, 63, 164, 0.1), transparent);
+  -webkit-mask-image: linear-gradient(to top, #000, transparent);
+  mask-image: linear-gradient(to top, #000, transparent);
+  animation: shimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+  to {
+    opacity: 0.55;
+    transform: scaleY(1.06);
+  }
 }
 
 /* Tarama çizgileri: eski ekran hissi, çok hafif */
 .neon-scan {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.16) 2px 3px);
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.14) 2px 3px);
 }
 
 /* ===== Pastel: çıkartmalar ===== */
@@ -352,7 +616,10 @@ body:has(.week-planner) .sticker.left {
     opacity: 0.4;
   }
 
-  .neon-radar {
+  .neon-signs .sign-arrows,
+  .neon-signs .sign-ring,
+  .backdrop-dark .orrery,
+  .backdrop-light .title-block {
     display: none;
   }
 }
@@ -363,9 +630,14 @@ body:has(.week-planner) .sticker.left {
     animation: none !important;
   }
 
-  /* Çizim animasyonu kapalıysa çizgiler baştan görünsün */
+  /* Çizim animasyonu kapalıysa çizgiler ve notlar baştan görünsün */
   .backdrop-light .draw-in > * {
     stroke-dashoffset: 0;
+  }
+
+  .backdrop-light .draw-in text,
+  .backdrop-light .notes text {
+    opacity: 1;
   }
 }
 
