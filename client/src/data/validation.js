@@ -136,7 +136,7 @@ export function assertTopicMatchesSubject(state, topicId, subjectId) {
 }
 
 // Yedek dosyasındaki tablolar: hepsi dizi olmalı, başka alanlar atılır
-const BACKUP_TABLES = ["subjects", "topics", "sessions", "questions", "resources"];
+const BACKUP_TABLES = ["subjects", "topics", "sessions", "questions", "resources", "classes", "plans"];
 
 // Yedek verisini doğrular ve yalnızca bilinen tabloları içeren temiz bir kopya verir.
 // En az bir tablo bulunmalı; bulunan her tablo dizi olmalı (eksik tablolar sonradan boş dizi olur).

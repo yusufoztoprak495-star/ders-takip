@@ -72,5 +72,9 @@ export function deleteSubject({ state, params }) {
   }
   state.subjects.splice(index, 1);
   state.topics = state.topics.filter((t) => t.subjectId !== id);
+  // Ders programı ve haftalık plandaki satırlar silinmez, yalnızca ders bağlantısı boşalır
+  for (const row of [...state.classes, ...state.plans]) {
+    if (row.subjectId === id) row.subjectId = null;
+  }
   return { status: 204, body: null };
 }

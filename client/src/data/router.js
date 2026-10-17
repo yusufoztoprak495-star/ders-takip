@@ -26,6 +26,19 @@ import {
   updateQuestion,
 } from "./routes/questions.js";
 import {
+  copyDay,
+  createClasses,
+  createPlan,
+  deleteClass,
+  deletePlan,
+  getSchedule,
+  listClasses,
+  listPlans,
+  updateClass,
+  updatePlan,
+  updateSchedule,
+} from "./routes/schedule.js";
+import {
   getBySubject,
   getByTopic,
   getDaily,
@@ -56,6 +69,18 @@ const ROUTES = [
   ["POST", "/api/questions", createQuestion],
   ["PUT", "/api/questions/:id", updateQuestion],
   ["DELETE", "/api/questions/:id", deleteQuestion],
+  ["GET", "/api/classes", listClasses],
+  ["POST", "/api/classes", createClasses],
+  ["PUT", "/api/classes/:id", updateClass],
+  ["DELETE", "/api/classes/:id", deleteClass],
+  ["GET", "/api/plans", listPlans],
+  ["POST", "/api/plans", createPlan],
+  // "copy" kimlik değil: :id kalıbından önce yazılır ki POST /api/plans/:id gibi algılanmasın
+  ["POST", "/api/plans/copy", copyDay],
+  ["PUT", "/api/plans/:id", updatePlan],
+  ["DELETE", "/api/plans/:id", deletePlan],
+  ["GET", "/api/schedule", getSchedule],
+  ["PUT", "/api/schedule", updateSchedule],
   ["GET", "/api/stats/daily", getDaily],
   ["GET", "/api/stats/by-subject", getBySubject],
   ["GET", "/api/stats/by-topic", getByTopic],

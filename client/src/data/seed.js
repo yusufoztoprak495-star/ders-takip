@@ -17,6 +17,8 @@ export function emptyState() {
     sessions: [],
     questions: [],
     resources: [],
+    classes: [], // ders programı (okul/üniversite dersleri)
+    plans: [], // haftalık programın blokları
     settings: { track: DEFAULT_TRACK, seededTracks: [] },
   };
 }
@@ -61,6 +63,13 @@ export function cleanSettings(raw, { hasSubjects = false } = {}) {
   if (Number.isSafeInteger(settings.yksListVersion) && settings.yksListVersion > 0) {
     clean.yksListVersion = settings.yksListVersion;
   }
+  // Ders programının gün aralığı (dakika). İkisi birlikte ve mantıklıysa tutulur; yoksa varsayılan kullanılır.
+  const { dayStart, dayEnd } = settings;
+  const inDay = (m) => Number.isSafeInteger(m) && m >= 0 && m <= 1440;
+  if (inDay(dayStart) && inDay(dayEnd) && dayEnd - dayStart >= 240) {
+    clean.dayStart = dayStart;
+    clean.dayEnd = dayEnd;
+  }
   return clean;
 }
 
@@ -78,17 +87,22 @@ export function ensureTrackSeeded(state, track) {
 // seed: false (yedek yükleme): yedek olduğu gibi kalsın diye hazır liste eklenmez, yüklenmiş sayılır.
 // Bir şey değiştiyse true döner (veri kaydedilmeli).
 export function prepareState(state, { seed = true } = {}) {
-  const before = JSON.stringify([state.settings, state.subjects.map((s) => s.track)]);
+  const tracksOf = () => [state.subjects, state.classes ?? [], state.plans ?? []].map((rows) => rows.map((r) => r.track));
+  const before = JSON.stringify([state.settings, tracksOf()]);
   state.settings = cleanSettings(state.settings, { hasSubjects: state.subjects.length > 0 });
   for (const subject of state.subjects) {
     if (!TRACK_IDS.includes(subject.track)) subject.track = "yks";
+  }
+  // Program satırları da hedefe bağlıdır; hedefsiz (elle düzenlenmiş yedek) satırlar YKS sayılır
+  for (const row of [...(state.classes ?? []), ...(state.plans ?? [])]) {
+    if (!TRACK_IDS.includes(row.track)) row.track = "yks";
   }
   const track = state.settings.track;
   let seeded = false;
   if (seed) seeded = ensureTrackSeeded(state, track);
   else if (!state.settings.seededTracks.includes(track)) state.settings.seededTracks.push(track);
   upgradeYksList(state);
-  const after = JSON.stringify([state.settings, state.subjects.map((s) => s.track)]);
+  const after = JSON.stringify([state.settings, tracksOf()]);
   return seeded || before !== after;
 }
 
