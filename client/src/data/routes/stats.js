@@ -1,5 +1,5 @@
 import { HttpError } from "../errors.js";
-import { dailyStats, hourlyStats, subjectStats, topicDetail, topicStats } from "../stats.js";
+import { achievementFacts, dailyStats, hourlyStats, subjectStats, topicDetail, topicStats } from "../stats.js";
 import { parseId, requireDate, requireInt } from "../validation.js";
 
 // from ve to zorunlu; from, to'dan büyük olamaz (YYYY-MM-DD metin olarak da sıralanır)
@@ -46,4 +46,9 @@ export function getTopicDetail({ state, params }) {
   const detail = topicDetail(state, parseId(params.id));
   if (!detail) throw new HttpError(404, "Konu bulunamadı");
   return { status: 200, body: detail };
+}
+
+// Rozetler için sayılar
+export function getAchievements({ state }) {
+  return { status: 200, body: achievementFacts(state) };
 }

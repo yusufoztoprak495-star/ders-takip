@@ -173,3 +173,12 @@ export const CardsIcon = () => (
     <path d="M10.5 12.5h6" />
   </Icon>
 );
+
+// Başarılar: kurdeleli madalya
+export const BadgeIcon = () => (
+  <Icon>
+    <circle cx="12" cy="14.5" r="5.5" />
+    <path d="M8.5 10.2 6 3.5h4l2 4 2-4h4l-2.5 6.7" />
+    <path d="M12 12.5v4" />
+  </Icon>
+);

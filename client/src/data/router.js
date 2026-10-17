@@ -53,6 +53,7 @@ import {
   updateSchedule,
 } from "./routes/schedule.js";
 import {
+  getAchievements,
   getBySubject,
   getByTopic,
   getDaily,
@@ -120,6 +121,7 @@ const ROUTES = [
   ["DELETE", "/api/plans/:id", deletePlan],
   ["GET", "/api/schedule", getSchedule],
   ["PUT", "/api/schedule", updateSchedule],
+  ["GET", "/api/achievements", getAchievements],
   ["GET", "/api/stats/daily", getDaily],
   ["GET", "/api/stats/hourly", getHourly],
   ["GET", "/api/stats/by-subject", getBySubject],

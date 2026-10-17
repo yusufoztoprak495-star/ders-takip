@@ -1,0 +1,186 @@
+/* --- Başarılar: rozetler ve koleksiyon --- */
+.badge-grid {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.badge-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 6px);
+  animation: card-in 0.45s var(--ease-out) both;
+}
+
+.badge-glyph {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  color: var(--muted);
+  border: 1px dashed var(--border-strong);
+  border-radius: 50%;
+}
+
+.badge-card.earned .badge-glyph {
+  color: var(--on-accent);
+  background: var(--accent-fill);
+  border: 0;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-fill) 35%, transparent);
+}
+
+.badge-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  font-size: 0.9rem;
+}
+
+.badge-card:not(.earned) .badge-text b {
+  color: var(--muted);
+}
+
+.badge-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.badge-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--series-dim);
+}
+
+.badge-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--series-2);
+}
+
+/* Koleksiyon tuvali */
+.collection-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+  border-radius: 6px;
+}
+
+.col-item {
+  transform-box: fill-box;
+  animation: col-in 0.6s var(--ease-out) both;
+}
+
+@keyframes col-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.collection-empty {
+  font-size: 15px;
+  fill: var(--muted);
+}
+
+/* Gece: lacivert gökte altın yıldızlar, ara ara yanıp söner */
+.collection-dark .collection-canvas {
+  background: radial-gradient(ellipse at 30% 20%, #1a2233, #0a0d13 70%);
+}
+
+.col-star path {
+  fill: #e8d3a0;
+}
+
+.collection-dark .col-item:nth-child(5n) {
+  animation: col-in 0.6s var(--ease-out) both, twinkle 3.2s ease-in-out infinite 1s;
+}
+
+@keyframes twinkle {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Kâğıt: kareli defterde lacivert mürekkep yapraklar */
+.collection-light .collection-canvas {
+  background-color: #fbfbf8;
+  background-image: linear-gradient(#e6e9ef 1px, transparent 1px), linear-gradient(90deg, #e6e9ef 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.col-leaf path {
+  fill: none;
+  stroke: #26385a;
+  stroke-width: 1.1;
+}
+
+.col-leaf path:first-child {
+  fill: color-mix(in srgb, #1b6b64 14%, transparent);
+}
+
+/* Neon: mor gecede pembe/turkuaz/sarı ışıklar */
+.collection-neon .collection-canvas {
+  background: linear-gradient(#120e2b, #1d1240);
+}
+
+.col-light rect {
+  fill: #ff3fa4;
+  filter: drop-shadow(0 0 3px #ff3fa4);
+}
+
+.col-light.v1 rect {
+  fill: #34e7ff;
+  filter: drop-shadow(0 0 3px #34e7ff);
+}
+
+.col-light.v2 rect {
+  fill: #ffe066;
+  filter: drop-shadow(0 0 3px #ffe066);
+}
+
+/* Pastel: kalın kenarlı çıkartmalar */
+.collection-pastel .collection-canvas {
+  background: #fdf9f1;
+  border: 2px solid var(--ink);
+}
+
+.col-sticker path {
+  stroke: var(--ink, #2a2f45);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  fill: #ffd6e0;
+}
+
+.col-sticker.v1 path {
+  fill: #cfe9ff;
+}
+
+.col-sticker.v2 path {
+  fill: #d8f3e8;
+}
+
+:root[data-theme="pastel"] .badge-card {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .col-item,
+  .collection-dark .col-item:nth-child(5n),
+  .badge-card {
+    animation: none;
+  }
+}

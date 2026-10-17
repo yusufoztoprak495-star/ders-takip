@@ -217,3 +217,50 @@ export function topicDetail(state, topicId) {
     daily,
   };
 }
+
+// Başarılar (rozetler) için ham sayılar: seçili hedefin dersleri. Rozet kuralları lib/badges.js'te.
+export function achievementFacts(state) {
+  const active = activeSubjectIds(state);
+  const sessions = state.sessions.filter((s) => active.has(s.subjectId));
+  const questions = state.questions.filter((q) => active.has(q.subjectId));
+  const track = state.settings.track;
+
+  const perDay = new Map();
+  let early = 0;
+  let late = 0;
+  for (const s of sessions) {
+    const day = sessionDay(s);
+    perDay.set(day, (perDay.get(day) ?? 0) + s.durationSeconds);
+    const hour = new Date(s.startedAt).getHours();
+    if (hour < 7 && hour >= 4) early += 1;
+    if (hour >= 23 || hour < 4) late += 1;
+  }
+  // En uzun seri: art arda çalışılan gün sayısı (günler YYYY-MM-DD; UTC öğlesiyle gün farkı hesaplanır)
+  const days = [...perDay.keys()].sort();
+  let longest = 0;
+  let run = 0;
+  let previous = null;
+  for (const day of days) {
+    const ms = Date.parse(`${day}T12:00:00Z`);
+    run = previous !== null && Math.round((ms - previous) / 86400000) === 1 ? run + 1 : 1;
+    longest = Math.max(longest, run);
+    previous = ms;
+  }
+
+  const pomodoros = sessions.filter((s) => s.entryType === "pomodoro");
+  return {
+    sessions: sessions.length,
+    totalSeconds: sum(sessions, "durationSeconds"),
+    pomodoros: pomodoros.length,
+    focusedPomodoros: pomodoros.filter((s) => s.distractions === 0).length,
+    longestStreak: longest,
+    bestDaySeconds: Math.max(0, ...perDay.values()),
+    questions: questions.reduce((n, q) => n + q.correct + q.wrong + q.blank, 0),
+    exams: (state.exams ?? []).filter((e) => e.track === track).length,
+    topicsDone: state.topics.filter((t) => t.doneAt && active.has(t.subjectId)).length,
+    mistakesLearned: (state.mistakes ?? []).filter((m) => m.track === track && m.learnedAt).length,
+    cardReviews: (state.cards ?? []).filter((c) => c.track === track).reduce((n, c) => n + (c.reviews ?? 0), 0),
+    earlySessions: early,
+    lateSessions: late,
+  };
+}

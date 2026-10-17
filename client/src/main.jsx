@@ -16,6 +16,7 @@ import './motion.css';
 import './features.css';
 import './mistakes.css';
 import './cards.css';
+import './achievements.css';
 import './animations.css';
 import './theme.css';
 import './themes.css';

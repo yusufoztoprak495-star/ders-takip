@@ -18,6 +18,8 @@ import CountUp from '../components/CountUp.jsx';
 import TodayPlan from '../components/TodayPlan.jsx';
 import Heatmap from '../components/Heatmap.jsx';
 import { celebrate } from '../lib/celebrate.js';
+import { badgeList, newlyEarned } from '../lib/badges.js';
+import { readSeenBadges, rememberBadges } from '../lib/badgeMemory.js';
 
 // Seri ve haftalık karşılaştırma için bu kadar geriye bakılır (daha uzun seriler "365+" yazılır)
 const HISTORY_DAYS = 365;
@@ -270,6 +272,18 @@ export default function Home() {
     apiFetch(`/api/reviews?date=${to}`).then(setReviews).catch(() => {});
     apiFetch('/api/mistakes')
       .then((rows) => setMistakesDue(rows.filter((m) => m.nextReview !== null && m.nextReview <= to).length))
+      .catch(() => {});
+    // Yeni kazanılan rozet: bir kez kutlanır. İlk açılışta (hiç kayıt yoksa) eskiler sessizce görülmüş sayılır.
+    apiFetch('/api/achievements')
+      .then((facts) => {
+        const list = badgeList(facts);
+        const seen = readSeenBadges();
+        const fresh = seen === null ? [] : newlyEarned(list, seen);
+        rememberBadges(list.filter((b) => b.earned).map((b) => b.id));
+        if (fresh.length > 0) {
+          celebrate(null, fresh.length === 1 ? `Yeni rozet: ${fresh[0].name}` : `${fresh.length} yeni rozet kazandın!`);
+        }
+      })
       .catch(() => {});
     apiFetch('/api/cards')
       .then((rows) => setCardsDue(rows.filter((c) => c.nextReview <= to).length))

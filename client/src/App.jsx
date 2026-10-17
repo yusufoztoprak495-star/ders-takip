@@ -21,6 +21,7 @@ import WeeklyPlan from './pages/WeeklyPlan.jsx';
 import Exams from './pages/Exams.jsx';
 import Mistakes from './pages/Mistakes.jsx';
 import Cards from './pages/Cards.jsx';
+import Achievements from './pages/Achievements.jsx';
 import Backdrop from './components/Backdrop.jsx';
 import ThemePicker from './components/ThemePicker.jsx';
 import Celebration from './components/Celebration.jsx';
@@ -32,6 +33,7 @@ import {
   ExamIcon,
   MistakeIcon,
   CardsIcon,
+  BadgeIcon,
   LogIcon,
   ProgressIcon,
   QuestionsIcon,
@@ -59,6 +61,7 @@ const NAV_ITEMS = [
   { to: '/ders-programi', label: 'Ders Programı', short: 'Program', Icon: TimetableIcon },
   { to: '/haftalik', label: 'Haftalık Program', short: 'Hafta', Icon: WeekIcon, primary: true },
   { to: '/ilerleme', label: 'İlerleme', short: 'İlerleme', Icon: ProgressIcon, primary: true },
+  { to: '/basarilar', label: 'Başarılar', short: 'Rozet', Icon: BadgeIcon },
   { to: '/ayarlar', label: 'Ayarlar', short: 'Ayarlar', Icon: SettingsIcon },
 ];
 
@@ -178,6 +181,7 @@ function Pages() {
         <Route path="/ilerleme" element={<Progress />} />
         <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
         <Route path="/ilerleme/ders/:subjectId/konu/:topicId" element={<ProgressTopic />} />
+        <Route path="/basarilar" element={<Achievements />} />
         <Route path="/ayarlar" element={<Settings />} />
       </Routes>
     </div>
