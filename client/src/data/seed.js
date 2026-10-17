@@ -23,6 +23,9 @@ export function emptyState() {
     planChecks: [], // haftalık program bloklarının "yapıldı" işaretleri: { id, planId, date }
     mistakes: [], // hata defteri (fotoğraflar ayrı depoda: data/images.js)
     cards: [], // bilgi kartları (Leitner kutuları)
+    courses: [], // üniversite: ders başına kredi, not bileşenleri, devamsızlık hakkı
+    absences: [], // üniversite: devamsızlıklar
+    assignments: [], // üniversite: ödev teslimleri
     settings: { track: DEFAULT_TRACK, seededTracks: [] },
   };
 }
@@ -104,14 +107,14 @@ export function ensureTrackSeeded(state, track) {
 // Bir şey değiştiyse true döner (veri kaydedilmeli).
 export function prepareState(state, { seed = true } = {}) {
   const tracksOf = () =>
-    [state.subjects, state.classes ?? [], state.plans ?? [], state.exams ?? [], state.mistakes ?? [], state.cards ?? []].map((rows) => rows.map((r) => r.track));
+    [state.subjects, state.classes ?? [], state.plans ?? [], state.exams ?? [], state.mistakes ?? [], state.cards ?? [], state.absences ?? [], state.assignments ?? []].map((rows) => rows.map((r) => r.track));
   const before = JSON.stringify([state.settings, tracksOf()]);
   state.settings = cleanSettings(state.settings, { hasSubjects: state.subjects.length > 0 });
   for (const subject of state.subjects) {
     if (!TRACK_IDS.includes(subject.track)) subject.track = "yks";
   }
   // Program satırları da hedefe bağlıdır; hedefsiz (elle düzenlenmiş yedek) satırlar YKS sayılır
-  for (const row of [...(state.classes ?? []), ...(state.plans ?? []), ...(state.exams ?? []), ...(state.mistakes ?? []), ...(state.cards ?? [])]) {
+  for (const row of [...(state.classes ?? []), ...(state.plans ?? []), ...(state.exams ?? []), ...(state.mistakes ?? []), ...(state.cards ?? []), ...(state.absences ?? []), ...(state.assignments ?? [])]) {
     if (!TRACK_IDS.includes(row.track)) row.track = "yks";
   }
   const track = state.settings.track;

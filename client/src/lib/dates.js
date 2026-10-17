@@ -41,3 +41,11 @@ export function daysBetween(from, to) {
   };
   return Math.round((toUtc(to) - toUtc(from)) / 86_400_000);
 }
+
+// Teslime kalan süre: "3 gün kaldı", "bugün", "yarın", "2 gün geçti"
+export function dueLabel(due, today) {
+  const d = daysBetween(today, due);
+  if (d === 0) return 'bugün';
+  if (d === 1) return 'yarın';
+  return d > 0 ? `${d} gün kaldı` : `${-d} gün geçti`;
+}

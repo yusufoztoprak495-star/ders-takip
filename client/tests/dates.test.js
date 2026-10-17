@@ -67,3 +67,13 @@ describe("daysBetween", () => {
     expect(daysBetween("2026-03-28", "2026-03-30")).toBe(2);
   });
 });
+
+describe("dueLabel", () => {
+  it("teslime kalan günü yazar", async () => {
+    const { dueLabel } = await import("../src/lib/dates.js");
+    expect(dueLabel("2026-10-19", "2026-10-19")).toBe("bugün");
+    expect(dueLabel("2026-10-20", "2026-10-19")).toBe("yarın");
+    expect(dueLabel("2026-10-24", "2026-10-19")).toBe("5 gün kaldı");
+    expect(dueLabel("2026-10-17", "2026-10-19")).toBe("2 gün geçti");
+  });
+});

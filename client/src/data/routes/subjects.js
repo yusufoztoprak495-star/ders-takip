@@ -65,20 +65,22 @@ export function deleteSubject({ state, params }) {
   const id = parseId(params.id);
   const index = state.subjects.findIndex((s) => s.id === id);
   if (index === -1) throw new HttpError(404, "Bulunamadı");
-  const used = [...state.sessions, ...state.questions, ...state.resources, ...state.exams, ...(state.mistakes ?? []), ...(state.cards ?? [])].some(
+  const used = [...state.sessions, ...state.questions, ...state.resources, ...state.exams, ...(state.mistakes ?? []), ...(state.cards ?? []), ...(state.absences ?? [])].some(
     (row) => row.subjectId === id,
   );
   if (used) {
     throw new HttpError(
       400,
-      "Bu derse bağlı çalışma, soru, kitap, branş denemesi, hata defteri ya da bilgi kartı kaydı var; önce o kayıtları silmelisin",
+      "Bu derse bağlı çalışma, soru, kitap, branş denemesi, hata defteri, bilgi kartı ya da devamsızlık kaydı var; önce o kayıtları silmelisin",
     );
   }
   state.subjects.splice(index, 1);
   state.topics = state.topics.filter((t) => t.subjectId !== id);
   // Ders programı ve haftalık plandaki satırlar silinmez, yalnızca ders bağlantısı boşalır
-  for (const row of [...state.classes, ...state.plans]) {
+  for (const row of [...state.classes, ...state.plans, ...(state.assignments ?? [])]) {
     if (row.subjectId === id) row.subjectId = null;
   }
+  // Dersin kredi/not bilgisi dersle birlikte gider
+  state.courses = (state.courses ?? []).filter((c) => c.subjectId !== id);
   return { status: 204, body: null };
 }

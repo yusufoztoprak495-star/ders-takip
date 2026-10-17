@@ -22,6 +22,7 @@ import Exams from './pages/Exams.jsx';
 import Mistakes from './pages/Mistakes.jsx';
 import Cards from './pages/Cards.jsx';
 import Achievements from './pages/Achievements.jsx';
+import Term from './pages/Term.jsx';
 import Backdrop from './components/Backdrop.jsx';
 import ThemePicker from './components/ThemePicker.jsx';
 import Celebration from './components/Celebration.jsx';
@@ -34,6 +35,7 @@ import {
   MistakeIcon,
   CardsIcon,
   BadgeIcon,
+  TermIcon,
   LogIcon,
   ProgressIcon,
   QuestionsIcon,
@@ -55,6 +57,8 @@ const NAV_ITEMS = [
   { to: '/sorular', label: 'Soru Kaydı', short: 'Soru', Icon: QuestionsIcon, questions: true },
   { to: '/kaynaklar', label: 'Kaynaklar', short: 'Kaynak', Icon: ResourcesIcon, questions: true },
   { to: '/denemeler', label: 'Denemeler', short: 'Deneme', Icon: ExamIcon, questions: true },
+  // uni: true olanlar yalnızca üniversite hedefinde görünür
+  { to: '/donem', label: 'Dönem', short: 'Dönem', Icon: TermIcon, uni: true },
   { to: '/hata-defteri', label: 'Hata Defteri', short: 'Hatalar', Icon: MistakeIcon },
   { to: '/kartlar', label: 'Bilgi Kartları', short: 'Kartlar', Icon: CardsIcon },
   { to: '/konular', label: 'Dersler ve Konular', short: 'Dersler', Icon: TopicsIcon },
@@ -69,7 +73,7 @@ const NAV_ITEMS = [
 function useNavItems() {
   const { track } = useTrack();
   const exam = tracksQuestions(track);
-  return NAV_ITEMS.filter((item) => exam || !item.questions);
+  return NAV_ITEMS.filter((item) => (exam || !item.questions) && (!item.uni || track === 'uni'));
 }
 
 function NavItem({ to, label, short, Icon, primary }) {
@@ -173,6 +177,7 @@ function Pages() {
         <Route path="/sorular" element={examOnly(<Questions />)} />
         <Route path="/kaynaklar" element={examOnly(<Resources />)} />
         <Route path="/denemeler" element={examOnly(<Exams />)} />
+        <Route path="/donem" element={track === 'uni' ? <Term /> : <Navigate to="/" replace />} />
         <Route path="/hata-defteri" element={<Mistakes />} />
         <Route path="/kartlar" element={<Cards />} />
         <Route path="/konular" element={<Topics />} />

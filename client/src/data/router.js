@@ -15,6 +15,18 @@ import {
   setTopicDone,
   setTopicNote,
 } from "./routes/topics.js";
+import {
+  createAbsence,
+  createAssignment,
+  deleteAbsence,
+  deleteAssignment,
+  listAbsences,
+  listAssignments,
+  listCourses,
+  setAssignmentDone,
+  updateAssignment,
+  updateCourse,
+} from "./routes/university.js";
 import { createCard, deleteCard, listCards, reviewCard, updateCard } from "./routes/cards.js";
 import { createMistake, deleteMistake, listMistakes, reviewMistake, updateMistake } from "./routes/mistakes.js";
 import { createExam, deleteExam, listExams, listWrongTopics, setWrongTopics, updateExam } from "./routes/exams.js";
@@ -78,6 +90,16 @@ const ROUTES = [
   ["PUT", "/api/topics/:id/note", setTopicNote],
   ["POST", "/api/topics/:id/review", reviewTopic],
   ["GET", "/api/reviews", listDueReviews],
+  ["GET", "/api/courses", listCourses],
+  ["PUT", "/api/courses/:subjectId", updateCourse],
+  ["GET", "/api/absences", listAbsences],
+  ["POST", "/api/absences", createAbsence],
+  ["DELETE", "/api/absences/:id", deleteAbsence],
+  ["GET", "/api/assignments", listAssignments],
+  ["POST", "/api/assignments", createAssignment],
+  ["PUT", "/api/assignments/:id/done", setAssignmentDone],
+  ["PUT", "/api/assignments/:id", updateAssignment],
+  ["DELETE", "/api/assignments/:id", deleteAssignment],
   ["GET", "/api/cards", listCards],
   ["POST", "/api/cards", createCard],
   ["POST", "/api/cards/:id/review", reviewCard],

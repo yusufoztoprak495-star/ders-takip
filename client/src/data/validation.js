@@ -177,6 +177,18 @@ function cleanWrongTopics(value) {
   return out;
 }
 
+// Üniversite not bileşenleri: [{ name, weight, score|null }]
+function cleanComponents(value) {
+  if (!Array.isArray(value) || value.length > 10) return undefined;
+  const out = [];
+  for (const c of value) {
+    if (!isPlainObject(c) || !isText(c.name) || !isInt(c.weight)) return undefined;
+    if (!(c.score === null || (typeof c.score === "number" && Number.isFinite(c.score)))) return undefined;
+    out.push({ name: c.name, weight: c.weight, score: c.score });
+  }
+  return out;
+}
+
 // Tablo başına alanlar ve denetleyicileri. Denetleyici true/false ya da (temizleyen) bir değer döndürür.
 const ROW_SCHEMAS = {
   subjects: { name: isText, examType: isText, track: isText },
@@ -202,6 +214,9 @@ const ROW_SCHEMAS = {
   classes: { track: isText, day: isInt, start: isInt, end: isInt, title: isText, place: isText, subjectId: intOrNull },
   plans: { track: isText, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull },
   planChecks: { planId: isInt, date: isText },
+  courses: { subjectId: isInt, credits: isInt, absenceLimit: intOrNull, components: "components" },
+  absences: { track: isText, subjectId: isInt, date: isText, hours: isInt },
+  assignments: { track: isText, subjectId: intOrNull, title: isText, due: isText, note: isText, doneAt: textOrNull },
   cards: {
     track: isText,
     subjectId: isInt,
@@ -253,6 +268,12 @@ function cleanRow(row, schema) {
       const results = cleanResults(value);
       if (!results) throw new BadField(field);
       clean[field] = results;
+      continue;
+    }
+    if (check === "components") {
+      const list = cleanComponents(value);
+      if (!list) throw new BadField(field);
+      clean[field] = list;
       continue;
     }
     if (check === "wrongTopics") {

@@ -9,7 +9,7 @@ import EmptyState from '../components/EmptyState.jsx';
 import BackupReminder from '../components/BackupReminder.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import { fillMissingDays, summarize } from '../lib/charts.js';
-import { daysAgo, daysBetween, toLocalDateString } from '../lib/dates.js';
+import { daysAgo, daysBetween, dueLabel, toLocalDateString } from '../lib/dates.js';
 import { trackInfo } from '../lib/tracks.js';
 import { formatDate, formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
 import { addDays, studyStreak, topSubjectOfDay, weeklyChange } from '../lib/insights.js';
@@ -243,6 +243,29 @@ function MistakesDue({ mistakes, cards }) {
   );
 }
 
+// Üniversite: önümüzdeki 7 günde teslimi olan ödevler
+function UpcomingAssignments({ items, today }) {
+  if (items.length === 0) return null;
+  return (
+    <article className="panel panel-wide upcoming">
+      <h2 className="panel-label">Yaklaşan teslimler</h2>
+      <ul className="review-list">
+        {items.map((a) => (
+          <li key={a.id}>
+            <span className="review-topic">
+              {a.title}
+              <span className="muted">{a.subjectName ? ` ${a.subjectName}` : ''}</span>
+            </span>
+            <Link className="text-link" to="/donem">
+              {dueLabel(a.due, today)}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </article>
+  );
+}
+
 // Karşılama sayfası: bugünün özeti, haftalık değişim, çalışma serisi, günün dersi ve son haftanın ritmi
 export default function Home() {
   const { track } = useTrack();
@@ -251,6 +274,7 @@ export default function Home() {
   const [reviews, setReviews] = useState([]);
   const [mistakesDue, setMistakesDue] = useState(0);
   const [cardsDue, setCardsDue] = useState(0);
+  const [upcoming, setUpcoming] = useState([]);
   const [history, setHistory] = useState(null);
   const [todaySubjects, setTodaySubjects] = useState(null);
   const [error, setError] = useState(null);
@@ -285,6 +309,11 @@ export default function Home() {
         }
       })
       .catch(() => {});
+    if (track === 'uni') {
+      apiFetch('/api/assignments')
+        .then((rows) => setUpcoming(rows.filter((a) => !a.doneAt && daysBetween(to, a.due) <= 7).slice(0, 5)))
+        .catch(() => {});
+    }
     apiFetch('/api/cards')
       .then((rows) => setCardsDue(rows.filter((c) => c.nextReview <= to).length))
       .catch(() => {});
@@ -389,6 +418,7 @@ export default function Home() {
 
             <DueReviews reviews={reviews} onReviewed={handleReviewed} today={today} />
             <MistakesDue mistakes={mistakesDue} cards={cardsDue} />
+            <UpcomingAssignments items={upcoming} today={today} />
 
             <article className="panel">
               <h2 className="panel-label">Haftalık değişim</h2>

@@ -182,3 +182,12 @@ export const BadgeIcon = () => (
     <path d="M12 12.5v4" />
   </Icon>
 );
+
+// Dönem (üniversite): kep
+export const TermIcon = () => (
+  <Icon>
+    <path d="M2.5 9.5 12 5l9.5 4.5L12 14z" />
+    <path d="M6.5 11.5v4.5c3.5 2.5 7.5 2.5 11 0v-4.5" />
+    <path d="M21.5 9.5v5" />
+  </Icon>
+);
