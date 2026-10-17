@@ -84,6 +84,6 @@ Sunucusuz, tamamen statik bir web uygulaması (PWA olarak yayınlanacak): React 
 - Silinen konu/kaynağa bağlı kayıtlar silinmez, bağlantıları boşalır (veri katmanı bağlantıyı `null` yapar). Kaydı olan ders silinmez.
 - **Çalışma hedefi:** `state.settings.track` (`yks`/`dgs`/`uni`, `client/src/lib/tracks.js`). Her dersin `track` alanı vardır; listeler ve istatistikler `activeSubjectIds` ile seçili hedefe süzülür. Hazır listeler `seedData.js` → `SEED_BY_TRACK`, göç `seed.js` → `prepareState`.
 - **Program:** saatler dakika olarak saklanır (08:30 = 510, gün sonu 1440; 5 dk adım). `classes` (ders programı) ve `plans` (haftalık bloklar) hedefe bağlıdır. Ders haftalık programa kopyalanmaz; haftalık sayfa iki tabloyu birlikte okur. Saf yardımcılar `client/src/lib/schedule.js`, uçlar `client/src/data/routes/schedule.js`.
-- **Temalar:**  (Gece),  (Kâğıt), ,  ( → ; 'deki ilk betik de aynı listeyi taşır). Renkler yalnızca CSS değişkenlerinden: Gece , Kâğıt , Neon/Pastel . Arka plan sahneleri  +  (yalnızca transform/opacity canlandırılır, "hareketi azalt"ta durur).
-- **Odak sesleri:** nota üretimi saf ve testli (), ses sentezi  (Web Audio, dosya yok).
+- **Temalar:** `dark` (Gece), `light` (Kâğıt), `neon`, `pastel` (`client/src/lib/theme.js` → `THEMES`; `index.html`'deki ilk betik de aynı listeyi taşır). Renkler yalnızca CSS değişkenlerinden: Gece `index.css :root`, Kâğıt `theme.css`, Neon/Pastel `themes.css`. Arka plan sahneleri `components/Backdrop.jsx` + `backdrop.css` (yalnızca transform/opacity canlandırılır, "hareketi azalt"ta durur).
+- **Odak sesleri:** nota üretimi saf ve testli (`lib/focusSound.js`), ses sentezi `lib/focusPlayer.js` (Web Audio, dosya yok).
 - Kapsam dışı: PDF'ten soru üretme (ileride).
