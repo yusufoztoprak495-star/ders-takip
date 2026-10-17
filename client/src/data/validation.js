@@ -181,7 +181,7 @@ function cleanWrongTopics(value) {
 const ROW_SCHEMAS = {
   subjects: { name: isText, examType: isText, track: isText },
   topics: { subjectId: isInt, name: isText, doneAt: isText, reviewStep: isInt, nextReview: textOrNull, note: isText },
-  sessions: { subjectId: isInt, topicId: intOrNull, startedAt: isText, durationSeconds: isInt, entryType: isText },
+  sessions: { subjectId: isInt, topicId: intOrNull, startedAt: isText, durationSeconds: isInt, entryType: isText, distractions: isInt },
   questions: {
     subjectId: isInt,
     topicId: intOrNull,

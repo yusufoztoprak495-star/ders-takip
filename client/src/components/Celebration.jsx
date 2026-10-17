@@ -44,9 +44,9 @@ export default function Celebration() {
       timers.add(t);
     };
     function onCelebrate(event) {
-      const { x, y, message } = event.detail;
+      const { x, y, message, quiet } = event.detail;
       const reduce = prefersLessMotion();
-      if (!reduce) {
+      if (!reduce && !quiet) {
         const id = ++counter;
         setBursts((list) => [...list, makeBurst(id, x, y)]);
         later(() => setBursts((list) => list.filter((b) => b.id !== id)), 1600);

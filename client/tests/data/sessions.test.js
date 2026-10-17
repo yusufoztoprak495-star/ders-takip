@@ -162,3 +162,17 @@ describe("/api/sessions sınır değerleri", () => {
     expect(res.status).toBe(201);
   });
 });
+
+describe("Pomodoro dikkat sayacı (distractions)", () => {
+  it("verilirse kaydedilir, verilmezse alan hiç olmaz; eksi ya da kesirli reddedilir", async () => {
+    const { app } = makeTestApp();
+    const base = { subjectId: 1, startedAt: "2026-10-19T10:00:00.000Z", durationSeconds: 1500, entryType: "pomodoro" };
+    const withCount = await request(app).post("/api/sessions").send({ ...base, distractions: 2 });
+    expect(withCount.status).toBe(201);
+    expect(withCount.body.distractions).toBe(2);
+    const without = await request(app).post("/api/sessions").send(base);
+    expect(without.body).not.toHaveProperty("distractions");
+    expect((await request(app).post("/api/sessions").send({ ...base, distractions: -1 })).status).toBe(400);
+    expect((await request(app).post("/api/sessions").send({ ...base, distractions: 1.5 })).status).toBe(400);
+  });
+});

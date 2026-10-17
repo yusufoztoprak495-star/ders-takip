@@ -13,3 +13,8 @@ export function celebrate(anchor, message) {
   }
   window.dispatchEvent(new CustomEvent(CELEBRATE_EVENT, { detail: { x, y, message } }));
 }
+
+// Sessiz bildirim: konfetisiz, yalnızca kısa mesaj (ör. 20-20-20 göz molası hatırlatması)
+export function notify(message) {
+  window.dispatchEvent(new CustomEvent(CELEBRATE_EVENT, { detail: { x: 0, y: 0, message, quiet: true } }));
+}

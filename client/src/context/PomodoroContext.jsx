@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../api.js';
-import { celebrate } from '../lib/celebrate.js';
+import { celebrate, notify } from '../lib/celebrate.js';
+import { breakAfter, breakTip, eyeReminderIndex, loadBreakSettings, nextStreak, saveBreakSettings } from '../lib/breaks.js';
 import { createSingleFlight, formatTime, loadSettings, remainingSeconds, saveSettings } from '../lib/pomodoro.js';
 import { loadSoundSettings, saveSoundSettings, shouldPlay } from '../lib/focusSound.js';
 import { createFocusPlayer } from '../lib/focusPlayer.js';
@@ -15,6 +16,9 @@ export function usePomodoro() {
 
 export function PomodoroProvider({ children }) {
   const [settings, setSettings] = useState(loadSettings);
+  // Mola sağlığı ayarları (uzun mola, 20-20-20) ve art arda tur serisi
+  const [breakSettings, setBreakSettings] = useState(loadBreakSettings);
+  const streak = useRef(null); // { count, lastEndedAtMs }
   // phase: null (boşta) ya da { kind: 'work' | 'break', startedAtMs, durationSeconds, subjectId, topicId }
   const [phase, setPhase] = useState(null);
   const [now, setNow] = useState(() => Date.now());
@@ -58,11 +62,18 @@ export function PomodoroProvider({ children }) {
         startedAt: new Date(phase.startedAtMs).toISOString(),
         durationSeconds: phase.durationSeconds,
         entryType: 'pomodoro',
+        distractions: phase.distractions ?? 0,
       };
+      // Her 4. turdan sonra uzun mola (ayarlanabilir); molada küçük bir öneri gösterilir
+      const next = breakAfter(phase.round ?? 1, settings.breakMinutes, breakSettings);
+      streak.current = { count: phase.round ?? 1, lastEndedAtMs: Date.now() };
       setPhase({
         kind: 'break',
         startedAtMs: Date.now(),
-        durationSeconds: settings.breakMinutes * 60,
+        durationSeconds: next.minutes * 60,
+        long: next.long,
+        round: phase.round ?? 1,
+        tip: breakTip(next.long, Math.floor(Date.now() / 1000)),
       });
       setNow(Date.now());
       saveSession(payload);
@@ -73,10 +84,35 @@ export function PomodoroProvider({ children }) {
         }).catch(() => {});
       }
     } else {
+      // Uzun moladan sonra seri baştan başlar
+      streak.current = phase.long ? null : { count: phase.round ?? 0, lastEndedAtMs: Date.now() };
       setPhase(null);
       setNotice('Mola bitti. Yeni bir tur başlatabilirsin.');
     }
-  }, [phase, remaining, settings.breakMinutes, saveSession]);
+  }, [phase, remaining, settings.breakMinutes, breakSettings, saveSession]);
+
+  // Odak: çalışma turunda sekmeden/uygulamadan çıkılan her sefer sayılır (tur kaydına yazılır)
+  const working = phase?.kind === 'work';
+  useEffect(() => {
+    if (!working) return undefined;
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        setPhase((p) => (p?.kind === 'work' ? { ...p, distractions: (p.distractions ?? 0) + 1 } : p));
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [working]);
+
+  // 20-20-20: uzun turlarda her 20 dakikada bir göz molası hatırlatması
+  useEffect(() => {
+    if (!phase || phase.kind !== 'work' || !breakSettings.eyeReminder || remaining === null) return;
+    const index = eyeReminderIndex(phase.durationSeconds - remaining, phase.durationSeconds);
+    if (index > (phase.eyeIndex ?? 0)) {
+      setPhase((p) => ({ ...p, eyeIndex: index }));
+      notify('Göz molası: 20 saniye boyunca 6 metre uzağa bak.');
+    }
+  }, [phase, remaining, breakSettings.eyeReminder]);
 
   // Sekmeyi kapatmadan önce uyar: çalışan sayaç ya da kaydedilmemiş çalışma kaybolmasın
   const unsafeToLeave = phase?.kind === 'work' || pending.length > 0;
@@ -118,12 +154,17 @@ export function PomodoroProvider({ children }) {
       player.current.unlock();
       setNotice(null);
       setNow(Date.now());
+      const now = Date.now();
       setPhase({
         kind: 'work',
-        startedAtMs: Date.now(),
+        startedAtMs: now,
         durationSeconds: settings.workMinutes * 60,
         subjectId,
         topicId,
+        // Serideki kaçıncı tur (uzun mola bununla belirlenir), dikkat sayacı, son göz hatırlatması
+        round: nextStreak(streak.current, now) + 1,
+        distractions: 0,
+        eyeIndex: 0,
         // Haftalık programdaki bir bloktan başlatıldıysa: tur bitince o blok bugün için "yapıldı" olur
         planId,
         planDate,
@@ -138,6 +179,11 @@ export function PomodoroProvider({ children }) {
   const updateSettings = useCallback((next) => {
     setSettings(next);
     saveSettings(next);
+  }, []);
+
+  const updateBreakSettings = useCallback((next) => {
+    setBreakSettings(next);
+    saveBreakSettings(next);
   }, []);
 
   // Çift tıklamada aynı çalışma iki kez kaydedilmesin: aynı kayıt için tek istek uçuşta olabilir
@@ -169,6 +215,8 @@ export function PomodoroProvider({ children }) {
   const value = {
     settings,
     updateSettings,
+    breakSettings,
+    updateBreakSettings,
     phase,
     remaining,
     pending,

@@ -29,7 +29,7 @@ function parseSessionBody(state, rawBody) {
   if (durationSeconds > MAX_SESSION_SECONDS) {
     throw new HttpError(400, "Bir çalışma kaydı en fazla 24 saat olabilir");
   }
-  return {
+  const row = {
     subjectId,
     topicId,
     startedAt: requireIsoDateTime(body.startedAt, "Başlangıç zamanı"),
@@ -39,6 +39,11 @@ function parseSessionBody(state, rawBody) {
       "manual",
     ]),
   };
+  // Pomodoro turunda sekmeden kaç kez çıkıldığı (odak modu); yalnızca gönderilirse saklanır
+  if (body.distractions !== undefined && body.distractions !== null) {
+    row.distractions = requireInt(body.distractions, "Dikkat dağılması", { min: 0, max: 999 });
+  }
+  return row;
 }
 
 // İsteğe bağlı from/to (yerel tarih, uçlar dahil), yeniden eskiye sıralı. Yalnızca seçili hedefin dersleri.

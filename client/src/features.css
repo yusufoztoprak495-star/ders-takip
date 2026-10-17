@@ -769,3 +769,122 @@ kbd {
   margin-right: 4px;
   font-size: 0.85rem;
 }
+
+/* --- Pomodoro: tur bilgisi, mola önerisi, mola sağlığı ayarları --- */
+.timer-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.round-info {
+  margin: 0;
+  text-align: center;
+  font-size: 0.88rem;
+}
+
+.break-tip {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 10px 14px;
+  text-align: center;
+  border-left: 3px solid var(--series-2);
+  background: color-mix(in srgb, var(--series-2) 10%, transparent);
+}
+
+.break-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.break-settings summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.break-settings[open] summary {
+  margin-bottom: 10px;
+}
+
+.break-settings .check-row {
+  margin: 10px 0 4px;
+}
+
+/* --- Odak modu: ekranı kaplayan sade sayaç --- */
+.focus-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+}
+
+.focus-mode.is-break {
+  background: color-mix(in srgb, var(--series-2) 12%, var(--bg));
+}
+
+.focus-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(720px, 100%);
+  text-align: center;
+}
+
+.focus-label {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.focus-time {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 22vw, 13rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.focus-bar {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--series-dim);
+}
+
+.focus-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent-fill);
+  transform-origin: left;
+  transition: transform 0.25s linear;
+}
+
+.focus-meta,
+.focus-tip {
+  margin: 0;
+  color: var(--muted);
+}
+
+.focus-tip {
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+.focus-exit {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+}
