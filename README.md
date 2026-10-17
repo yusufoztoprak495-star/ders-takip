@@ -6,11 +6,13 @@
 ![React](https://img.shields.io/badge/React-19-149eca)
 ![Vite](https://img.shields.io/badge/Vite-8-646cff)
 ![PWA](https://img.shields.io/badge/PWA-çevrimdışı%20çalışır-5a0fc8)
-![Testler](https://img.shields.io/badge/test-349%20geçiyor-2ea44f)
+![Testler](https://img.shields.io/badge/test-572%20geçiyor-2ea44f)
 
 ### 👉 [Uygulamayı aç](https://yusufoztoprak495-star.github.io/ders-takip/)
 
 Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sunucuya gönderilmez. Telefonda "Ana ekrana ekle" ile uygulama gibi kurulur ve internetsiz de açılır.
+
+Önce nasıl göründüğüne bakmak istersen: **Ayarlar → Örnek verilerle dene** 200 günlük örnek bir YKS çalışma geçmişi yükler (kendi verin varsa önce yedek al).
 
 ![Ana sayfa: günün sözü, bugünün özeti, haftalık değişim, seri ve günün dersi](docs/screenshots/ana-sayfa.png)
 
@@ -32,11 +34,45 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | 🗂️ **Dersler ve konular** | YKS sayısalın 15 dersi (TYT: Türkçe, Matematik, Geometri, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din Kültürü; AYT: Matematik, Geometri, Fizik, Kimya, Biyoloji) tüm konularıyla, müfredat sırasında hazır gelir. Listeyi düzenle ya da kendi derslerini (dönemiyle) ekle. |
 | ✨ **Canlılık** | Kartlar sırayla gelir, sayılar sayarak dolar, grafikler çizilerek açılır; pomodoro bitince, konu ya da ders tamamlanınca, yeni rekor nette ve günlük hedefe ulaşınca konfetili kutlama. "Hareketi azalt" açıksa hepsi kapanır. |
 | 🎨 **Dört tema** | Gece (Samanyolu, Türkçe adlı takımyıldızlar, gezegen yörüngeleri, kayan yıldızlar), Kâğıt (teknik çizim paftası: antet, gönye, grafikler, kalemle beliren notlar), Neon (yağmurlu neon gece, bokeh ışıklar, yanıp sönen ODAK tabelası) ve Pastel (kalın çizgili çıkartma kartlar, kareli defter, fosforlu başlık). Yeni tema, tema düğmesinden daire hâlinde yayılarak gelir; "hareketi azalt" açıksa arka planlar durur. Masaüstünde sol menü, telefonda 4 ana sekme + Diğer paneli. |
-| 💾 **Yedekleme** | Yedeği indir/yükle, haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek. |
+| 📆 **Bugünün programı** | Ana sayfada bugünün dersleri ve çalışma blokları, şu anki blok vurgulu; bir bloktan tek dokunuşla Pomodoro başlat, tur bitince blok "yapıldı" olur. |
+| 🔥 **Isı haritası** | Son bir yılın her günü bir kare (ana sayfada son dört ay): kaç gün çalıştın, en uzun günün. |
+| 🔮 **Gidişat** | Deneme netinin tavana yaklaştıkça yavaşlayan eğriyle 3 aya kadar tahmini; konu bitirme hızına göre bitiş tarihi ve sınava yetişmek için haftada kaç konu gerektiği; günün hangi saatlerinde çalıştığın (verimli saatler). |
+| 🧮 **Puan ve sıralama tahmini** | TYT ve SAY / EA / SÖZ netlerinden (son 3 deneme ortalamasıyla doldurulabilir) ve diploma notundan tahmini ham ve yerleştirme puanı; 2025-YKS puan dağılımından tahmini başarı sırası; hedef sıra için gereken puan. Katsayılar yaklaşıktır, ekranda tahmin olduğu yazar. |
+| 🎯 **Yanlış konu analizi** | Denemeden sonra yanlış/boş soruların konusunu işle; "soru kaybettiren konular" sıralaması çıkar. |
+| 📸 **Hata defteri** | Yanlış yaptığın sorunun fotoğrafını çek (tarayıcıda küçültülür), cevabı ve notunu ekle; 1-3-7-30 gün arayla yeniden karşına çıkar, dört kez üst üste doğru çözünce öğrenilmiş sayılır. |
+| 🃏 **Bilgi kartları** | Formül ve tanımlar için çevrilen kartlar, Leitner kutularıyla (1-2-4-8-16 gün) tekrar; kartlardan 4 şıklı mini test. |
+| 🗒️ **Konu notları** | Her konuya formül / püf noktası notu. |
+| 🧠 **Akıllı plan önerisi** | Haftalık programdaki boş saatlere zayıf konulardan (denemede soru kaybettiren, doğruluğu düşük, tekrarı gelen) çalışma blokları önerir; istemediklerini çıkarıp ekle. |
+| 🧘 **Odak modu ve mola sağlığı** | Tam ekran sade sayaç; turda sekmeden kaç kez çıktığın sayılır. Her 4 turda uzun mola, molada kısa öneriler, uzun turlarda 20-20-20 göz molası hatırlatması. |
+| 🏅 **Başarılar** | 20 rozet (seri, saat, soru, deneme, odak, erkenci kuş…) ve her pomodoroda büyüyen, temaya göre değişen koleksiyon: Gece'de yıldızlar, Kâğıt'ta mürekkep yapraklar, Neon'da ışıklar, Pastel'de çıkartmalar. |
+| 🖼️ **Haftalık rapor kartı** | Haftanın özetini temanın renkleriyle 1080×1920 PNG olarak indir ya da paylaş. |
+| 🎓 **Dönem (üniversite)** | Ders başına kredi ve not bileşenleri, harf notu, hedef harf için finalden kaç alman gerektiği, dönem ortalaması; ders programından hesaplanan devamsızlık hakkı ve "Gitmedim" düğmesi; ödev teslimlerine geri sayım. |
+| ⌨️ **Kısayollar ve hafif mod** | Tek harfle sayfa değiştir (`?` listeyi açar); haftalık programı ve sınav gününü `.ics` olarak takvimine aktar; eski cihazlar için animasyonları ve arka planı kapatan hafif mod; ana ekran simgesinde Pomodoro / Soru / Hafta kısayolları. |
+| 💾 **Yedekleme** | Yedeği indir/yükle (hata defteri fotoğrafları dahil), haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek. |
 
-> Üniversite hedefinde sınav mantığı yoktur: soru kaydı, kaynaklar, net ve doğruluk gizlenir; yalnızca Pomodoro ve çalışma süresi tutulur.
+> Üniversite hedefinde sınav mantığı yoktur: soru kaydı, kaynaklar, net ve doğruluk gizlenir; onların yerine Dönem sayfası (not, devamsızlık, ödev) gelir.
 
 ## Ekran görüntüleri
+
+| Isı haritası ve gidişat | Puan ve sıralama tahmini |
+| --- | --- |
+| ![İlerleme: yıllık ısı haritası, net gidişatı ve konu bitiş tahmini](docs/screenshots/ilerleme-isi-haritasi.png) | ![Denemeler: netlerden puan ve başarı sırası tahmini](docs/screenshots/puan-siralama.png) |
+
+| Hata defteri | Bilgi kartları |
+| --- | --- |
+| ![Hata defteri kartları ve tekrar adımları](docs/screenshots/hata-defteri.png) | ![Çevrilen bilgi kartı](docs/screenshots/bilgi-kartlari.png) |
+
+| Akıllı plan önerisi | Soru kaybettiren konular |
+| --- | --- |
+| ![Boş saatlere zayıf konulardan blok önerisi](docs/screenshots/akilli-oneri.png) | ![Denemelerden toplanan yanlış konular](docs/screenshots/yanlis-konular.png) |
+
+| Başarılar | Odak modu |
+| --- | --- |
+| ![Rozetler ve yıldızlı gökyüzü koleksiyonu](docs/screenshots/basarilar.png) | ![Tam ekran sade sayaç](docs/screenshots/odak-modu.png) |
+
+| Haftalık rapor kartı | Verimli saatler |
+| --- | --- |
+| <img src="docs/screenshots/haftalik-rapor.png" alt="Pastel temada haftalık rapor kartı" width="270"> | ![Günün saatlerine göre çalışma](docs/screenshots/verimli-saatler.png) |
 
 | İlerleme | Ders ayrıntısı (konular zayıftan güçlüye) |
 | --- | --- |
@@ -121,7 +157,8 @@ Sunucu, veritabanı ya da `.env` yoktur. `master` dalına her gönderimde GitHub
 client/
   public/            manifest, simge, servis çalışanı
   src/
-    pages/           Ana sayfa, Pomodoro, Günlük, Soru Kaydı, Kaynaklar, Dersler ve Konular, Ders Programı, Haftalık Program, İlerleme, Ayarlar
+    pages/           Ana sayfa, Pomodoro, Günlük, Soru Kaydı, Kaynaklar, Denemeler, Hata Defteri, Bilgi Kartları,
+                     Dersler ve Konular, Ders Programı, Haftalık Program, İlerleme, Başarılar, Dönem, Ayarlar
     components/      ortak parçalar, hedef seçici, Pomodoro kadranı, SVG grafikler, çizimler
     context/         Pomodoro sayacı, çalışma hedefi, klasör yedeği
     hooks/, lib/     saf yardımcılar (tarih, süre, grafik, tema, hedefler, yedek, ders saatleri)
@@ -146,7 +183,13 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 | `/api/classes` | Ders programı (seçili hedefin); bir dersi birden çok güne ekle / düzenle / sil. Aynı gün çakışan ders reddedilir |
 | `/api/plans`, `/api/plans/copy` | Haftalık programın blokları (çalışma, mola, diğer); ders saatine ya da başka bloğa denk gelen blok reddedilir. Bir günü başka günlere kopyalama |
 | `/api/schedule` | Gün aralığı (varsayılan 08:00–23:00): şerit ve ızgara bu saatlere göre çizilir |
-| `/api/stats/daily`, `by-subject`, `by-topic`, `topic/:id` | İstatistikler |
+| `/api/today`, `/api/plans/:id/done` | Bugünün programı ve blokların o güne özel "yapıldı" işareti |
+| `/api/exams`, `/api/exams/:id/wrong-topics`, `/api/exams/wrong-topics` | Denemeler; denemede yanlış yapılan konular ve tüm denemelerden toplamı |
+| `/api/goals`, `/api/reviews`, `/api/topics/:id/done`, `/review`, `/note` | Sınav tarihi ve günlük hedef; konu bitirme, 1-3-7-30 tekrar, konu notu |
+| `/api/mistakes`, `/api/cards` | Hata defteri ve bilgi kartları (tekrar: `/:id/review`). Fotoğraflar ayrı bir IndexedDB deposunda (`data/images.js`) |
+| `/api/courses`, `/api/absences`, `/api/assignments` | Üniversite: kredi ve not bileşenleri, devamsızlık, ödevler |
+| `/api/weak-topics`, `/api/achievements` | Akıllı öneri için zayıf konular; rozetler için sayılar |
+| `/api/stats/daily`, `hourly`, `by-subject`, `by-topic`, `topic/:id` | İstatistikler |
 
 <details>
 <summary><b>Kurallar</b> (doğrulama, net, gün sınırı, silme, hedefler)</summary>
@@ -159,6 +202,14 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 - **Hedefler:** her dersin bir `track` alanı vardır; listeler ve istatistikler yalnızca seçili hedeften hesaplanır. Hazır ders listesi bir hedef ilk seçildiğinde bir kez yüklenir. Üniversite derslerine soru ve kitap kaydı eklenemez. Hedeflerden önceki eski veriler ve yedekler kendiliğinden YKS sayılır.
 
 </details>
+
+### Puan ve sıralama tahmini nasıl çalışır?
+
+ÖSYM puanları her yıl adayların ortalama ve standart sapmasına göre hesaplar, katsayıları açıklamaz. Uygulama bu yüzden **tahmin** verir:
+
+- **Ham puan** = 100 + Σ (net × katsayı). Katsayılar puan hesaplayıcılarda yaygın kullanılan yaklaşık değerlerdir (TYT'de Türkçe/Matematik 3,3, Sosyal/Fen 3,4; SAY'da TYT bölümleri 1,32–1,36, AYT Matematik 3, Fizik 2,85, Kimya ve Biyoloji 3,07…). Tam netlerde her puan türü ~500 eder.
+- **Yerleştirme puanı** = ham puan + OBP katkısı (diploma notu × 5 × 0,12; önceki yıl bir programa yerleşenlerde × 0,06).
+- **Sıralama**, 2025-YKS yerleştirme puanlarının yığınsal dağılımından (o puan ve üzeri aday sayısı) iki nokta arasında logaritmik aradeğerle bulunur. Tablo `client/src/lib/yksScore.js` içinde.
 
 ### Veriler ve yedekleme
 
@@ -175,7 +226,7 @@ Ayrıntılı tehdit modeli ve alınan önlemler: [SECURITY.md](SECURITY.md). Kı
 - **CSP:** sayfa yalnızca kendi dosyalarını yükler, dışarıya bağlanamaz, çerçeve ve medya açamaz. Tek satır içi betik (tema) özetiyle (hash) izinlidir.
 - **Trusted Types:** DOM'a ham HTML/betik adresi yazmak tarayıcı düzeyinde yasak; tek izinli kalıp servis çalışanının adresi.
 - **Clickjacking:** uygulama başka bir sitenin çerçevesinde açılırsa çizilmez.
-- **Yedek dosyası güvenilmez sayılır:** en fazla 20 MB; yalnızca bilinen tablolar ve alanlar alınır, alan türleri ve metin uzunlukları denetlenir, `__proto__` gibi anahtarlar atılır.
+- **Yedek dosyası güvenilmez sayılır:** en fazla 80 MB (payın çoğu fotoğraflar için); yalnızca bilinen tablolar ve alanlar alınır, alan türleri ve metin uzunlukları denetlenir, `__proto__` gibi anahtarlar atılır. Fotoğraflar yalnızca boyutu sınırlı webp/jpeg/png `data:` adresi olarak kabul edilir (SVG gibi betik taşıyabilecek türler reddedilir).
 - **Yayın hattı:** GitHub eylemleri commit özetiyle sabitlenmiş, işler en az yetkiyle çalışır, `npm audit` ciddi açıkta yayını durdurur, Dependabot haftalık güncelleme açar.
 
 ### Testler
@@ -185,7 +236,7 @@ npm test
 ```
 
 - **Veri katmanı** (`client/tests/data/`): her uç için başarılı ve hatalı durumlar, doğrulama, gün sınırı, net/istatistik hesapları, hedefe göre süzme, eski verinin taşınması, yedek doğrulaması ve klasör yedeği (sahte klasörle).
-- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi.
+- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, mola kuralları, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi, ısı haritası, net/konu tahmini, puan ve sıralama tahmini, Leitner kutuları ve mini test, plan önerisi, rozetler, harf notu/AGNO, takvim dosyası, kısayollar.
 
 Sayfaların görünümü testlerle yakalanmaz; her değişiklik tarayıcıda masaüstü ve telefon genişliğinde açılıp denenir.
 
@@ -203,6 +254,7 @@ Hedef his: deri kaplı bir ajanda ve dolma kalem.
 ## Yol haritası
 
 - PDF'ten soru üretme (ileride).
+- Puan tahmininde her yıl yeni ÖSYM dağılımı geldikçe sıralama tablosunu güncellemek.
 
 ## Nasıl yapıldı?
 

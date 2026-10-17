@@ -88,4 +88,10 @@ Sunucusuz, tamamen statik bir web uygulaması (PWA olarak yayınlanacak): React 
 - **Denemeler / hedefler / tekrar:** deneme türleri ve soru sayıları `lib/exams.js` (`EXAM_TYPES`), uçlar `routes/exams.js`; sınav tarihi (hedef başına) ve günlük hedef `settings.examDates` / `settings.dailyGoal` (`routes/goals.js`); konu bitirme ve 1-3-7-30 gün tekrarı konu kaydında `doneAt`, `reviewStep`, `nextReview` (`routes/topics.js`).
 - **Yedek dosyası güvenilmezdir:** `validation.js` → `ROW_SCHEMAS` yalnızca bilinen alanları alır; yeni bir tabloya/alana veri eklenince şemaya da eklenmeli, yoksa yedekten geri yüklenmez. Güvenlik önlemleri `SECURITY.md`.
 - **Odak sesleri:** nota üretimi saf ve testli (`lib/focusSound.js`), ses sentezi `lib/focusPlayer.js` (Web Audio, dosya yok).
+- **Hata defteri fotoğrafları** ana veride değil, ayrı IndexedDB deposunda (`data/images.js`, `getImageStore()`); satırda yalnızca `imageId`. Yedek dosyasına `images: { id: data: adresi }` olarak girer (`data/backupData.js`: `collectBackup` / `restoreBackupText`). CSP `img-src`'de `blob:` bunun için.
+- **Tekrar sistemleri:** konu ve hata defteri 1-3-7-30 gün (`REVIEW_INTERVALS`), bilgi kartları Leitner 1-2-4-8-16 (`lib/leitner.js`).
+- **Tahminler saf ve testli:** net gidişatı/konu bitişi `lib/forecast.js`, puan ve sıralama `lib/yksScore.js` (yaklaşık katsayılar + 2025 dağılımı; arayüzde "tahmin" diye yazılır), plan önerisi `lib/planSuggest.js` (zayıf konular veri katmanında `stats.js` → `weakTopics`), rozetler `lib/badges.js` (veri `stats.js` → `achievementFacts`), not/AGNO/devamsızlık `lib/grades.js`.
+- **Sayfalar tembel yüklenir** (`App.jsx` → `PAGES`, `React.lazy`); açılıştan sonra boşta hepsi indirilir ki servis çalışanı önbelleğe alsın. Yeni sayfa eklerken `PAGES`'e de yaz.
+- **Örnek veri:** `lib/demoData.js` → `buildDemoState(today)`; yeni tablo/özellik eklenince örnek veriye de eklenmeli (yedek şemasından geçtiği testte denetlenir).
+- **Görünüm tercihleri tarayıcıda (localStorage):** tema, hafif mod (`hafif-mod`, `<html data-lite>`), Pomodoro ve mola ayarları, görülen rozetler, puan hesabı girdileri.
 - Kapsam dışı: PDF'ten soru üretme (ileride).
