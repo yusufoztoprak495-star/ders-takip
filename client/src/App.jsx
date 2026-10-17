@@ -21,6 +21,7 @@ import WeeklyPlan from './pages/WeeklyPlan.jsx';
 import Exams from './pages/Exams.jsx';
 import Backdrop from './components/Backdrop.jsx';
 import ThemePicker from './components/ThemePicker.jsx';
+import Celebration from './components/Celebration.jsx';
 import { useTheme } from './hooks/useTheme.js';
 
 import {
@@ -196,6 +197,7 @@ export default function App() {
       <main className="page">
         <Pages />
       </main>
+      <Celebration />
     </TrackProvider>
     </PomodoroProvider>
     </BackupProvider>

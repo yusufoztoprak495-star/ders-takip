@@ -7,6 +7,7 @@ import { EmptyChart } from '../components/Doodles.jsx';
 import { useTrack } from '../context/TrackContext.jsx';
 import { trackInfo } from '../lib/tracks.js';
 import { toLocalDateString } from '../lib/dates.js';
+import { celebrate } from '../lib/celebrate.js';
 
 // Hedefe göre grup alanının örnek metni (ders adının yanındaki parantez)
 const GROUP_PLACEHOLDER = {
@@ -188,7 +189,13 @@ export default function Topics() {
 
   // Bitti işareti: tekrar takvimi bugünden başlar (1, 3, 7, 30 gün sonra)
   // Kutu hemen işaretlenir (beklemeden); kayıt başarısız olursa yeniden yükleme eski hâline döndürür
-  const handleToggleDone = (topic, done) => {
+  const handleToggleDone = (topic, done, anchor) => {
+    if (done) {
+      // Dersin son konusu da bittiyse büyük kutlama, değilse kutunun yanında küçük konfeti
+      const subject = subjects.find((s) => s.topics.some((t) => t.id === topic.id));
+      const allDone = subject && subject.topics.every((t) => t.id === topic.id || t.done);
+      celebrate(anchor, allDone ? `${subject.name} dersinin tüm konuları bitti!` : null);
+    }
     setSubjects((list) =>
       list.map((s) => ({ ...s, topics: s.topics.map((t) => (t.id === topic.id ? { ...t, done } : t)) })),
     );

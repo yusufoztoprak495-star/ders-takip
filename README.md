@@ -21,7 +21,7 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | 🎯 **Üç hedef** | YKS (TYT/AYT), DGS (sayısal/sözel) ya da üniversite dersleri. Her hedefin dersleri ve kayıtları ayrı tutulur; hedef değiştirince öbürü silinmez, gizlenir. |
 | ⏱️ **Pomodoro** | Ders ve konu seçip sayacı başlat; süre dolunca çalışma kendiliğinden kaydedilir. Arkada odak sesi çalabilir: dört ölçülük cümlelerle sakin piyano, müzik kutusu, gece sentezi (arpej + bas + pad), derin ambiyans, damlalı yağmur ya da kahverengi gürültü. Hepsi tarayıcıda anlık üretilir, ses dosyası yok. |
 | 📒 **Çalışma günlüğü** | Pomodoro dışındaki çalışmaları elle ekle. |
-| 📝 **Denemeler** | TYT/AYT (YKS) ve DGS denemelerini bölüm bölüm gir; net, toplam net grafiği, bir önceki denemeye göre değişim ve en zayıf bölüm. |
+| 📝 **Denemeler** | Genel denemeler: TYT, AYT Sayısal / Eşit Ağırlık / Sözel ve DGS, bölüm bölüm; net grafiği, bir önceki denemeye göre değişim, en zayıf bölüm. Branş denemeleri: tek ders, kendi soru sayısıyla; ders başına ortalama ve net yüzdesi grafiği. |
 | 🎯 **Hedefler ve geri sayım** | Sınav tarihine kalan gün ana sayfada; günlük çalışma hedefi bugünün özetinde çubuk olarak. |
 | 🔁 **Konu tekrarı** | Bitirdiğin konuyu işaretle; 1, 3, 7 ve 30 gün sonra ana sayfadaki tekrar listesine düşer. |
 | ✍️ **Soru kaydı** | Doğru / yanlış / boş gir; net (`doğru − yanlış / 4`) ve doğruluk otomatik hesaplanır. |
@@ -30,7 +30,8 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | 🗓️ **Ders programı** | Okul, kurs ya da üniversite ders saatlerini haftalık gir (aynı saati birden çok güne tek seferde). Her günün şeridinde dersler ve 45 dakikadan uzun boşluklar süresiyle görünür. |
 | 🕘 **Haftalık program** | Haftayı saat saat planla: ders programındaki dersler ızgaraya kendiliğinden gelir, boş saate tıklayıp çalışma / mola / diğer bloğu ekle, bir günü başka günlere kopyala. Gün başlığında planlanan ve gerçekten kaydedilen çalışma süresi yan yana. |
 | 🗂️ **Dersler ve konular** | YKS sayısalın 15 dersi (TYT: Türkçe, Matematik, Geometri, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din Kültürü; AYT: Matematik, Geometri, Fizik, Kimya, Biyoloji) tüm konularıyla, müfredat sırasında hazır gelir. Listeyi düzenle ya da kendi derslerini (dönemiyle) ekle. |
-| 🎨 **Dört tema** | Gece (yıldız haritası, dönen usturlap), Kâğıt (milimetrik kenar, iletki, kalemle beliren notlar), Neon (devre kartında akan ışık paketleri, HUD radarı) ve Pastel (kalın çizgili çıkartma kartlar, kareli defter, fosforlu başlık). Yeni tema, tema düğmesinden daire hâlinde yayılarak gelir; "hareketi azalt" açıksa arka planlar durur. Masaüstünde sol menü, telefonda 4 ana sekme + Diğer paneli. |
+| ✨ **Canlılık** | Kartlar sırayla gelir, sayılar sayarak dolar, grafikler çizilerek açılır; pomodoro bitince, konu ya da ders tamamlanınca, yeni rekor nette ve günlük hedefe ulaşınca konfetili kutlama. "Hareketi azalt" açıksa hepsi kapanır. |
+| 🎨 **Dört tema** | Gece (Samanyolu, Türkçe adlı takımyıldızlar, gezegen yörüngeleri, kayan yıldızlar), Kâğıt (teknik çizim paftası: antet, gönye, grafikler, kalemle beliren notlar), Neon (yağmurlu neon gece, bokeh ışıklar, yanıp sönen ODAK tabelası) ve Pastel (kalın çizgili çıkartma kartlar, kareli defter, fosforlu başlık). Yeni tema, tema düğmesinden daire hâlinde yayılarak gelir; "hareketi azalt" açıksa arka planlar durur. Masaüstünde sol menü, telefonda 4 ana sekme + Diğer paneli. |
 | 💾 **Yedekleme** | Yedeği indir/yükle, haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek. |
 
 > Üniversite hedefinde sınav mantığı yoktur: soru kaydı, kaynaklar, net ve doğruluk gizlenir; yalnızca Pomodoro ve çalışma süresi tutulur.
@@ -67,7 +68,7 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 
 | Neon | Pastel |
 | --- | --- |
-| ![Neon teması: devre kartı](docs/screenshots/tema-neon.png) | ![Pastel teması: çıkartma kartlar](docs/screenshots/tema-pastel.png) |
+| ![Neon teması: yağmurlu neon gece](docs/screenshots/tema-neon.png) | ![Pastel teması: çıkartma kartlar](docs/screenshots/tema-pastel.png) |
 
 | Açık tema | Hedef seçimi |
 | --- | --- |

@@ -14,6 +14,8 @@ import { trackInfo } from '../lib/tracks.js';
 import { formatDate, formatDuration, formatNet, formatPercent, formatShortDate } from '../lib/format.js';
 import { addDays, studyStreak, topSubjectOfDay, weeklyChange } from '../lib/insights.js';
 import { quoteOfDay } from '../lib/quotes.js';
+import CountUp from '../components/CountUp.jsx';
+import { celebrate } from '../lib/celebrate.js';
 
 // Seri ve haftalık karşılaştırma için bu kadar geriye bakılır (daha uzun seriler "365+" yazılır)
 const HISTORY_DAYS = 365;
@@ -100,7 +102,9 @@ function Countdown({ examDate, today, track }) {
   }
   return (
     <div className="countdown" role="status">
-      <span className="countdown-days">{days}</span>
+      <span className="countdown-days">
+        <CountUp value={days} duration={1100} />
+      </span>
       <span className="countdown-text">
         {days === 0 ? `Bugün ${label} günü. Başarılar!` : `gün kaldı · ${label} ${formatDate(examDate)}`}
         <span className="countdown-weeks muted">{days >= 14 ? `yaklaşık ${Math.floor(days / 7)} hafta` : ''}</span>
@@ -147,7 +151,7 @@ function DueReviews({ reviews, onReviewed, today }) {
                   {late > 0 ? ` · ${late} gün gecikti` : ''}
                 </span>
               </span>
-              <button type="button" className="secondary small" onClick={() => onReviewed(r)}>
+              <button type="button" className="secondary small" onClick={(e) => onReviewed(r, e.currentTarget)}>
                 Tekrar ettim
               </button>
             </li>
@@ -188,10 +192,11 @@ export default function Home() {
     apiFetch(`/api/reviews?date=${to}`).then(setReviews).catch(() => {});
   }, []);
 
-  async function handleReviewed(topic) {
+  async function handleReviewed(topic, button) {
     setError(null);
     try {
-      await apiFetch(`/api/topics/${topic.id}/review`, { method: 'POST', body: { today } });
+      const done = await apiFetch(`/api/topics/${topic.id}/review`, { method: 'POST', body: { today } });
+      celebrate(button, done.nextReview ? null : `${topic.name} artık kalıcı!`);
       setReviews(await apiFetch(`/api/reviews?date=${today}`));
     } catch (e) {
       setError(e.message);
@@ -212,6 +217,20 @@ export default function Home() {
     };
   }, [history, todaySubjects, today]);
 
+  // Günlük hedefe ulaşıldıysa günde bir kez kutla (sayfaya her girişte değil)
+  useEffect(() => {
+    if (!view || !goals?.dailyGoal) return;
+    if (view.todaySummary.totalSeconds < goals.dailyGoal * 60) return;
+    try {
+      if (localStorage.getItem('hedef-kutlandi') === today) return;
+      localStorage.setItem('hedef-kutlandi', today);
+    } catch {
+      return;
+    }
+    celebrate(null, 'Günlük hedefine ulaştın!');
+  }, [view, goals, today]);
+
+
   return (
     <section>
       <h1>Bugün</h1>
@@ -228,17 +247,23 @@ export default function Home() {
               <h2 className="panel-label">Bugünün özeti</h2>
               <div className="today-grid">
                 <div>
-                  <span className="value">{formatDuration(view.todaySummary.totalSeconds)}</span>
+                  <span className="value">
+                    <CountUp value={view.todaySummary.totalSeconds} format={formatDuration} />
+                  </span>
                   <span className="label">Çalışma süresi</span>
                 </div>
                 {exam ? (
                   <>
                     <div>
-                      <span className="value">{view.todaySummary.questions}</span>
+                      <span className="value">
+                        <CountUp value={view.todaySummary.questions} />
+                      </span>
                       <span className="label">Çözülen soru</span>
                     </div>
                     <div>
-                      <span className="value">{formatNet(view.todaySummary.net)}</span>
+                      <span className="value">
+                        <CountUp value={view.todaySummary.net} format={formatNet} />
+                      </span>
                       <span className="label">Net</span>
                     </div>
                     <div>
@@ -277,7 +302,7 @@ export default function Home() {
             <article className="panel">
               <h2 className="panel-label">Seri</h2>
               <span className="value">
-                {view.streak.count >= HISTORY_DAYS ? `${HISTORY_DAYS}+` : view.streak.count}
+                {view.streak.count >= HISTORY_DAYS ? `${HISTORY_DAYS}+` : <CountUp value={view.streak.count} />}
                 <small> gün</small>
               </span>
               <p className="panel-note">

@@ -13,7 +13,7 @@ export default function Dial({ kind = 'work', remaining = null, duration = null,
   const firstLit = COUNT - lit;
 
   return (
-    <div className={`dial dial-${kind}`}>
+    <div className={`dial dial-${kind}${remaining !== null ? ' running' : ''}`}>
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden="true">
         {Array.from({ length: COUNT }, (_, i) => {
           const major = i % 5 === 0;

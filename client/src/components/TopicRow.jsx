@@ -49,7 +49,7 @@ export default function TopicRow({ topic, onRename, onDelete, onToggleDone }) {
   return (
     <li className={topic.done ? 'topic-done' : undefined}>
       <label className="topic-check">
-        <input type="checkbox" checked={Boolean(topic.done)} onChange={(e) => onToggleDone(topic, e.target.checked)} />
+        <input type="checkbox" checked={Boolean(topic.done)} onChange={(e) => onToggleDone(topic, e.target.checked, e.target)} />
         <span className="topic-name">{topic.name}</span>
         {note && <span className="topic-review">{note}</span>}
       </label>

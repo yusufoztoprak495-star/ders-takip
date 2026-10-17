@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../api.js';
+import { celebrate } from '../lib/celebrate.js';
 import { createSingleFlight, formatTime, loadSettings, remainingSeconds, saveSettings } from '../lib/pomodoro.js';
 import { loadSoundSettings, saveSoundSettings, shouldPlay } from '../lib/focusSound.js';
 import { createFocusPlayer } from '../lib/focusPlayer.js';
@@ -39,6 +40,7 @@ export function PomodoroProvider({ children }) {
     try {
       await apiFetch('/api/sessions', { method: 'POST', body: payload });
       setNotice('Çalışma kaydedildi.');
+      celebrate(null, 'Bir pomodoro daha bitti, çalışma kaydedildi.');
     } catch (e) {
       // Süre kaybolmasın diye listede tutulur, kullanıcı tekrar deneyebilir
       const id = nextPendingId.current++;

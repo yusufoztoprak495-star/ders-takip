@@ -105,7 +105,7 @@ export function DurationColumns({ labels, seconds, unit, ariaLabel }) {
                 {v > 0 && (
                   <path
                     d={columnPath(x(i) - barW / 2, y(v), barW, h, 3)}
-                    className={hover === i ? 'mark mark-hover' : 'mark'}
+                    className={hover === i ? 'mark grow-up mark-hover' : 'mark grow-up'}
                     fill="var(--series-1)"
                   />
                 )}
@@ -189,7 +189,7 @@ export function SubjectTimeBars({ rows, highlightId, ariaLabel }) {
                 <path
                   d={rowPath(layout.plotLeft, cy - 4, w, 8, 4)}
                   fill={faded ? 'var(--series-dim)' : 'var(--series-1)'}
-                  className={hover === i ? 'mark mark-hover' : 'mark'}
+                  className={hover === i ? 'mark grow-right mark-hover' : 'mark grow-right'}
                 />
                 <text x={layout.plotLeft + w + 8} y={cy + 4} className="value-text">
                   {formatDuration(r.totalSeconds)}
@@ -272,7 +272,7 @@ export function QuestionStacks({ rows, highlightId, ariaLabel }) {
                       fill={s.color}
                       stroke="var(--bg)"
                       strokeWidth="2"
-                      className={hover === i ? 'mark mark-hover' : 'mark'}
+                      className={hover === i ? 'mark grow-right mark-hover' : 'mark grow-right'}
                     />
                   ) : null;
                 })}
@@ -345,7 +345,9 @@ function TrendLine({ days, valueOf, format, label, domain, ariaLabel }) {
         <svg width={width} height={HEIGHT} role="img" aria-label={ariaLabel}>
           <ValueGrid ticks={ticks} y={y} left={m.left} right={width - m.right} format={(v) => (domain ? format(v) : numberTr(v))} />
           {active && <line x1={x(active.i)} x2={x(active.i)} y1={m.top} y2={m.top + plotH} className="crosshair" />}
-          {days.length > 1 && <path d={path} fill="none" stroke="var(--series-1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
+          {days.length > 1 && (
+            <path d={path} pathLength="1" className="trend-path" fill="none" stroke="var(--series-1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+          )}
           {days.map((d, i) => (
             <circle
               key={`${d.date}-${i}`}
