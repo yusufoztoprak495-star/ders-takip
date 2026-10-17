@@ -133,3 +133,13 @@ export const WeekIcon = () => (
     <path d="M8 11h4v5.5H8z" />
   </Icon>
 );
+
+// Diğer: telefonda alt çubuğa sığmayan sayfaların paneli (üç nokta değil, dört küçük kare)
+export const MoreIcon = () => (
+  <Icon>
+    <path d="M5 5h5v5H5z" />
+    <path d="M14 5h5v5h-5z" />
+    <path d="M5 14h5v5H5z" />
+    <path d="M14 14h5v5h-5z" />
+  </Icon>
+);

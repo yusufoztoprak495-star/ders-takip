@@ -12,6 +12,7 @@ import './decor.css';
 import './luxe.css';
 import './tracks.css';
 import './schedule.css';
+import './motion.css';
 import './theme.css';
 
 createRoot(document.getElementById('root')).render(

@@ -34,10 +34,12 @@ h3 {
   font-weight: 500;
 }
 
+/* Başlık boyutu ekranla birlikte akar: telefonda 2.3rem, geniş ekranda en çok 3.3rem */
 h1 {
-  font-size: 3.2rem;
+  font-size: clamp(2.3rem, 1.5rem + 2.2vw, 3.3rem);
   line-height: 1.05;
   letter-spacing: 0.005em;
+  text-wrap: balance;
 }
 
 /* h2: altında ince çizgi ve sol başta kısa bir altın ayırıcı */
@@ -50,21 +52,26 @@ h2 {
   box-shadow: inset 0 -1px 0 var(--border);
 }
 
-/* Etiketler: küçük boyutlu büyük harf (small caps görünümü) ve geniş harf aralığı.
-   Gerçek small caps yerine text-transform kullanılır: yazı tipinin small caps tablosu Türkçe
-   noktalı İ'yi üretmez; text-transform ise html lang="tr" ile i → İ kuralını doğru uygular. */
+/* Etiketler: düz cümle harfiyle, arayüz yazı tipinde, sakin gri. Eskiden geniş aralıklı BÜYÜK HARF
+   serif etiketlerdi; her alanın üstünde bağıran bir başlık gibi duruyor ve okumayı yavaşlatıyordu. */
 .label,
 label,
 .tile .muted,
 .stat-head span,
-.table-wrap th,
+.table-wrap th {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Kart başlığı: küçük ama gerçek bir başlık (serif, metin renginde) */
 .panel-label {
   font-family: var(--font-display);
-  font-size: 0.86rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--muted);
+  font-size: 1.22rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text);
 }
 
 /* Etiketin içindeki alanlar etiketin yazı biçimini miras almasın */
@@ -228,10 +235,9 @@ button.secondary:hover:not(:disabled) {
 
 .dial-label {
   font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
+  font-size: 1.05rem;
+  font-style: italic;
+  font-weight: 500;
 }
 
 /* --- Ana sayfa kartları --- */
@@ -359,10 +365,6 @@ button.secondary:hover:not(:disabled) {
 
   .today-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  h1 {
-    font-size: 2.6rem;
   }
 
   .card {
