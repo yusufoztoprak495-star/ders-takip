@@ -1,6 +1,11 @@
 import { usePomodoro } from '../context/PomodoroContext.jsx';
 import { SOUND_KINDS } from '../lib/focusSound.js';
 
+const GROUPS = [
+  { id: 'music', label: 'Müzik' },
+  { id: 'ambience', label: 'Ortam sesi' },
+];
+
 // Odak sesi seçimi ve ses seviyesi. Sayaç çalışırken de değiştirilebilir, değişiklik anında duyulur.
 export default function FocusSoundControls() {
   const { sound, updateSound } = usePomodoro();
@@ -10,10 +15,16 @@ export default function FocusSoundControls() {
       <label>
         Odak sesi
         <select value={sound.kind} onChange={(e) => updateSound({ ...sound, kind: e.target.value })}>
-          {SOUND_KINDS.map((k) => (
-            <option key={k.id} value={k.id}>
-              {k.label}
-            </option>
+          <option value="off">Kapalı</option>
+          {/* Ezgili sesler ve ortam sesleri ayrı başlıklar altında */}
+          {GROUPS.map((g) => (
+            <optgroup key={g.id} label={g.label}>
+              {SOUND_KINDS.filter((k) => k.group === g.id).map((k) => (
+                <option key={k.id} value={k.id}>
+                  {k.label}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </label>

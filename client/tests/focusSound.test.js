@@ -6,6 +6,10 @@ import {
   loadSoundSettings,
   saveSoundSettings,
   pianoBar,
+  musicBoxBar,
+  synthBar,
+  SCALE,
+  SYNTH_CHORDS,
   midiToFrequency,
   volumeToGain,
   shouldPlay,
@@ -27,10 +31,12 @@ describe("midiToFrequency", () => {
   });
 });
 
+const pc = (midi) => ((midi % 12) + 12) % 12;
+
 describe("pianoBar", () => {
-  it("notalar ölçünün içinde, yumuşak ve akorun seslerinden oluşur", () => {
+  it("notalar ölçünün içinde ve yumuşak; sol el akor sesleri, sağ el gamın içinde", () => {
     const rng = seeded(7);
-    for (let bar = 0; bar < 40; bar++) {
+    for (let bar = 0; bar < 48; bar++) {
       const chord = CHORDS[bar % CHORDS.length];
       const notes = pianoBar(rng, bar);
       expect(notes.length).toBeGreaterThan(0);
@@ -39,17 +45,72 @@ describe("pianoBar", () => {
         expect(n.offset).toBeLessThan(BAR_SECONDS);
         expect(n.velocity).toBeGreaterThan(0);
         expect(n.velocity).toBeLessThanOrEqual(0.6);
-        // Her nota akorun bir sesinin herhangi bir oktavı: uyumsuz ses çıkmaz
-        expect(chord.tones).toContain(((n.midi % 12) + 12) % 12);
+        if (n.hand === "left") expect(chord.tones).toContain(pc(n.midi));
+        else expect(SCALE).toContain(pc(n.midi));
       }
     }
   });
 
-  it("her ölçü bir bas notasıyla, ölçünün başında başlar", () => {
+  it("her ölçü sol elin bas notasıyla, ölçünün başında başlar", () => {
     const notes = pianoBar(seeded(3), 0);
-    const bass = notes.find((n) => n.offset === 0);
+    const bass = notes.find((n) => n.hand === "left" && n.offset === 0);
     expect(bass).toBeDefined();
     expect(bass.midi).toBeLessThan(55);
+  });
+
+  it("ezgi söylenebilir: güçlü vuruştaki notalar akor sesi, sıçramalar en çok bir beşli, aralık 60–81", () => {
+    const rng = seeded(11);
+    for (let bar = 0; bar < 48; bar++) {
+      const chord = CHORDS[bar % CHORDS.length];
+      const melody = pianoBar(rng, bar).filter((n) => n.hand === "right");
+      melody.forEach((n, i) => {
+        expect(n.midi).toBeGreaterThanOrEqual(60);
+        expect(n.midi).toBeLessThanOrEqual(81);
+        if (Math.abs(n.beat % 2) === 0) expect(chord.tones).toContain(pc(n.midi));
+        if (i > 0) expect(Math.abs(n.midi - melody[i - 1].midi)).toBeLessThanOrEqual(7);
+      });
+    }
+  });
+
+  it("dört ölçülük cümlede ilk iki ölçünün ritmi aynı (motif tekrarı), son ölçü daha seyrek (nefes)", () => {
+    const rhythm = (bar) => pianoBar(seeded(5), bar).filter((n) => n.hand === "right").map((n) => n.beat);
+    for (const start of [0, 4, 8]) {
+      expect(rhythm(start + 1)).toEqual(rhythm(start));
+      expect(rhythm(start + 3).length).toBeLessThan(rhythm(start).length);
+    }
+  });
+});
+
+describe("musicBoxBar", () => {
+  it("tiz, beşli gamda (pentatonik) ve ölçünün içinde; uyumsuz ses yok", () => {
+    const rng = seeded(9);
+    for (let bar = 0; bar < 24; bar++) {
+      const notes = musicBoxBar(rng, bar);
+      expect(notes.length).toBeGreaterThanOrEqual(4);
+      for (const n of notes) {
+        expect(n.offset).toBeGreaterThanOrEqual(0);
+        expect(n.offset).toBeLessThan(BAR_SECONDS);
+        expect(n.midi).toBeGreaterThanOrEqual(72);
+        expect(n.midi).toBeLessThanOrEqual(96);
+        expect([0, 2, 4, 7, 9]).toContain(pc(n.midi));
+      }
+    }
+  });
+});
+
+describe("synthBar", () => {
+  it("16 eşit adımlı arpej akorun seslerinden, ölçü başında ve ortasında bas", () => {
+    for (let bar = 0; bar < 8; bar++) {
+      const chord = SYNTH_CHORDS[bar % SYNTH_CHORDS.length];
+      const { arp, bass } = synthBar(bar);
+      expect(arp).toHaveLength(16);
+      arp.forEach((n, i) => {
+        expect(n.offset).toBeCloseTo((i * BAR_SECONDS) / 16);
+        expect(chord.tones).toContain(pc(n.midi));
+      });
+      expect(bass.map((n) => n.offset)).toEqual([0, BAR_SECONDS / 2]);
+      for (const n of bass) expect(n.midi).toBeLessThan(48);
+    }
   });
 });
 
@@ -121,5 +182,11 @@ describe("ses ayarları", () => {
     const ids = SOUND_KINDS.map((k) => k.id);
     expect(ids).toContain("off");
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("müzik kutusu ve gece sentezi de seçilebilir; her seçeneğin grubu var", () => {
+    const ids = SOUND_KINDS.map((k) => k.id);
+    expect(ids).toEqual(expect.arrayContaining(["musicbox", "synth"]));
+    for (const k of SOUND_KINDS.filter((k) => k.id !== "off")) expect(["music", "ambience"]).toContain(k.group);
   });
 });
