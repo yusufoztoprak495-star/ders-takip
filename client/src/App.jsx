@@ -18,18 +18,17 @@ import ProgressSubject from './pages/ProgressSubject.jsx';
 import ProgressTopic from './pages/ProgressTopic.jsx';
 import ClassSchedule from './pages/ClassSchedule.jsx';
 import WeeklyPlan from './pages/WeeklyPlan.jsx';
-import Decor from './components/Decor.jsx';
+import Backdrop from './components/Backdrop.jsx';
+import ThemePicker from './components/ThemePicker.jsx';
 import { useTheme } from './hooks/useTheme.js';
 
 import {
   HomeIcon,
-  MoonIcon,
   LogIcon,
   ProgressIcon,
   QuestionsIcon,
   ResourcesIcon,
   SettingsIcon,
-  SunIcon,
   MoreIcon,
   TimerIcon,
   TimetableIcon,
@@ -172,13 +171,11 @@ function Pages() {
 }
 
 export default function App() {
-  const { theme, toggle } = useTheme();
+  const { theme, choose } = useTheme();
   // Açılışta kalıcı depolama izni istenir (sonuç Ayarlar sayfasında gösterilir)
   useEffect(() => {
     requestPersistence();
   }, []);
-  const goingLight = theme === 'dark';
-  const toggleLabel = goingLight ? 'Açık temaya geç' : 'Koyu temaya geç';
   return (
     <BackupProvider>
     <PomodoroProvider>
@@ -186,20 +183,12 @@ export default function App() {
       <nav className="nav" aria-label="Ana menü">
         <div className="brand-row">
           <Brand />
-          <button
-            type="button"
-            className="theme-toggle"
-            onClick={toggle}
-            aria-label={toggleLabel}
-            title={toggleLabel}
-          >
-            {goingLight ? <SunIcon /> : <MoonIcon />}
-          </button>
+          <ThemePicker theme={theme} onChoose={choose} />
         </div>
         <NavLinks />
         <NavTimer />
       </nav>
-      <Decor />
+      <Backdrop theme={theme} />
       <main className="page">
         <Pages />
       </main>

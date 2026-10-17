@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { THEME_BAR_COLORS, THEME_KEY, isForcedDarkCanvas, nextTheme, resolveTheme } from "../lib/theme.js";
+import { flushSync } from "react-dom";
+import { THEME_BAR_COLORS, THEME_KEY, isForcedDarkCanvas, resolveTheme } from "../lib/theme.js";
 
 // localStorage kapalı olabilir (gizli pencere vb.): hata verirse sessizce geçilir
 function readStored() {
@@ -52,21 +53,35 @@ export function useTheme() {
     if (meta) meta.content = THEME_BAR_COLORS[theme];
   }, [theme]);
 
-  const toggle = useCallback(() => {
+  // Temayı değiştirir. `origin` (ekrandaki bir nokta, genelde basılan düğme) verilirse yeni tema o noktadan
+  // dairesel olarak yayılır (View Transitions). Desteklemeyen tarayıcıda ya da "hareketi azalt" açıkken
+  // renkler kısa bir geçişle değişir.
+  const choose = useCallback((next, origin) => {
     const root = document.documentElement;
-    // Geçiş sınıfı yalnızca değişim sırasında durur: normal gezinmede her öğeye geçiş eklenmez
-    root.classList.add("theme-switching");
-    window.setTimeout(() => root.classList.remove("theme-switching"), 450);
-    setTheme((current) => {
-      const next = nextTheme(current);
+    const save = () => {
       try {
         localStorage.setItem(THEME_KEY, next);
       } catch {
         // kayıt yapılamazsa tema yine bu oturumda değişir
       }
-      return next;
+    };
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || reduce || !origin) {
+      root.classList.add("theme-switching");
+      window.setTimeout(() => root.classList.remove("theme-switching"), 450);
+      setTheme(next);
+      save();
+      return;
+    }
+    root.style.setProperty("--reveal-x", `${origin.x}px`);
+    root.style.setProperty("--reveal-y", `${origin.y}px`);
+    // flushSync: React yeni temayı hemen DOM'a yazsın ki tarayıcı "sonra" görüntüsünü doğru alsın
+    document.startViewTransition(() => {
+      flushSync(() => setTheme(next));
+      root.dataset.theme = next;
     });
+    save();
   }, []);
 
-  return { theme, toggle };
+  return { theme, choose };
 }

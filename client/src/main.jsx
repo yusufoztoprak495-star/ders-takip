@@ -14,6 +14,8 @@ import './tracks.css';
 import './schedule.css';
 import './motion.css';
 import './theme.css';
+import './themes.css';
+import './backdrop.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

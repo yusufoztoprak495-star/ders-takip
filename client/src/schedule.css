@@ -752,9 +752,3 @@ button.secondary.danger:hover:not(:disabled) {
     scroll-behavior: auto;
   }
 }
-
-/* Geniş ızgara sayfanın kenar boşluğunu kullanır: oradaki küçük süs çizimleri saat sütununun
-   üstüne binmesin diye bu sayfada yalnızca köşe süsleri kalır */
-body:has(.week-planner) .decor-item.slot {
-  display: none;
-}

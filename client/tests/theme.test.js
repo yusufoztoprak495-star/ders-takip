@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveTheme, nextTheme, isForcedDarkCanvas } from "../src/lib/theme.js";
+import { THEMES, THEME_BAR_COLORS, isDarkTheme, isTheme, resolveTheme, isForcedDarkCanvas } from "../src/lib/theme.js";
 
 describe("resolveTheme", () => {
   it("kayıtlı seçim varsa sistem temasını yok sayar", () => {
@@ -43,9 +43,26 @@ describe("isForcedDarkCanvas", () => {
   });
 });
 
-describe("nextTheme", () => {
-  it("temayı tersine çevirir", () => {
-    expect(nextTheme("dark")).toBe("light");
-    expect(nextTheme("light")).toBe("dark");
+describe("dört tema", () => {
+  it("Gece, Kâğıt, Neon ve Pastel temaları tanınır", () => {
+    expect(THEMES.map((t) => t.id)).toEqual(["dark", "light", "neon", "pastel"]);
+    for (const id of ["dark", "light", "neon", "pastel"]) expect(isTheme(id)).toBe(true);
+    expect(isTheme("mavi")).toBe(false);
+  });
+
+  it("kayıtlı yeni temalar olduğu gibi açılır", () => {
+    expect(resolveTheme("neon", false)).toBe("neon");
+    expect(resolveTheme("pastel", true)).toBe("pastel");
+  });
+
+  it("zorla karartmada koyu temalar (Gece, Neon) korunur, açık olanlar Gece'ye döner", () => {
+    expect(resolveTheme("neon", false, true)).toBe("neon");
+    expect(resolveTheme("pastel", false, true)).toBe("dark");
+  });
+
+  it("her temanın koyu/açık bilgisi ve tarayıcı çubuğu rengi var", () => {
+    expect(isDarkTheme("neon")).toBe(true);
+    expect(isDarkTheme("pastel")).toBe(false);
+    for (const t of THEMES) expect(THEME_BAR_COLORS[t.id]).toMatch(/^#[0-9a-f]{6}$/i);
   });
 });

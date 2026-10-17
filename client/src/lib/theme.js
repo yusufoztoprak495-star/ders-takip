@@ -1,21 +1,34 @@
 // Tema yardımcıları (saf fonksiyonlar; DOM'a dokunan kısım hooks/useTheme.js içinde).
 export const THEME_KEY = "tema";
 
-// Tarayıcı çubuğu (theme-color) için temaların zemin rengi; CSS'teki --bg ile aynı
-export const THEME_BAR_COLORS = { dark: "#0c0f14", light: "#f4f5f7" };
+// Uygulamanın dört teması. id'ler kayıtta durur (eski "dark"/"light" seçimleri aynen geçerli kalır).
+// dark: koyu zeminli mi (tarayıcının zorla karartması ve sistem rengi bununla karar verir)
+// swatch: seçicideki küçük önizlemenin renkleri [zemin, yüzey, vurgu, ikinci vurgu]
+// bar: telefonda tarayıcı çubuğunun rengi = temanın zemin rengi (CSS'teki --bg ile aynı)
+export const THEMES = [
+  { id: "dark", name: "Gece", hint: "Lacivert gece, altın yıldız haritası", dark: true, bar: "#0c0f14", swatch: ["#0c0f14", "#171c25", "#cdb07a", "#5fa89e"] },
+  { id: "light", name: "Kâğıt", hint: "Beyaz çizim kâğıdı, lacivert mürekkep", dark: false, bar: "#f4f5f7", swatch: ["#f4f5f7", "#ffffff", "#26385a", "#1b6b64"] },
+  { id: "neon", name: "Neon", hint: "Mor gece, ışıldayan ızgara ve kayan semboller", dark: true, bar: "#0d0b1e", swatch: ["#0d0b1e", "#1a1640", "#ff3fa4", "#34e7ff"] },
+  { id: "pastel", name: "Pastel", hint: "Lavanta, nane ve şeftali; yumuşak bulutlar", dark: false, bar: "#f6f3fb", swatch: ["#f6f3fb", "#ffffff", "#7457c4", "#f2a48f"] },
+];
+
+export const THEME_BAR_COLORS = Object.fromEntries(THEMES.map((t) => [t.id, t.bar]));
+
+export function isTheme(value) {
+  return THEMES.some((t) => t.id === value);
+}
+
+export function isDarkTheme(id) {
+  return THEMES.find((t) => t.id === id)?.dark ?? false;
+}
 
 // Hangi tema uygulanacak? Kayıtlı geçerli bir seçim varsa o, yoksa bilgisayarın sistem teması.
 // İstisna: tarayıcı sayfayı zorla karartıyorsa (Chrome "Auto Dark Mode", Samsung Internet karanlık modu)
-// her zaman koyu tema. Tarayıcı açık temayı kendi kafasına göre ters çevirince sepya yazı
-// altın-bej görünüyor; zaten koyu olan sayfaya ise dokunmuyor.
+// açık temalar bozuk görünür (renkleri ters çevrilir); o zaman Gece açılır. Koyu temalara dokunulmaz.
 export function resolveTheme(stored, systemPrefersDark, forcedDark = false) {
+  if (isTheme(stored)) return forcedDark && !isDarkTheme(stored) ? "dark" : stored;
   if (forcedDark) return "dark";
-  if (stored === "light" || stored === "dark") return stored;
   return systemPrefersDark ? "dark" : "light";
-}
-
-export function nextTheme(theme) {
-  return theme === "dark" ? "light" : "dark";
 }
 
 // Zorla karartma tespiti: açık renk şemalı bir öğenin "Canvas" (sayfa zemini) sistem rengi

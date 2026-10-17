@@ -219,13 +219,6 @@ button.secondary:hover:not(:disabled) {
     background-color 0.16s ease;
 }
 
-@media (min-width: 821px) and (min-height: 680px) {
-  /* Köşe süsleri için menünün üstünde ve altında boşluk ayrılır */
-  .nav {
-    padding-top: 96px;
-    padding-bottom: 100px;
-  }
-}
 
 /* --- Pomodoro kadranı yazısı --- */
 .timer {

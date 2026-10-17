@@ -1,0 +1,288 @@
+/* --- Neon ve Pastel temaları ---
+   Gece (varsayılan, index.css :root) ve Kâğıt (theme.css) ile aynı değişkenleri doldurur; bileşenlerde
+   renk yazılmaz. Bu iki tema yalnızca renkle yetinmez, biraz da biçim değiştirir: Neon köşeleri keskin,
+   başlıkları kalın sans ve ışıldayan; Pastel köşeleri yuvarlak, düğmeleri hap biçimli.
+   Kontrast (WCAG AA): yazı en az 4.5:1, grafik işaretleri en az 3:1 (kart yüzeyine göre). */
+
+/* ======================= NEON ======================= */
+:root[data-theme="neon"] {
+  color-scheme: dark;
+
+  --bg: #0d0b1e;
+  --surface: #151231;
+  --surface-2: #1c1840;
+  --text: #efeaff;
+  --muted: #a7a1d8; /* kartta ~7:1 */
+  --border: #2b2560;
+  --border-strong: #463d8c;
+
+  --gold: #ff3fa4; /* ana vurgu: elektrik pembesi */
+  --gold-hair: rgba(255, 63, 164, 0.3);
+  --teal: #2fe6ff; /* ikinci vurgu: camgöbeği */
+  --rose: #ff6b7f;
+  --accent: var(--gold);
+  --accent-fill: #ff3fa4;
+  --gold-text: #ff72c0; /* kartta ~6:1 */
+  --accent-2: #2fe6ff;
+  --on-accent: #1a0412;
+
+  --danger-bg: #3a0f2a;
+  --danger-text: #ffa3c8;
+
+  --series-1: #ff4fb0;
+  --series-2: #2fd8f0;
+  --series-3: #ffb03f;
+  --series-blank: #8a84b8;
+  --series-dim: #2b2560;
+  --chart-grid: #1f1a46;
+  --chart-axis: #3d3578;
+
+  --nav-bg: #0a0819;
+  --paper-line: transparent;
+  --card-shadow:
+    inset 0 1px 0 rgba(255, 63, 164, 0.35), 0 0 0 1px rgba(47, 230, 255, 0.04),
+    0 10px 40px rgba(123, 43, 255, 0.22);
+  --btn-hover: brightness(1.12);
+  --mark-hover: brightness(1.3);
+  --grain-opacity: 0;
+  --doodle: rgba(47, 230, 255, 0.42);
+  --doodle-strong: rgba(47, 230, 255, 0.7);
+
+  --bd-sky-top: #0d0b1e;
+  --bd-sky-mid: #2c0c4a;
+
+  --radius: 2px;
+  --font-display: "Figtree Variable", "Segoe UI", sans-serif;
+}
+
+:root[data-theme="neon"] body {
+  background-image: none;
+}
+
+/* Başlıklar kalın, sıkı ve ışıldıyor; h1'de iki rengin hafif kayması (kromatik sapma) */
+:root[data-theme="neon"] h1,
+:root[data-theme="neon"] h2,
+:root[data-theme="neon"] h3 {
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+:root[data-theme="neon"] h1 {
+  text-shadow:
+    -1.5px 0 rgba(47, 230, 255, 0.75),
+    1.5px 0 rgba(255, 63, 164, 0.75),
+    0 0 28px rgba(255, 63, 164, 0.4);
+}
+
+:root[data-theme="neon"] h2 {
+  font-size: 1.45rem;
+}
+
+:root[data-theme="neon"] .panel-label,
+:root[data-theme="neon"] .value,
+:root[data-theme="neon"] .day-name,
+:root[data-theme="neon"] .strip-day,
+:root[data-theme="neon"] .class-time,
+:root[data-theme="neon"] .gutter.hours span {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+:root[data-theme="neon"] .brand {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-shadow: 0 0 18px rgba(255, 63, 164, 0.55);
+}
+
+/* Kartlar hafif saydam: arkadaki şehir ışıkları kenarlardan sızar */
+:root[data-theme="neon"] .card,
+:root[data-theme="neon"] .panel,
+:root[data-theme="neon"] .chart-card,
+:root[data-theme="neon"] .kpis,
+:root[data-theme="neon"] .week-grid,
+:root[data-theme="neon"] .list li.resource {
+  background: rgba(21, 18, 49, 0.9);
+}
+
+:root[data-theme="neon"] .panel:hover,
+:root[data-theme="neon"] .chart-card:hover {
+  border-color: rgba(47, 230, 255, 0.45);
+}
+
+/* Ana düğme: pembe ışık */
+:root[data-theme="neon"] button:not(.secondary):not(.theme-option):not(.day-chip):not(.block):not(.nav-more):not(.span-chip):not(.theme-toggle),
+:root[data-theme="neon"] .button-link {
+  box-shadow: 0 0 18px rgba(255, 63, 164, 0.45);
+}
+
+:root[data-theme="neon"] .nav a.active {
+  box-shadow:
+    inset 2px 0 0 var(--gold),
+    -6px 0 18px -6px rgba(255, 63, 164, 0.8);
+}
+
+:root[data-theme="neon"] .nav a.active .icon,
+:root[data-theme="neon"] .nav-more.active .icon {
+  filter: drop-shadow(0 0 4px rgba(255, 63, 164, 0.9));
+}
+
+:root[data-theme="neon"] select:focus-visible,
+:root[data-theme="neon"] input:focus-visible {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px var(--teal), 0 0 14px rgba(47, 230, 255, 0.35);
+}
+
+:root[data-theme="neon"] .dial .tick.lit {
+  filter: drop-shadow(0 0 3px var(--gold));
+}
+
+:root[data-theme="neon"] .timer {
+  font-weight: 300;
+  text-shadow: 0 0 22px rgba(47, 230, 255, 0.45);
+}
+
+:root[data-theme="neon"] .daily-quote blockquote {
+  font-style: normal;
+  font-weight: 600;
+}
+
+:root[data-theme="neon"] .block-class {
+  background-image: repeating-linear-gradient(135deg, rgba(47, 230, 255, 0.2) 0 1px, transparent 1px 6px);
+}
+
+/* ======================= PASTEL ======================= */
+:root[data-theme="pastel"] {
+  /* "only light": tarayıcı bu açık temayı zorla karartamaz */
+  color-scheme: only light;
+
+  --bg: #f6f3fb; /* lavantaya çalan beyaz (sarıya kaymaz) */
+  --surface: #ffffff;
+  --surface-2: #faf8fd;
+  --text: #2b2342; /* mürdüm mürekkep */
+  --muted: #675e80; /* beyazda ~6:1 */
+  --border: #ebe5f5;
+  --border-strong: #d6cce9;
+
+  --gold: #7457c4;
+  --gold-hair: rgba(116, 87, 196, 0.18);
+  --teal: #23806d;
+  --rose: #c03d63;
+  --accent: var(--gold);
+  --accent-fill: #7457c4; /* üzerindeki beyaz ~5.4:1 */
+  --gold-text: #6a4dbc;
+  --accent-2: #7457c4;
+  --on-accent: #ffffff;
+
+  --danger-bg: #fde8ee;
+  --danger-text: #a1304f;
+
+  --series-1: #8467d6;
+  --series-2: #2b9a82;
+  --series-3: #d9664a;
+  --series-blank: #9a93ab;
+  --series-dim: #ebe5f5;
+  --chart-grid: #f1edf8;
+  --chart-axis: #d6cce9;
+
+  /* Menü opak: üstüne bulut ve şekiller binmesin (bulanıklaştırma, sabit konumlu tema düğmesini bozduğu için yok) */
+  --nav-bg: #fdfcff;
+  --paper-line: transparent;
+  --card-shadow: 0 1px 2px rgba(76, 52, 140, 0.05), 0 12px 32px rgba(116, 87, 196, 0.09);
+  --btn-hover: brightness(1.1);
+  --mark-hover: brightness(0.9);
+  --grain-opacity: 0.035;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.4 0 0 0 0 0.35 0 0 0 0 0.55 1.2 0 0 0 -0.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --doodle: rgba(116, 87, 196, 0.38);
+  --doodle-strong: rgba(116, 87, 196, 0.55);
+
+  --radius: 12px;
+}
+
+:root[data-theme="pastel"] body {
+  background-image: radial-gradient(rgba(116, 87, 196, 0.11) 1px, transparent 1.2px);
+  background-size: 26px 26px;
+}
+
+:root[data-theme="pastel"] h1,
+:root[data-theme="pastel"] h2,
+:root[data-theme="pastel"] h3,
+:root[data-theme="pastel"] .panel-label {
+  font-weight: 600;
+}
+
+/* h2'nin altın ayırıcısı pastelde yumuşak, yuvarlak uçlu bir çizgi */
+:root[data-theme="pastel"] h2:not(.panel-label) {
+  background: linear-gradient(90deg, #b59cf0, #f5a98f) left bottom / 44px 3px no-repeat;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* Yuvarlak köşeler: kartlar 18px, alanlar 12px, düğmeler hap */
+:root[data-theme="pastel"] .card,
+:root[data-theme="pastel"] .panel,
+:root[data-theme="pastel"] .chart-card,
+:root[data-theme="pastel"] .kpis,
+:root[data-theme="pastel"] .week-grid,
+:root[data-theme="pastel"] .strip-panel,
+:root[data-theme="pastel"] .list li.resource,
+:root[data-theme="pastel"] .plan-editor,
+:root[data-theme="pastel"] .theme-menu,
+:root[data-theme="pastel"] .nav-sheet {
+  border-radius: 18px;
+}
+
+:root[data-theme="pastel"] .kpis,
+:root[data-theme="pastel"] .week-grid {
+  overflow: hidden;
+}
+
+:root[data-theme="pastel"] .week-head {
+  border-radius: 18px 18px 0 0;
+}
+
+:root[data-theme="pastel"] select,
+:root[data-theme="pastel"] input {
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+:root[data-theme="pastel"] button,
+:root[data-theme="pastel"] .button-link,
+:root[data-theme="pastel"] input[type="file"]::file-selector-button {
+  border-radius: 999px;
+}
+
+:root[data-theme="pastel"] .block,
+:root[data-theme="pastel"] .strip-class,
+:root[data-theme="pastel"] .theme-option {
+  border-radius: 10px;
+}
+
+:root[data-theme="pastel"] .segmented {
+  border-radius: 999px;
+}
+
+:root[data-theme="pastel"] .badge {
+  border-radius: 999px;
+}
+
+:root[data-theme="pastel"] .nav a {
+  border-radius: 12px;
+}
+
+:root[data-theme="pastel"] .nav a.active {
+  background: #efe9fb;
+  box-shadow: none;
+}
+
+:root[data-theme="pastel"] .daily-quote {
+  border-left: 3px solid #d9cbf7;
+}
+
+:root[data-theme="pastel"] .block-class {
+  background-image: repeating-linear-gradient(135deg, rgba(181, 156, 240, 0.28) 0 1.5px, transparent 1.5px 7px);
+}
+
+:root[data-theme="pastel"] .block-study {
+  box-shadow: inset 4px 0 0 #b59cf0;
+}
