@@ -288,6 +288,9 @@ function Attendance({ courses, absences, classes, today, onChanged }) {
 function Assignments({ courses, assignments, today, onChanged }) {
   const [form, setForm] = useState({ subjectId: '', title: '', due: today, note: '' });
   const [error, setError] = useState(null);
+  // Onay kutusu hemen değişsin (iyimser): veri katmanı cevap verene kadar seçim burada tutulur
+  const [pending, setPending] = useState({});
+  const isDone = (a) => (a.id in pending ? pending[a.id] : Boolean(a.doneAt));
   const open = assignments.filter((a) => !a.doneAt);
   const done = assignments.filter((a) => a.doneAt);
 
@@ -307,12 +310,19 @@ function Assignments({ courses, assignments, today, onChanged }) {
   }
 
   async function toggle(a, checked, anchor) {
+    setPending((p) => ({ ...p, [a.id]: checked }));
     try {
       await apiFetch(`/api/assignments/${a.id}/done`, { method: 'PUT', body: { done: checked, today } });
       if (checked) celebrate(anchor, 'Teslim edildi!');
-      onChanged();
+      await onChanged();
     } catch (e) {
       setError(e.message);
+    } finally {
+      setPending((p) => {
+        const next = { ...p };
+        delete next[a.id];
+        return next;
+      });
     }
   }
 
@@ -332,7 +342,7 @@ function Assignments({ courses, assignments, today, onChanged }) {
     return (
       <li key={a.id} className={`assignment ${tone}`}>
         <label className="check-row">
-          <input type="checkbox" checked={Boolean(a.doneAt)} onChange={(e) => toggle(a, e.target.checked, e.target)} />
+          <input type="checkbox" checked={isDone(a)} onChange={(e) => toggle(a, e.target.checked, e.target)} />
           <span>
             <b>{a.title}</b>
             {a.subjectName && <span className="muted"> · {a.subjectName}</span>}

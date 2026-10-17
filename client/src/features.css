@@ -1057,3 +1057,19 @@ kbd {
   font-size: 0.85rem;
   line-height: 1.6;
 }
+
+/* Başlık yanındaki düğme sağ üstteki süslerin (Kutup Yıldızı vb.) önüne düşebilir: zemini dolu olsun */
+.page-head button.secondary {
+  background: var(--surface);
+}
+
+/* Ayarlar → Hedefler: telefonda tarih kutusu tek satıra, saat ve dakika altına */
+@media (max-width: 560px) {
+  .goals-form .row {
+    flex-wrap: wrap;
+  }
+
+  .goals-form .row label:first-child {
+    flex: 1 0 100%;
+  }
+}

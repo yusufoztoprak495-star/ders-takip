@@ -91,6 +91,11 @@
     flex-direction: column;
   }
 
+  /* Sütun düzeninde genel "flex: 1 1 0" düğmelerin yüksekliğini sıfıra indiriyordu */
+  .track-switcher.detailed .segmented button {
+    flex: 0 0 auto;
+  }
+
   .track-switcher.detailed .segmented button + button {
     border-left: 0;
     border-top: 1px solid var(--border-strong);

@@ -553,7 +553,9 @@ form.card .dial {
 
 .tile strong {
   font-family: var(--font-display);
-  font-size: 2.1rem;
+  /* "25 sa 26 dk" gibi değerler iki satıra kırılmasın: dar kutuda yazı biraz küçülür */
+  font-size: clamp(1.5rem, 2.3vw, 2.1rem);
+  white-space: nowrap;
   font-weight: 300;
   line-height: 1.2;
 }
