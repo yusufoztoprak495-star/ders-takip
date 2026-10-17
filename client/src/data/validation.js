@@ -187,6 +187,7 @@ const ROW_SCHEMAS = {
   },
   classes: { track: isText, day: isInt, start: isInt, end: isInt, title: isText, place: isText, subjectId: intOrNull },
   plans: { track: isText, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull },
+  planChecks: { planId: isInt, date: isText },
   exams: {
     track: isText,
     date: isText,

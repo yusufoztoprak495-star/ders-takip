@@ -135,3 +135,9 @@ export function slotAt(blocks, minute, range) {
   const end = Math.min(start + 60, nextStart);
   return end > start ? { start, end } : null;
 }
+
+// 'YYYY-AA-GG' gününün haftadaki yeri: pazartesi 0 ... pazar 6 (UTC ile, saat diliminden bağımsız)
+export function dayIndexOfDate(dateString) {
+  const [y, m, d] = dateString.split("-").map(Number);
+  return (new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7;
+}

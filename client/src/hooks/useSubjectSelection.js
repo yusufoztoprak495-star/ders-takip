@@ -3,7 +3,8 @@ import { apiFetch } from "../api.js";
 
 // Ders listesini sunucudan çeker ve seçili ders/konu durumunu tutar.
 // Birden fazla sayfada aynı ders ve konu seçimi gerektiği için ortak bir kancadır.
-export function useSubjectSelection() {
+// initialSubjectId: başka bir sayfadan gelinirken önceden seçilecek ders (örn. haftalık programdaki blok)
+export function useSubjectSelection(initialSubjectId = null) {
   const [subjects, setSubjects] = useState([]);
   const [error, setError] = useState(null);
   const [loaded, setLoaded] = useState(false);
@@ -16,7 +17,8 @@ export function useSubjectSelection() {
       .then((list) => {
         setSubjects(list);
         // Henüz seçim yapılmadıysa ilk ders seçili gelsin
-        setSubjectId((current) => current || String(list[0]?.id ?? ""));
+        const wanted = list.find((s) => String(s.id) === String(initialSubjectId ?? ""));
+        setSubjectId((current) => current || String((wanted ?? list[0])?.id ?? ""));
         setLoaded(true);
       })
       .catch((e) => setError(e.message));

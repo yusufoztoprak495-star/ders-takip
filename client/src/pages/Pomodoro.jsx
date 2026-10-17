@@ -5,11 +5,16 @@ import SubjectTopicFields from '../components/SubjectTopicFields.jsx';
 import { usePomodoro } from '../context/PomodoroContext.jsx';
 import { useSubjectSelection } from '../hooks/useSubjectSelection.js';
 import { formatTime } from '../lib/pomodoro.js';
+import { useSearchParams } from 'react-router-dom';
+import { toLocalDateString } from '../lib/dates.js';
 
 export default function Pomodoro() {
   const { settings, updateSettings, phase, remaining, pending, notice, start, cancel, retry, dismissPending } =
     usePomodoro();
-  const selection = useSubjectSelection();
+  // Ana sayfadaki "Bugünün programı"ndan gelindiyse ders ve blok adreste yazar (?ders=3&blok=7)
+  const [params] = useSearchParams();
+  const planId = Number(params.get('blok')) || null;
+  const selection = useSubjectSelection(params.get('ders'));
   const { subjects, subject, topicId } = selection;
 
   const runningSubject = phase && subjects.find((s) => s.id === phase.subjectId);
@@ -17,7 +22,12 @@ export default function Pomodoro() {
   function handleStart(event) {
     event.preventDefault();
     if (!subject) return;
-    start({ subjectId: subject.id, topicId: topicId ? Number(topicId) : null });
+    start({
+      subjectId: subject.id,
+      topicId: topicId ? Number(topicId) : null,
+      planId,
+      planDate: planId ? toLocalDateString(new Date()) : null,
+    });
   }
 
   // Dakika alanları: yalnızca pozitif tam sayı kabul edilir
@@ -72,6 +82,7 @@ export default function Pomodoro() {
             <div className="timer idle">{formatTime(settings.workMinutes * 60)}</div>
             <p className="dial-label">Hazır</p>
           </Dial>
+          {planId && <p className="notice">Bu tur bitince haftalık programdaki blok bugün için “yapıldı” işaretlenecek.</p>}
           <SubjectTopicFields selection={selection} />
           <div className="row">
             <label>

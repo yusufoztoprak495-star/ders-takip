@@ -1,8 +1,17 @@
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
 import { activeSubjectIds } from "../seed.js";
-import { DAYS, DAY_MINUTES, DEFAULT_DAY_WINDOW, TIME_STEP, formatClock, overlaps } from "../../lib/schedule.js";
-import { optionalInt, optionalString, parseId, requireBody, requireInt, requireOneOf, requireString } from "../validation.js";
+import { DAYS, DAY_MINUTES, DEFAULT_DAY_WINDOW, TIME_STEP, dayIndexOfDate, formatClock, overlaps } from "../../lib/schedule.js";
+import {
+  optionalInt,
+  optionalString,
+  parseId,
+  requireBody,
+  requireDate,
+  requireInt,
+  requireOneOf,
+  requireString,
+} from "../validation.js";
 
 // İki tablo:
 //  classes: ders programı (okul/üniversite dersleri). Her satır tek gün: { id, track, day, start, end, title, place, subjectId }
@@ -188,7 +197,55 @@ export function updatePlan({ state, params, body }) {
 export function deletePlan({ state, params }) {
   const row = findOwn(state, "plans", params.id);
   state.plans = state.plans.filter((r) => r !== row);
+  dropChecks(state);
   return { status: 204, body: null };
+}
+
+// Artık var olmayan bloklara ait "yapıldı" işaretlerini temizler
+function dropChecks(state) {
+  const alive = new Set(state.plans.map((p) => p.id));
+  state.planChecks = state.planChecks.filter((c) => alive.has(c.planId));
+}
+
+// --- Bugünün programı ---
+// Haftalık program her hafta tekrar eden bir şablondur; "yapıldı" ise o tarihe özeldir (planChecks).
+
+export function getToday({ state, query }) {
+  const date = requireDate(query.get("date") ?? undefined, "Tarih");
+  const day = dayIndexOfDate(date);
+  const subjectName = (id) => state.subjects.find((s) => s.id === id)?.name ?? "";
+  const done = new Set(state.planChecks.filter((c) => c.date === date).map((c) => c.planId));
+  const classes = ofTrack(state.classes, state)
+    .filter((c) => c.day === day)
+    .map((c) => ({ type: "class", id: c.id, start: c.start, end: c.end, title: c.title, place: c.place, subjectId: c.subjectId }));
+  const plans = ofTrack(state.plans, state)
+    .filter((p) => p.day === day)
+    .map((p) => ({
+      type: p.kind,
+      id: p.id,
+      start: p.start,
+      end: p.end,
+      title: planLabel(state, p),
+      note: p.title,
+      subjectId: p.subjectId,
+      subjectName: subjectName(p.subjectId),
+      done: done.has(p.id),
+    }));
+  const items = [...classes, ...plans].sort((a, b) => a.start - b.start || (a.type === "class" ? -1 : 1));
+  return { status: 200, body: { date, day, items } };
+}
+
+export function setPlanDone({ state, params, body: rawBody }) {
+  const row = findOwn(state, "plans", params.id);
+  const body = requireBody(rawBody);
+  const date = requireDate(body.date, "Tarih");
+  if (typeof body.done !== "boolean") throw new HttpError(400, "Yapıldı bilgisi doğru/yanlış olmalı");
+  if (dayIndexOfDate(date) !== row.day) {
+    throw new HttpError(400, `Bu blok ${DAYS[row.day].name} günü; o tarih başka bir güne denk geliyor`);
+  }
+  state.planChecks = state.planChecks.filter((c) => !(c.planId === row.id && c.date === date));
+  if (body.done) state.planChecks.push({ id: nextId(state.planChecks), planId: row.id, date });
+  return { status: 200, body: { id: row.id, date, done: body.done } };
 }
 
 // Bir günün bloklarını başka günlere kopyalar. Hedef günlerin eski blokları kaldırılır (sayfa önce sorar);
@@ -216,6 +273,7 @@ export function copyDay({ state, body: rawBody }) {
       copied += 1;
     }
   }
+  dropChecks(state);
   return { status: 200, body: { copied, skipped } };
 }
 

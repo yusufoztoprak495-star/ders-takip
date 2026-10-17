@@ -66,6 +66,12 @@ export function PomodoroProvider({ children }) {
       });
       setNow(Date.now());
       saveSession(payload);
+      if (phase.planId) {
+        apiFetch(`/api/plans/${phase.planId}/done`, {
+          method: 'PUT',
+          body: { date: phase.planDate, done: true },
+        }).catch(() => {});
+      }
     } else {
       setPhase(null);
       setNotice('Mola bitti. Yeni bir tur başlatabilirsin.');
@@ -107,7 +113,7 @@ export function PomodoroProvider({ children }) {
   }, []);
 
   const start = useCallback(
-    ({ subjectId, topicId }) => {
+    ({ subjectId, topicId, planId = null, planDate = null }) => {
       // Tarayıcı sesi ancak bir tıklamayla açar: "Başlat"a basıldığı anda ses motoru hazırlanır
       player.current.unlock();
       setNotice(null);
@@ -118,6 +124,9 @@ export function PomodoroProvider({ children }) {
         durationSeconds: settings.workMinutes * 60,
         subjectId,
         topicId,
+        // Haftalık programdaki bir bloktan başlatıldıysa: tur bitince o blok bugün için "yapıldı" olur
+        planId,
+        planDate,
       });
     },
     [settings.workMinutes],

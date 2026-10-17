@@ -20,6 +20,7 @@ export function emptyState() {
     classes: [], // ders programı (okul/üniversite dersleri)
     plans: [], // haftalık programın blokları
     exams: [], // deneme sınavları
+    planChecks: [], // haftalık program bloklarının "yapıldı" işaretleri: { id, planId, date }
     settings: { track: DEFAULT_TRACK, seededTracks: [] },
   };
 }

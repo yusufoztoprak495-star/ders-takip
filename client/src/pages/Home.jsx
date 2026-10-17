@@ -15,6 +15,7 @@ import { formatDate, formatDuration, formatNet, formatPercent, formatShortDate }
 import { addDays, studyStreak, topSubjectOfDay, weeklyChange } from '../lib/insights.js';
 import { QUOTES, drawQuote } from '../lib/quotes.js';
 import CountUp from '../components/CountUp.jsx';
+import TodayPlan from '../components/TodayPlan.jsx';
 import { celebrate } from '../lib/celebrate.js';
 
 // Seri ve haftalık karşılaştırma için bu kadar geriye bakılır (daha uzun seriler "365+" yazılır)
@@ -322,6 +323,8 @@ export default function Home() {
               </div>
               {goals?.dailyGoal > 0 && <GoalBar seconds={view.todaySummary.totalSeconds} goalMinutes={goals.dailyGoal} />}
             </article>
+
+            <TodayPlan today={today} />
 
             <DueReviews reviews={reviews} onReviewed={handleReviewed} today={today} />
 

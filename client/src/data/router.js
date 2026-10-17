@@ -41,6 +41,8 @@ import {
   deleteClass,
   deletePlan,
   getSchedule,
+  getToday,
+  setPlanDone,
   listClasses,
   listPlans,
   updateClass,
@@ -95,7 +97,9 @@ const ROUTES = [
   ["POST", "/api/plans", createPlan],
   // "copy" kimlik değil: :id kalıbından önce yazılır ki POST /api/plans/:id gibi algılanmasın
   ["POST", "/api/plans/copy", copyDay],
+  ["PUT", "/api/plans/:id/done", setPlanDone],
   ["PUT", "/api/plans/:id", updatePlan],
+  ["GET", "/api/today", getToday],
   ["DELETE", "/api/plans/:id", deletePlan],
   ["GET", "/api/schedule", getSchedule],
   ["PUT", "/api/schedule", updateSchedule],
