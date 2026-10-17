@@ -67,6 +67,63 @@ describe("Denemeler (/api/exams)", () => {
   });
 });
 
+describe("AYT alanları ve branş denemeleri", () => {
+  it("AYT Eşit Ağırlık ve Sözel denemesi eklenebilir", async () => {
+    const { app } = makeTestApp();
+    const ea = await request(app)
+      .post("/api/exams")
+      .send({
+        date: "2026-10-12",
+        name: "",
+        type: "AYT-EA",
+        results: {
+          matematik: { correct: 20, wrong: 8, blank: 12 },
+          edebiyat: { correct: 18, wrong: 4, blank: 2 },
+          tarih1: { correct: 7, wrong: 2, blank: 1 },
+          cografya1: { correct: 4, wrong: 1, blank: 1 },
+        },
+      });
+    expect(ea.status).toBe(201);
+    expect(ea.body.totals.net).toBe(45.25);
+  });
+
+  const branch = (subjectId, extra = {}) => ({
+    date: "2026-10-14",
+    name: "Paragraf 12",
+    type: "BRANS",
+    subjectId,
+    questionCount: 40,
+    results: { brans: { correct: 30, wrong: 6, blank: 4 } },
+    ...extra,
+  });
+
+  it("branş denemesi bir derse bağlanır, kendi soru sayısıyla denetlenir", async () => {
+    const { app, db } = makeTestApp();
+    const turkce = db.subjects.find((s) => s.name === "Türkçe");
+    const res = await request(app).post("/api/exams").send(branch(turkce.id));
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ type: "BRANS", subjectId: turkce.id, questionCount: 40 });
+    expect(res.body.totals.net).toBe(28.5);
+    const over = await request(app)
+      .post("/api/exams")
+      .send(branch(turkce.id, { questionCount: 20 }));
+    expect(over.status).toBe(400);
+    expect(over.body.error).toMatch(/20/);
+    expect((await request(app).post("/api/exams").send(branch(9999))).status).toBe(400);
+    expect((await request(app).post("/api/exams").send(branch(turkce.id, { questionCount: 0 }))).status).toBe(400);
+    const list = (await request(app).get("/api/exams")).body;
+    expect(list[0].subjectName).toBe("Türkçe");
+  });
+
+  it("dersi silinmeye çalışılırsa branş denemesi kaydı onu korur", async () => {
+    const { app } = makeTestApp();
+    const subject = (await request(app).post("/api/subjects").send({ name: "Paragraf", examType: "TYT" })).body;
+    await request(app).post("/api/exams").send(branch(subject.id));
+    const del = await request(app).delete(`/api/subjects/${subject.id}`);
+    expect(del.status).toBe(400);
+  });
+});
+
 // --- Hedefler: sınav tarihi ve günlük çalışma hedefi ---
 
 describe("Hedefler (/api/goals)", () => {

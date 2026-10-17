@@ -1,9 +1,13 @@
 // Deneme sınavları: türler, bölümler ve net hesabı (saf yardımcılar; veri katmanı ve sayfalar kullanır).
-// Bölümlerin soru sayıları ÖSYM'nin güncel sınav yapısıyla aynıdır: TYT 120, AYT sayısal 80, DGS 100 soru.
+// Bölümlerin soru sayıları ÖSYM'nin güncel sınav yapısıyla aynıdır: TYT 120, DGS 100 soru.
+// AYT dört testten oluşur (Edebiyat-Sosyal 1: 40, Sosyal 2: 40, Matematik: 40, Fen: 40); öğrenci alanının
+// testlerini çözer: Sayısal = Matematik + Fen, Eşit Ağırlık = Matematik + Edebiyat-Sosyal 1,
+// Sözel = Edebiyat-Sosyal 1 + Sosyal 2. Her alan ayrı bir deneme türüdür (netler birbiriyle karışmasın).
 
 export const EXAM_TYPES = [
   {
     id: "TYT",
+    label: "TYT",
     track: "yks",
     sections: [
       { id: "turkce", label: "Türkçe", count: 40 },
@@ -13,7 +17,10 @@ export const EXAM_TYPES = [
     ],
   },
   {
+    // Kimlik "AYT" kalır: önceki sürümde girilen sayısal AYT denemeleri aynen geçerli
     id: "AYT",
+    label: "AYT Sayısal",
+    short: "AYT SAY",
     track: "yks",
     sections: [
       { id: "matematik", label: "Matematik", count: 40 },
@@ -23,7 +30,35 @@ export const EXAM_TYPES = [
     ],
   },
   {
+    id: "AYT-EA",
+    label: "AYT Eşit Ağırlık",
+    short: "AYT EA",
+    track: "yks",
+    sections: [
+      { id: "matematik", label: "Matematik", count: 40 },
+      { id: "edebiyat", label: "Türk Dili ve Edebiyatı", count: 24 },
+      { id: "tarih1", label: "Tarih-1", count: 10 },
+      { id: "cografya1", label: "Coğrafya-1", count: 6 },
+    ],
+  },
+  {
+    id: "AYT-SOZ",
+    label: "AYT Sözel",
+    short: "AYT SÖZ",
+    track: "yks",
+    sections: [
+      { id: "edebiyat", label: "Türk Dili ve Edebiyatı", count: 24 },
+      { id: "tarih1", label: "Tarih-1", count: 10 },
+      { id: "cografya1", label: "Coğrafya-1", count: 6 },
+      { id: "tarih2", label: "Tarih-2", count: 11 },
+      { id: "cografya2", label: "Coğrafya-2", count: 11 },
+      { id: "felsefe", label: "Felsefe Grubu", count: 12 },
+      { id: "din", label: "Din Kültürü", count: 6 },
+    ],
+  },
+  {
     id: "DGS",
+    label: "DGS",
     track: "dgs",
     sections: [
       { id: "sayisal", label: "Sayısal", count: 50 },
@@ -31,6 +66,17 @@ export const EXAM_TYPES = [
     ],
   },
 ];
+
+// Branş denemesi: tek bir dersin denemesi (Paragraf, Fizik, Problemler...). Soru sayısını kullanıcı girer.
+export const BRANCH_TYPE = "BRANS";
+export const BRANCH_MAX_QUESTIONS = 200;
+
+// Bir deneme türünün kısa adı (rozet ve grafik düğmeleri için)
+export function examShortLabel(id) {
+  if (id === BRANCH_TYPE) return "Branş";
+  const t = findExamType(id);
+  return t ? (t.short ?? t.label) : id;
+}
 
 // Seçili hedefin deneme türleri (üniversitede deneme yok: boş liste)
 export function examTypesFor(track) {

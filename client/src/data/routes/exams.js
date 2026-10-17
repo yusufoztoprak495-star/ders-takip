@@ -1,6 +1,7 @@
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
-import { examTotals, examTypesFor, findExamType } from "../../lib/exams.js";
+import { BRANCH_MAX_QUESTIONS, BRANCH_TYPE, examTotals, examTypesFor, findExamType } from "../../lib/exams.js";
+import { activeSubjectIds } from "../seed.js";
 import { optionalString, parseId, requireBody, requireDate, requireInt } from "../validation.js";
 
 // Deneme sınavları: { id, track, date, name, type, results: { bölümId: { correct, wrong, blank } } }
@@ -15,6 +16,11 @@ function parseExamBody(state, rawBody) {
   if (allowed.length === 0) {
     throw new HttpError(400, "Üniversite hedefinde deneme takibi yok");
   }
+  const common = {
+    date: requireDate(body.date, "Tarih"),
+    name: optionalString(body.name, "Deneme adı", { maxLength: NAME_MAX }),
+  };
+  if (body.type === BRANCH_TYPE) return { ...common, ...parseBranch(state, body) };
   const type = allowed.find((t) => t.id === body.type);
   if (!type) {
     throw new HttpError(400, `Deneme türü şunlardan biri olmalı: ${allowed.map((t) => t.id).join(", ")}`);
@@ -26,43 +32,64 @@ function parseExamBody(state, rawBody) {
   // Yalnızca bu türün bölümleri alınır; her bölüm dolu olmalı (boş bırakılan bölüm 0 olarak gönderilir)
   const results = {};
   for (const section of type.sections) {
-    const r = raw[section.id];
-    if (r === null || typeof r !== "object") {
-      throw new HttpError(400, `${section.label} sonucu eksik`);
-    }
-    const opts = { min: 0, max: section.count };
-    const row = {
-      correct: requireInt(r.correct, `${section.label} doğru`, opts),
-      wrong: requireInt(r.wrong, `${section.label} yanlış`, opts),
-      blank: requireInt(r.blank, `${section.label} boş`, opts),
-    };
-    if (row.correct + row.wrong + row.blank > section.count) {
-      throw new HttpError(400, `${section.label} bölümünde en fazla ${section.count} soru var`);
-    }
-    results[section.id] = row;
+    results[section.id] = parseRow(raw[section.id], section.label, section.count);
   }
+  return { ...common, type: type.id, results };
+}
+
+// Sonuç satırı: doğru/yanlış/boş tam sayı, toplamı soru sayısını aşamaz
+function parseRow(r, label, count) {
+  if (r === null || typeof r !== "object") throw new HttpError(400, `${label} sonucu eksik`);
+  const opts = { min: 0, max: count };
+  const row = {
+    correct: requireInt(r.correct, `${label} doğru`, opts),
+    wrong: requireInt(r.wrong, `${label} yanlış`, opts),
+    blank: requireInt(r.blank, `${label} boş`, opts),
+  };
+  if (row.correct + row.wrong + row.blank > count) {
+    throw new HttpError(400, `${label}: en fazla ${count} soru var`);
+  }
+  return row;
+}
+
+// Branş denemesi: seçili hedefin bir dersine bağlı, soru sayısını kullanıcı belirler
+function parseBranch(state, body) {
+  const subjectId = requireInt(body.subjectId, "Ders");
+  if (!activeSubjectIds(state).has(subjectId)) throw new HttpError(400, "Ders bulunamadı");
+  const questionCount = requireInt(body.questionCount, "Soru sayısı", { min: 1, max: BRANCH_MAX_QUESTIONS });
+  const raw = body.results;
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw new HttpError(400, "Sonuç eksik");
+  const subject = state.subjects.find((s) => s.id === subjectId);
   return {
-    date: requireDate(body.date, "Tarih"),
-    name: optionalString(body.name, "Deneme adı", { maxLength: NAME_MAX }),
-    type: type.id,
-    results,
+    type: BRANCH_TYPE,
+    subjectId,
+    questionCount,
+    results: { brans: parseRow(raw.brans, subject.name, questionCount) },
   };
 }
 
-const withTotals = (exam) => ({ ...exam, results: structuredClone(exam.results), totals: examTotals(exam) });
+function withTotals(exam, state) {
+  const out = { ...exam, results: structuredClone(exam.results), totals: examTotals(exam) };
+  if (exam.type === BRANCH_TYPE) {
+    const subject = state.subjects.find((s) => s.id === exam.subjectId);
+    out.subjectName = subject?.name ?? "";
+    out.examType = subject?.examType ?? "";
+  }
+  return out;
+}
 
 export function listExams({ state }) {
   const track = state.settings.track;
   const rows = state.exams
-    .filter((e) => e.track === track && findExamType(e.type)?.track === track)
+    .filter((e) => e.track === track && (e.type === BRANCH_TYPE || findExamType(e.type)?.track === track))
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
-  return { status: 200, body: rows.map(withTotals) };
+  return { status: 200, body: rows.map((e) => withTotals(e, state)) };
 }
 
 export function createExam({ state, body }) {
   const exam = { id: nextId(state.exams), track: state.settings.track, ...parseExamBody(state, body) };
   state.exams.push(exam);
-  return { status: 201, body: withTotals(exam) };
+  return { status: 201, body: withTotals(exam, state) };
 }
 
 function findOwn(state, rawId) {
@@ -74,8 +101,11 @@ function findOwn(state, rawId) {
 
 export function updateExam({ state, params, body }) {
   const exam = findOwn(state, params.id);
-  Object.assign(exam, parseExamBody(state, body));
-  return { status: 200, body: withTotals(exam) };
+  const parsed = parseExamBody(state, body);
+  // Tür değişirse (genelden branşa) eski türün alanları kalmasın
+  for (const key of ["subjectId", "questionCount"]) delete exam[key];
+  Object.assign(exam, parsed);
+  return { status: 200, body: withTotals(exam, state) };
 }
 
 export function deleteExam({ state, params }) {

@@ -187,7 +187,15 @@ const ROW_SCHEMAS = {
   },
   classes: { track: isText, day: isInt, start: isInt, end: isInt, title: isText, place: isText, subjectId: intOrNull },
   plans: { track: isText, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull },
-  exams: { track: isText, date: isText, name: isText, type: isText, results: "results" },
+  exams: {
+    track: isText,
+    date: isText,
+    name: isText,
+    type: isText,
+    results: "results",
+    subjectId: isInt,
+    questionCount: isInt,
+  },
 };
 
 const BACKUP_TABLES = Object.keys(ROW_SCHEMAS);
