@@ -19,7 +19,7 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | | |
 | --- | --- |
 | 🎯 **Üç hedef** | YKS (TYT/AYT), DGS (sayısal/sözel) ya da üniversite dersleri. Her hedefin dersleri ve kayıtları ayrı tutulur; hedef değiştirince öbürü silinmez, gizlenir. |
-| ⏱️ **Pomodoro** | Ders ve konu seçip sayacı başlat; süre dolunca çalışma kendiliğinden kaydedilir. Arkada sakin piyano, ambiyans, yağmur ya da gürültü çalabilir (tarayıcıda anlık üretilir, ses dosyası yok). |
+| ⏱️ **Pomodoro** | Ders ve konu seçip sayacı başlat; süre dolunca çalışma kendiliğinden kaydedilir. Arkada odak sesi çalabilir: dört ölçülük cümlelerle sakin piyano, müzik kutusu, gece sentezi (arpej + bas + pad), derin ambiyans, damlalı yağmur ya da kahverengi gürültü. Hepsi tarayıcıda anlık üretilir, ses dosyası yok. |
 | 📒 **Çalışma günlüğü** | Pomodoro dışındaki çalışmaları elle ekle. |
 | ✍️ **Soru kaydı** | Doğru / yanlış / boş gir; net (`doğru − yanlış / 4`) ve doğruluk otomatik hesaplanır. |
 | 📚 **Kaynaklar** | Test kitaplarında kaçıncı testte olduğun ve son çözüm tarihi. |
@@ -27,7 +27,7 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | 🗓️ **Ders programı** | Okul, kurs ya da üniversite ders saatlerini haftalık gir (aynı saati birden çok güne tek seferde). Her günün şeridinde dersler ve 45 dakikadan uzun boşluklar süresiyle görünür. |
 | 🕘 **Haftalık program** | Haftayı saat saat planla: ders programındaki dersler ızgaraya kendiliğinden gelir, boş saate tıklayıp çalışma / mola / diğer bloğu ekle, bir günü başka günlere kopyala. Gün başlığında planlanan ve gerçekten kaydedilen çalışma süresi yan yana. |
 | 🗂️ **Dersler ve konular** | YKS sayısalın 15 dersi (TYT: Türkçe, Matematik, Geometri, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din Kültürü; AYT: Matematik, Geometri, Fizik, Kimya, Biyoloji) tüm konularıyla, müfredat sırasında hazır gelir. Listeyi düzenle ya da kendi derslerini (dönemiyle) ekle. |
-| 🌗 **Açık / koyu tema** | Gerçek beyaz açık tema ve gece mavisi koyu tema; masaüstünde sol menü, telefonda alt menü. |
+| 🎨 **Dört tema** | Gece (yıldız haritası, dönen usturlap), Kâğıt (milimetrik kenar, iletki, kalemle beliren notlar), Neon (şehir silueti, kayan ızgara, matematik sembolü yağmuru) ve Pastel (süzülen renk bulutları, kâğıt şekiller). Yeni tema, tema düğmesinden daire hâlinde yayılarak gelir; "hareketi azalt" açıksa arka planlar durur. Masaüstünde sol menü, telefonda 4 ana sekme + Diğer paneli. |
 | 💾 **Yedekleme** | Yedeği indir/yükle, haftalık hatırlatma, bilgisayarda bir klasöre günlük otomatik yedek. |
 
 > Üniversite hedefinde sınav mantığı yoktur: soru kaydı, kaynaklar, net ve doğruluk gizlenir; yalnızca Pomodoro ve çalışma süresi tutulur.
@@ -53,6 +53,14 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 | Ders programı |
 | --- |
 | ![Gün şeritleri: dersler ve boş zaman](docs/screenshots/ders-programi.png) |
+
+| Gece | Kâğıt |
+| --- | --- |
+| ![Gece teması: yıldız haritası](docs/screenshots/tema-gece.png) | ![Kâğıt teması: çizim masası](docs/screenshots/tema-kagit.png) |
+
+| Neon | Pastel |
+| --- | --- |
+| ![Neon teması: şehir silueti ve ızgara](docs/screenshots/tema-neon.png) | ![Pastel teması: Pomodoro](docs/screenshots/tema-pastel.png) |
 
 | Açık tema | Hedef seçimi |
 | --- | --- |
