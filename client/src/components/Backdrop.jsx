@@ -176,182 +176,253 @@ function PaperBackdrop() {
   );
 }
 
-// --- Neon: mor gece, ışıklı şehir silueti, kayan ızgara, yağan matematik sembolleri ---
+// --- Neon: devre kartı. Kenarlardan içeri uzanan iletken yollar, yollar boyunca akan ışık paketleri,
+// yanıp sönen lehim noktaları, bir köşede yavaş tarayan HUD radarı ---
 
 const NEON = (() => {
   const r = seeded(2077);
-  const glyphs = '∑∫π√∞Δθλ∂≈≠01ƒ∇×±';
-  const columns = Array.from({ length: 16 }, (_, i) => {
-    // Sütunlar iki kenar şeridine dağılır (orta, içerik sütunu)
-    const side = i % 2 === 0 ? r() * 20 : 80 + r() * 18;
-    return {
-      left: side,
-      duration: 11 + r() * 14,
-      delay: -r() * 20,
-      text: Array.from({ length: 14 }, () => glyphs[Math.floor(r() * glyphs.length)]).join(''),
-      tone: r() > 0.35 ? 'c' : 'm',
-    };
-  });
-  // Şehir silueti: binalar ve yanan pencereler
-  const buildings = [];
-  let x = 0;
-  while (x < VIEW_W) {
-    const w = 34 + r() * 70;
-    const h = 60 + r() ** 1.6 * 230;
-    const windows = [];
-    for (let wy = 14; wy < h - 10; wy += 16) {
-      for (let wx = 8; wx < w - 8; wx += 12) {
-        if (r() > 0.78) windows.push({ x: x + wx, y: VIEW_H * 0.62 - h + wy, flick: r() > 0.85, d: r() * 5 });
-      }
+  const traces = [];
+  // Yollar dört kenardan başlar, içeriye doğru 45° kırılarak ilerler; ortadaki içerik sütununa girmez
+  const fromEdge = (edge, i) => {
+    let x;
+    let y;
+    let dx;
+    let dy;
+    if (edge === 'left') [x, y, dx, dy] = [0, 60 + r() * 880, 1, 0];
+    else if (edge === 'right') [x, y, dx, dy] = [VIEW_W, 60 + r() * 880, -1, 0];
+    else if (edge === 'top') [x, y, dx, dy] = [r() < 0.5 ? 40 + r() * 300 : 1260 + r() * 300, 0, 0, 1];
+    else [x, y, dx, dy] = [r() < 0.5 ? 40 + r() * 300 : 1260 + r() * 300, VIEW_H, 0, -1];
+    const pts = [[x, y]];
+    const segments = 2 + Math.floor(r() * 3);
+    for (let k = 0; k < segments; k++) {
+      const len = 50 + r() * 150;
+      x += dx * len;
+      y += dy * len;
+      // İçerik sütununa (yaklaşık %24–%76) girmesin
+      x = Math.min(Math.max(x, 0), VIEW_W);
+      if (x > VIEW_W * 0.24 && x < VIEW_W * 0.76) x = dx > 0 ? VIEW_W * 0.24 : VIEW_W * 0.76;
+      pts.push([x, y]);
+      // 45° kırılma ya da düz devam
+      const turn = r();
+      if (dx !== 0 && dy === 0) dy = turn < 0.5 ? (r() < 0.5 ? 1 : -1) : 0;
+      else if (dy !== 0 && dx === 0) dx = turn < 0.5 ? (x < VIEW_W / 2 ? 1 : -1) : 0;
+      else if (turn < 0.5) dy = 0;
+      else dx = 0;
     }
-    buildings.push({ x, w, h, windows, antenna: r() > 0.8 });
-    x += w + 2 + r() * 10;
-  }
-  return { columns, buildings };
+    const d = pts.map((p, j) => `${j ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+    const length = pts.slice(1).reduce((sum, p, j) => sum + Math.hypot(p[0] - pts[j][0], p[1] - pts[j][1]), 0);
+    return {
+      d,
+      end: pts[pts.length - 1],
+      length,
+      tone: i % 3 === 0 ? 'm' : 'c',
+      pulse: r() > 0.35,
+      dur: 3 + r() * 5,
+      delay: -r() * 8,
+      blink: r() * 4,
+    };
+  };
+  const edges = ['left', 'right', 'left', 'right', 'top', 'bottom'];
+  for (let i = 0; i < 34; i++) traces.push(fromEdge(edges[i % edges.length], i));
+  // Küçük çipler: kenar boşluklarında birkaç dikdörtgen, bacaklarıyla
+  const chips = Array.from({ length: 6 }, (_, i) => ({
+    x: (i % 2 === 0 ? 60 + r() * 220 : 1320 + r() * 200),
+    y: 120 + r() * 760,
+    w: 44 + r() * 40,
+    h: 28 + r() * 20,
+  }));
+  return { traces, chips };
 })();
 
 function NeonBackdrop() {
-  const horizon = VIEW_H * 0.62;
   return (
     <>
-      <svg className="bd-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMax slice">
+      <svg className="bd-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid slice">
         <defs>
-          <linearGradient id="neon-sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" style={{ stopColor: "var(--bd-sky-top)" }} />
-            <stop offset="0.62" style={{ stopColor: "var(--bd-sky-mid)" }} />
-            <stop offset="1" style={{ stopColor: "var(--bd-sky-top)" }} />
-          </linearGradient>
-          <linearGradient id="neon-sun" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#ffd23f" />
-            <stop offset="0.55" stopColor="#ff3fa4" />
-            <stop offset="1" stopColor="#7b2bff" />
-          </linearGradient>
-          {/* Güneşin alt yarısındaki yatay yarıklar */}
-          <mask id="sun-slits">
-            <rect x="0" y="0" width={VIEW_W} height={VIEW_H} fill="#fff" />
-            {Array.from({ length: 7 }, (_, i) => (
-              <rect key={i} x="0" y={horizon - 120 + i * 18 + i * i * 1.2} width={VIEW_W} height={3 + i * 1.4} fill="#000" />
-            ))}
-          </mask>
+          {/* Altıgen mikro ızgara: kartın baskı deseni */}
+          <pattern id="hex" width="28" height="48.5" patternUnits="userSpaceOnUse" patternTransform="scale(1.1)">
+            <path d="M14 0L28 8.08V24.25L14 32.33L0 24.25V8.08Z M14 32.33V48.5" className="hex" />
+          </pattern>
+          <radialGradient id="neon-haze" cx="50%" cy="40%" r="75%">
+            <stop offset="0" style={{ stopColor: 'var(--bd-sky-mid)' }} />
+            <stop offset="1" style={{ stopColor: 'var(--bd-sky-top)' }} />
+          </radialGradient>
         </defs>
-        <rect width={VIEW_W} height={VIEW_H} fill="url(#neon-sky)" />
-        <circle cx={VIEW_W / 2} cy={horizon - 40} r="190" fill="url(#neon-sun)" mask="url(#sun-slits)" className="neon-sun" />
-        <g className="skyline">
-          {NEON.buildings.map((b) => (
-            <g key={b.x}>
-              <rect x={b.x} y={horizon - b.h} width={b.w} height={b.h} />
-              {b.antenna && <line x1={b.x + b.w / 2} y1={horizon - b.h} x2={b.x + b.w / 2} y2={horizon - b.h - 34} />}
-              {b.windows.map((w) => (
-                <rect
-                  key={`${w.x}-${w.y}`}
-                  x={w.x}
-                  y={w.y}
-                  width="5"
-                  height="7"
-                  className={w.flick ? 'win flick' : 'win'}
-                  style={w.flick ? { animationDelay: `${w.d}s` } : undefined}
-                />
+        <rect width={VIEW_W} height={VIEW_H} fill="url(#neon-haze)" />
+        <rect width={VIEW_W} height={VIEW_H} fill="url(#hex)" className="hex-field" />
+        <g className="traces">
+          {NEON.traces.map((t, i) => (
+            <path key={i} d={t.d} className={`trace tone-${t.tone}`} />
+          ))}
+        </g>
+        {/* Işık paketleri: aynı yolun üstünde kısa, parlak bir çizgi; yol boyunca akar */}
+        <g className="pulses">
+          {NEON.traces
+            .filter((t) => t.pulse)
+            .map((t, i) => (
+              <path
+                key={i}
+                d={t.d}
+                className={`pulse tone-${t.tone}`}
+                style={{
+                  strokeDasharray: `18 ${Math.ceil(t.length) + 40}`,
+                  '--len': Math.ceil(t.length) + 58,
+                  animationDuration: `${t.dur}s`,
+                  animationDelay: `${t.delay}s`,
+                }}
+              />
+            ))}
+        </g>
+        <g className="pads">
+          {NEON.traces.map((t, i) => (
+            <circle
+              key={i}
+              cx={t.end[0]}
+              cy={t.end[1]}
+              r="3.2"
+              className={`pad tone-${t.tone}`}
+              style={{ animationDelay: `${t.blink}s` }}
+            />
+          ))}
+        </g>
+        <g className="chips">
+          {NEON.chips.map((c, i) => (
+            <g key={i} transform={`translate(${c.x} ${c.y})`}>
+              <rect width={c.w} height={c.h} rx="2" />
+              {Array.from({ length: Math.floor(c.w / 9) }, (_, k) => (
+                <g key={k}>
+                  <line x1={6 + k * 9} y1="-6" x2={6 + k * 9} y2="0" />
+                  <line x1={6 + k * 9} y1={c.h} x2={6 + k * 9} y2={c.h + 6} />
+                </g>
               ))}
             </g>
           ))}
         </g>
-        <line x1="0" y1={horizon} x2={VIEW_W} y2={horizon} className="horizon" />
       </svg>
-      {/* Kayan ızgara: perspektifli bir düzlem; çizgiler sonsuza değil izleyiciye doğru akar */}
-      <div className="neon-floor">
-        <div className="neon-grid" />
-      </div>
-      <div className="neon-rain">
-        {NEON.columns.map((c, i) => (
-          <span
-            key={i}
-            className={`glyphs tone-${c.tone}`}
-            style={{ left: `${c.left}%`, animationDuration: `${c.duration}s`, animationDelay: `${c.delay}s` }}
-          >
-            {c.text}
-          </span>
-        ))}
+      {/* HUD radarı: sağ altta, yarısı ekran dışında; tarama ışını yavaşça döner */}
+      <div className="neon-radar">
+        <svg viewBox="-200 -200 400 400" className="radar-rings">
+          <circle r="190" />
+          <circle r="140" />
+          <circle r="90" />
+          <circle r="40" />
+          <line x1="-200" y1="0" x2="200" y2="0" />
+          <line x1="0" y1="-200" x2="0" y2="200" />
+          {Array.from({ length: 36 }, (_, i) => {
+            const a = (i * 10 * Math.PI) / 180;
+            const inner = i % 9 === 0 ? 172 : 182;
+            return <line key={i} x1={Math.cos(a) * inner} y1={Math.sin(a) * inner} x2={Math.cos(a) * 190} y2={Math.sin(a) * 190} />;
+          })}
+        </svg>
+        <div className="radar-sweep" />
+        <span className="radar-blip b1" />
+        <span className="radar-blip b2" />
       </div>
       <div className="neon-scan" />
-      <div className="neon-glitch" />
     </>
   );
 }
 
-// --- Pastel: süzülen renk bulutları, kâğıttan kesilmiş gibi yıldızlar, halkalar, kıvrımlar ---
+// --- Pastel: çıkartma defteri. Kenarlarda kalın mürekkep çizgili, düz gölgeli geometrik çıkartmalar:
+// gökkuşağı kemeri, yarım güneş, zikzak, yıldız, nokta kümesi. Yavaşça sallanır ya da döner. ---
 
-const PASTEL = (() => {
-  const r = seeded(314);
-  const kinds = ['sparkle', 'ring', 'squiggle', 'dot', 'cloud', 'sparkle', 'ring', 'tri'];
-  const tones = ['lav', 'mint', 'peach', 'sky', 'rose'];
-  return Array.from({ length: 22 }, (_, i) => {
-    const leftSide = i % 2 === 0;
-    return {
-      kind: kinds[i % kinds.length],
-      tone: tones[Math.floor(r() * tones.length)],
-      // Sol şerit menü ile içerik arasında, sağ şerit içeriğin sağında
-      x: leftSide ? 16.5 + r() * 7 : 84 + r() * 13,
-      y: 4 + r() * 88,
-      size: 18 + r() * 34,
-      rot: Math.round(r() * 60 - 30),
-      dur: 7 + r() * 8,
-      delay: -r() * 10,
-    };
-  });
-})();
+// Her çıkartma: şekil, renk, ekrandaki yer (yüzde), boyut, açı ve hareket
+const STICKERS = [
+  { kind: 'arch', fill: ['--peach', '--lilac', '--mint'], x: 89, y: 78, size: 260, rot: 0, move: 'none' },
+  { kind: 'sun', fill: ['--butter'], x: 93, y: 6, size: 190, rot: 180, move: 'spin' },
+  { kind: 'star', fill: ['--lilac'], x: 20, y: 18, size: 54, rot: -12, move: 'bob' },
+  { kind: 'zigzag', fill: ['--accent-2'], x: 19.5, y: 58, size: 90, rot: 8, move: 'bob' },
+  { kind: 'dots', fill: ['--ink'], x: 87, y: 40, size: 70, rot: 0, move: 'none' },
+  { kind: 'blob', fill: ['--mint'], x: 21, y: 84, size: 80, rot: 20, move: 'bob' },
+  { kind: 'star', fill: ['--peach'], x: 83, y: 58, size: 40, rot: 14, move: 'bob' },
+  { kind: 'ring', fill: ['--sky'], x: 22, y: 36, size: 46, rot: 0, move: 'bob' },
+];
 
-function PastelShape({ kind }) {
+function Sticker({ kind, fill }) {
+  const c = (i) => `var(${fill[i] ?? fill[0]})`;
   switch (kind) {
-    case 'sparkle':
-      return <path d="M12 0C13 8 16 11 24 12C16 13 13 16 12 24C11 16 8 13 0 12C8 11 11 8 12 0Z" className="fill" />;
-    case 'ring':
-      return <circle cx="12" cy="12" r="9" className="stroke" />;
-    case 'squiggle':
-      return <path d="M1 14C5 6 8 6 12 12S19 18 23 10" className="stroke" />;
-    case 'dot':
-      return <circle cx="12" cy="12" r="5" className="fill" />;
-    case 'cloud':
+    case 'arch':
+      // Üç bantlı kemer (alt kısmı ekran dışında kalır)
+      return (
+        <g>
+          <path d="M10 100A90 90 0 0 1 190 100H160A60 60 0 0 0 40 100Z" style={{ fill: c(0) }} />
+          <path d="M40 100A60 60 0 0 1 160 100H130A30 30 0 0 0 70 100Z" style={{ fill: c(1) }} />
+          <path d="M70 100A30 30 0 0 1 130 100Z" style={{ fill: c(2) }} />
+        </g>
+      );
+    case 'sun':
+      return (
+        <g>
+          <circle cx="100" cy="100" r="46" style={{ fill: c(0) }} />
+          {Array.from({ length: 12 }, (_, i) => (
+            <rect
+              key={i}
+              x="96"
+              y="22"
+              width="8"
+              height="26"
+              rx="4"
+              style={{ fill: c(0) }}
+              transform={`rotate(${i * 30} 100 100)`}
+            />
+          ))}
+        </g>
+      );
+    case 'star':
       return (
         <path
-          d="M6 18H19A5 5 0 0 0 19 8A6.5 6.5 0 0 0 6.6 9.6A4.3 4.3 0 0 0 6 18Z"
-          className="fill"
+          d="M100 14L124 72L186 76L138 116L154 178L100 144L46 178L62 116L14 76L76 72Z"
+          style={{ fill: c(0) }}
+          strokeLinejoin="round"
         />
       );
+    case 'zigzag':
+      return <path d="M10 120L50 70L90 120L130 70L170 120L190 95" className="line" style={{ stroke: c(0) }} />;
+    case 'dots':
+      return (
+        <g className="nostroke">
+          {Array.from({ length: 16 }, (_, i) => (
+            <circle key={i} cx={30 + (i % 4) * 46} cy={30 + Math.floor(i / 4) * 46} r="7" style={{ fill: c(0) }} />
+          ))}
+        </g>
+      );
+    case 'ring':
+      return <circle cx="100" cy="100" r="64" className="line" style={{ stroke: c(0) }} />;
     default:
-      return <path d="M12 3L22 20H2Z" className="stroke" />;
+      return (
+        <path
+          d="M60 30C110 0 180 40 170 100S120 190 70 170S10 60 60 30Z"
+          style={{ fill: c(0) }}
+        />
+      );
   }
 }
 
 function PastelBackdrop() {
   return (
-    <>
-      <div className="pastel-blobs">
-        <span className="blob b1" />
-        <span className="blob b2" />
-        <span className="blob b3" />
-        <span className="blob b4" />
-      </div>
-      <div className="pastel-shapes">
-        {PASTEL.map((s, i) => (
-          <svg
-            key={i}
-            viewBox="0 0 24 24"
-            className={`pastel-shape tone-${s.tone}`}
-            style={{
-              left: `${s.x}%`,
-              top: `${s.y}%`,
-              width: `${s.size}px`,
-              height: `${s.size}px`,
-              '--rot': `${s.rot}deg`,
-              animationDuration: `${s.dur}s`,
-              animationDelay: `${s.delay}s`,
-            }}
-          >
-            <PastelShape kind={s.kind} />
-          </svg>
-        ))}
-      </div>
-    </>
+    <div className="stickers">
+      {STICKERS.map((st, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 200 200"
+          className={`sticker move-${st.move} kind-${st.kind} ${st.x < 50 ? 'left' : 'right'}`}
+          style={{
+            left: `${st.x}%`,
+            top: `${st.y}%`,
+            width: `${st.size}px`,
+            height: `${st.size}px`,
+            '--rot': `${st.rot}deg`,
+            animationDelay: `${-i * 1.7}s`,
+          }}
+        >
+          {/* Düz gölge: aynı şeklin mürekkep renkli kopyası, sağa-aşağı kaydırılmış */}
+          <g className="sticker-shadow" transform="translate(7 7)">
+            <Sticker kind={st.kind} fill={['--ink']} />
+          </g>
+          <Sticker kind={st.kind} fill={st.fill} />
+        </svg>
+      ))}
+    </div>
   );
 }
 

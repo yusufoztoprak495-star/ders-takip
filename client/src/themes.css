@@ -150,74 +150,117 @@
   background-image: repeating-linear-gradient(135deg, rgba(47, 230, 255, 0.2) 0 1px, transparent 1px 6px);
 }
 
-/* ======================= PASTEL ======================= */
+/* ======================= PASTEL =======================
+   Şeker renkli çıkartma defteri: kalın mürekkep çizgili kartlar, arkalarında düz (bulanık olmayan)
+   kaydırılmış gölge, her kartın kendi pastel rengi, başlığın altında fosforlu kalem darbesi.
+   Yazı tipi baştan sona Figtree; başlıklar kalın ve sıkı. Basınca kart/düğme gölgesine "oturur". */
 :root[data-theme="pastel"] {
   /* "only light": tarayıcı bu açık temayı zorla karartamaz */
   color-scheme: only light;
 
-  --bg: #f6f3fb; /* lavantaya çalan beyaz (sarıya kaymaz) */
+  --bg: #eef2f9; /* bulut grisi-mavi (sarıya hiç kaymaz) */
   --surface: #ffffff;
-  --surface-2: #faf8fd;
-  --text: #2b2342; /* mürdüm mürekkep */
-  --muted: #675e80; /* beyazda ~6:1 */
-  --border: #ebe5f5;
-  --border-strong: #d6cce9;
+  --surface-2: #f6f8fc;
+  --text: #262c3a; /* mürekkep */
+  --muted: #5a6274; /* beyazda ~6:1, pastel kartlarda ≥4.7:1 */
+  --border: #dde3ee;
+  --border-strong: #262c3a;
+  --ink: #262c3a;
 
-  --gold: #7457c4;
-  --gold-hair: rgba(116, 87, 196, 0.18);
-  --teal: #23806d;
-  --rose: #c03d63;
+  --gold: #cc3d58; /* mercan */
+  --gold-hair: rgba(204, 61, 88, 0.2);
+  --teal: #267a67;
+  --rose: #b4372f;
   --accent: var(--gold);
-  --accent-fill: #7457c4; /* üzerindeki beyaz ~5.4:1 */
-  --gold-text: #6a4dbc;
-  --accent-2: #7457c4;
+  --accent-fill: #cc3d58; /* üzerindeki beyaz ~4.8:1 */
+  --gold-text: #b0304b;
+  --accent-2: #3b6fd0;
   --on-accent: #ffffff;
 
-  --danger-bg: #fde8ee;
-  --danger-text: #a1304f;
+  --danger-bg: #ffe1d6;
+  --danger-text: #9a2b26;
 
-  --series-1: #8467d6;
-  --series-2: #2b9a82;
-  --series-3: #d9664a;
-  --series-blank: #9a93ab;
-  --series-dim: #ebe5f5;
-  --chart-grid: #f1edf8;
-  --chart-axis: #d6cce9;
+  --series-1: #e0637a;
+  --series-2: #3d9c86;
+  --series-3: #5b8bd6;
+  --series-blank: #9aa1b0;
+  --series-dim: #dde3ee;
+  --chart-grid: #edf0f6;
+  --chart-axis: #c4cad6;
 
-  /* Menü opak: üstüne bulut ve şekiller binmesin (bulanıklaştırma, sabit konumlu tema düğmesini bozduğu için yok) */
-  --nav-bg: #fdfcff;
+  /* Kartlara verilen pastel renkler */
+  --mint: #d8f3e8;
+  --peach: #ffe1d6;
+  --lilac: #e6defa;
+  --sky: #d9e8fb;
+  --butter: #fff0bd;
+
+  --nav-bg: #ffffff;
   --paper-line: transparent;
-  --card-shadow: 0 1px 2px rgba(76, 52, 140, 0.05), 0 12px 32px rgba(116, 87, 196, 0.09);
-  --btn-hover: brightness(1.1);
+  --card-shadow: 4px 4px 0 var(--ink);
+  --btn-hover: brightness(1.06);
   --mark-hover: brightness(0.9);
-  --grain-opacity: 0.035;
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.4 0 0 0 0 0.35 0 0 0 0 0.55 1.2 0 0 0 -0.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --doodle: rgba(116, 87, 196, 0.38);
-  --doodle-strong: rgba(116, 87, 196, 0.55);
+  --grain-opacity: 0;
+  --doodle: rgba(38, 44, 58, 0.5);
+  --doodle-strong: rgba(38, 44, 58, 0.7);
 
-  --radius: 12px;
+  --radius: 14px;
+  --font-display: "Figtree Variable", "Segoe UI", sans-serif;
 }
 
+/* Zemin: ince kareli defter kâğıdı */
 :root[data-theme="pastel"] body {
-  background-image: radial-gradient(rgba(116, 87, 196, 0.11) 1px, transparent 1.2px);
-  background-size: 26px 26px;
+  background-image:
+    linear-gradient(rgba(91, 139, 214, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 139, 214, 0.1) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 :root[data-theme="pastel"] h1,
 :root[data-theme="pastel"] h2,
 :root[data-theme="pastel"] h3,
-:root[data-theme="pastel"] .panel-label {
-  font-weight: 600;
+:root[data-theme="pastel"] .panel-label,
+:root[data-theme="pastel"] .brand {
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-/* h2'nin altın ayırıcısı pastelde yumuşak, yuvarlak uçlu bir çizgi */
+/* Sayfa başlığının altında fosforlu kalem darbesi (sayfanın tek "gösterişli" öğesi) */
+:root[data-theme="pastel"] h1 {
+  width: fit-content;
+  padding: 0 6px;
+  margin-left: -6px;
+  background: linear-gradient(100deg, transparent 2%, var(--butter) 3%, var(--butter) 96%, transparent 97%) 0 72% / 100%
+    46% no-repeat;
+}
+
 :root[data-theme="pastel"] h2:not(.panel-label) {
-  background: linear-gradient(90deg, #b59cf0, #f5a98f) left bottom / 44px 3px no-repeat;
+  background: none;
   box-shadow: none;
-  border-radius: 0;
+  border-bottom: 2px solid var(--ink);
 }
 
-/* Yuvarlak köşeler: kartlar 18px, alanlar 12px, düğmeler hap */
+:root[data-theme="pastel"] .panel-label {
+  font-size: 1.05rem;
+}
+
+:root[data-theme="pastel"] .value,
+:root[data-theme="pastel"] .solved-number,
+:root[data-theme="pastel"] .timer,
+:root[data-theme="pastel"] .day-name,
+:root[data-theme="pastel"] .strip-day,
+:root[data-theme="pastel"] .class-time,
+:root[data-theme="pastel"] .gutter.hours span {
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+:root[data-theme="pastel"] .daily-quote blockquote {
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* --- Kalın çizgili kartlar --- */
 :root[data-theme="pastel"] .card,
 :root[data-theme="pastel"] .panel,
 :root[data-theme="pastel"] .chart-card,
@@ -228,7 +271,38 @@
 :root[data-theme="pastel"] .plan-editor,
 :root[data-theme="pastel"] .theme-menu,
 :root[data-theme="pastel"] .nav-sheet {
+  border: 2px solid var(--ink);
   border-radius: 18px;
+  box-shadow: var(--card-shadow);
+}
+
+/* Ana sayfa kartları sırayla nane, şeftali, leylak, gök mavisi */
+:root[data-theme="pastel"] .panels .panel:nth-child(4n + 1) {
+  background: var(--mint);
+}
+
+:root[data-theme="pastel"] .panels .panel:nth-child(4n + 2) {
+  background: var(--peach);
+}
+
+:root[data-theme="pastel"] .panels .panel:nth-child(4n + 3) {
+  background: var(--lilac);
+}
+
+:root[data-theme="pastel"] .panels .panel:nth-child(4n + 4) {
+  background: var(--sky);
+}
+
+:root[data-theme="pastel"] .chart-card:nth-of-type(odd) {
+  background: #fbfcff;
+}
+
+/* Kart üzerine gelince hafifçe kalkar, gölgesi uzar */
+:root[data-theme="pastel"] .panel:hover,
+:root[data-theme="pastel"] .chart-card:hover {
+  border-color: var(--ink);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
 :root[data-theme="pastel"] .kpis,
@@ -237,33 +311,127 @@
 }
 
 :root[data-theme="pastel"] .week-head {
-  border-radius: 18px 18px 0 0;
+  border-radius: 16px 16px 0 0;
+  border-bottom: 2px solid var(--ink);
 }
 
+:root[data-theme="pastel"] .tile + .tile {
+  border-left: 2px dashed var(--border);
+}
+
+/* --- Alanlar ve düğmeler --- */
 :root[data-theme="pastel"] select,
 :root[data-theme="pastel"] input {
+  border: 2px solid var(--ink);
   border-radius: 12px;
-  background: var(--surface-2);
+  background: var(--surface);
+}
+
+:root[data-theme="pastel"] select:focus-visible,
+:root[data-theme="pastel"] input:focus-visible {
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--accent-2);
+}
+
+:root[data-theme="pastel"] input[type="range"] {
+  border: none;
+  box-shadow: none;
 }
 
 :root[data-theme="pastel"] button,
-:root[data-theme="pastel"] .button-link,
-:root[data-theme="pastel"] input[type="file"]::file-selector-button {
+:root[data-theme="pastel"] .button-link {
+  border: 2px solid var(--ink);
   border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+:root[data-theme="pastel"] button.secondary {
+  background: var(--surface);
+}
+
+:root[data-theme="pastel"] button.secondary:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--ink);
+  background: var(--butter);
+}
+
+/* Basınca düğme gölgesinin üstüne oturur */
+:root[data-theme="pastel"] button:active:not(:disabled),
+:root[data-theme="pastel"] .button-link:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+/* Küçük ve iç içe düğmeler gölgesiz kalır (kalabalık olmasın) */
+:root[data-theme="pastel"] button.small,
+:root[data-theme="pastel"] .segmented button,
+:root[data-theme="pastel"] .theme-option,
+:root[data-theme="pastel"] .nav-more,
+:root[data-theme="pastel"] .nav-scrim,
+:root[data-theme="pastel"] .block,
+:root[data-theme="pastel"] .day-chip,
+:root[data-theme="pastel"] .span-chip,
+:root[data-theme="pastel"] .theme-toggle {
+  box-shadow: none;
 }
 
 :root[data-theme="pastel"] .block,
-:root[data-theme="pastel"] .strip-class,
+:root[data-theme="pastel"] .theme-option,
+:root[data-theme="pastel"] .nav-more,
+:root[data-theme="pastel"] .nav-scrim {
+  border-width: 1px;
+}
+
 :root[data-theme="pastel"] .theme-option {
-  border-radius: 10px;
+  border-color: transparent;
+}
+
+:root[data-theme="pastel"] .theme-option[aria-checked="true"] {
+  border: 2px solid var(--ink);
+  background: var(--butter);
+}
+
+:root[data-theme="pastel"] .nav-more,
+:root[data-theme="pastel"] .nav-scrim {
+  border: 0;
 }
 
 :root[data-theme="pastel"] .segmented {
+  border: 2px solid var(--ink);
   border-radius: 999px;
 }
 
+:root[data-theme="pastel"] .segmented button {
+  border: 0;
+  border-radius: 0;
+}
+
+:root[data-theme="pastel"] .segmented button + button {
+  border-left: 2px solid var(--ink);
+}
+
+:root[data-theme="pastel"] .day-chip.on,
+:root[data-theme="pastel"] .segmented button.active {
+  color: var(--text);
+  background: var(--butter);
+  border-color: var(--ink);
+}
+
 :root[data-theme="pastel"] .badge {
+  border: 1.5px solid var(--ink);
   border-radius: 999px;
+  background: var(--lilac);
+  color: var(--text);
+}
+
+:root[data-theme="pastel"] input[type="file"]::file-selector-button {
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+
+/* --- Menü --- */
+:root[data-theme="pastel"] .nav {
+  border-right: 2px solid var(--ink);
 }
 
 :root[data-theme="pastel"] .nav a {
@@ -271,18 +439,59 @@
 }
 
 :root[data-theme="pastel"] .nav a.active {
-  background: #efe9fb;
-  box-shadow: none;
+  color: var(--text);
+  background: var(--butter);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+:root[data-theme="pastel"] .nav a.active .icon {
+  color: var(--text);
+}
+
+:root[data-theme="pastel"] .brand::after {
+  height: 3px;
+  background: var(--gold);
 }
 
 :root[data-theme="pastel"] .daily-quote {
-  border-left: 3px solid #d9cbf7;
+  padding-left: 18px;
+  border-left: 6px solid var(--lilac);
+}
+
+/* --- Program sayfaları --- */
+:root[data-theme="pastel"] .block {
+  border-radius: 10px;
 }
 
 :root[data-theme="pastel"] .block-class {
-  background-image: repeating-linear-gradient(135deg, rgba(181, 156, 240, 0.28) 0 1.5px, transparent 1.5px 7px);
+  background-color: var(--sky);
+  background-image: repeating-linear-gradient(135deg, rgba(38, 44, 58, 0.12) 0 1.5px, transparent 1.5px 7px);
+  border-color: var(--ink);
 }
 
 :root[data-theme="pastel"] .block-study {
-  box-shadow: inset 4px 0 0 #b59cf0;
+  background: var(--mint);
+  border-color: var(--ink);
+  box-shadow: none;
+  padding-left: 7px;
+}
+
+:root[data-theme="pastel"] .block-other {
+  background: var(--lilac);
+  border-color: var(--ink);
+}
+
+:root[data-theme="pastel"] .strip-class {
+  border-radius: 6px;
+}
+
+@media (max-width: 820px) {
+  :root[data-theme="pastel"] .nav {
+    border-right: 0;
+    border-top: 2px solid var(--ink);
+  }
+
+  :root[data-theme="pastel"] .nav a.active {
+    box-shadow: inset 0 0 0 2px var(--ink);
+  }
 }

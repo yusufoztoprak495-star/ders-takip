@@ -22,7 +22,7 @@
           t = localStorage.getItem("tema");
         } catch (e) {}
         // Dört tema: Gece (dark), Kâğıt (light), Neon (neon), Pastel (pastel). Liste src/lib/theme.js ile aynı.
-        var bars = { dark: "#0c0f14", light: "#f4f5f7", neon: "#0d0b1e", pastel: "#f6f3fb" };
+        var bars = { dark: "#0c0f14", light: "#f4f5f7", neon: "#0d0b1e", pastel: "#eef2f9" };
         var darkThemes = { dark: 1, neon: 1 };
         if (!bars[t]) {
           t = window.matchMedia("(prefers-color-scheme: dark)").matches

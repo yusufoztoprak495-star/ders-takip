@@ -8,8 +8,8 @@ export const THEME_KEY = "tema";
 export const THEMES = [
   { id: "dark", name: "Gece", hint: "Lacivert gece, altın yıldız haritası", dark: true, bar: "#0c0f14", swatch: ["#0c0f14", "#171c25", "#cdb07a", "#5fa89e"] },
   { id: "light", name: "Kâğıt", hint: "Beyaz çizim kâğıdı, lacivert mürekkep", dark: false, bar: "#f4f5f7", swatch: ["#f4f5f7", "#ffffff", "#26385a", "#1b6b64"] },
-  { id: "neon", name: "Neon", hint: "Mor gece, ışıldayan ızgara ve kayan semboller", dark: true, bar: "#0d0b1e", swatch: ["#0d0b1e", "#1a1640", "#ff3fa4", "#34e7ff"] },
-  { id: "pastel", name: "Pastel", hint: "Lavanta, nane ve şeftali; yumuşak bulutlar", dark: false, bar: "#f6f3fb", swatch: ["#f6f3fb", "#ffffff", "#7457c4", "#f2a48f"] },
+  { id: "neon", name: "Neon", hint: "Mor devre kartı, yollarda akan ışık, HUD radarı", dark: true, bar: "#0d0b1e", swatch: ["#0d0b1e", "#1a1640", "#ff3fa4", "#34e7ff"] },
+  { id: "pastel", name: "Pastel", hint: "Şeker renkli çıkartmalar, kalın çizgili kartlar", dark: false, bar: "#eef2f9", swatch: ["#eef2f9", "#d8f3e8", "#cc3d58", "#fff0bd"] },
 ];
 
 export const THEME_BAR_COLORS = Object.fromEntries(THEMES.map((t) => [t.id, t.bar]));
