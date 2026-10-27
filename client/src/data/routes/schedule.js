@@ -2,6 +2,7 @@ import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
 import { activeSubjectIds } from "../seed.js";
 import { DAYS, DAY_MINUTES, DEFAULT_DAY_WINDOW, TIME_STEP, dayIndexOfDate, formatClock, overlaps } from "../../lib/schedule.js";
+import { weekOfDate } from "../../lib/months.js";
 import {
   optionalInt,
   optionalString,
@@ -28,7 +29,7 @@ const MIN_WINDOW = 4 * 60;
 
 // --- Ortak doğrulayıcılar ---
 
-function requireDay(value) {
+export function requireDay(value) {
   return requireInt(value, "Gün", { min: 0, max: DAYS.length - 1 });
 }
 
@@ -55,19 +56,19 @@ function optionalSubject(state, value) {
   return subjectId;
 }
 
-const track = (state) => state.settings.track;
-const ofTrack = (rows, state) => rows.filter((r) => r.track === track(state));
+export const track = (state) => state.settings.track;
+export const ofTrack = (rows, state) => rows.filter((r) => r.track === track(state));
 const byTime = (a, b) => a.day - b.day || a.start - b.start || a.id - b.id;
-const spanText = (row) => `${formatClock(row.start)}–${formatClock(row.end)}`;
+export const spanText = (row) => `${formatClock(row.start)}–${formatClock(row.end)}`;
 
 // Aynı gün çakışan satırı bulur (düzenlenen satırın kendisi hariç)
-function clashIn(rows, day, span, exceptId = null) {
+export function clashIn(rows, day, span, exceptId = null) {
   return rows.find((r) => r.id !== exceptId && r.day === day && overlaps(r, span));
 }
 
 const subjectName = (state, id) => state.subjects.find((s) => s.id === id)?.name ?? "";
 // Blok adı boşsa bağlı dersin adı, o da yoksa türün adı
-function planLabel(state, plan) {
+export function planLabel(state, plan) {
   return plan.title || subjectName(state, plan.subjectId) || (plan.kind === "break" ? "Mola" : "Blok");
 }
 
@@ -144,7 +145,7 @@ export function listPlans({ state }) {
   return { status: 200, body: ofTrack(state.plans, state).sort(byTime).map((p) => ({ ...p })) };
 }
 
-function parsePlanFields(state, body) {
+export function parsePlanFields(state, body) {
   const kind = requireOneOf(body.kind, "Blok türü", PLAN_KINDS);
   const subjectId = kind === "study" ? optionalSubject(state, body.subjectId) : null;
   let title;
@@ -231,7 +232,24 @@ export function getToday({ state, query }) {
       subjectName: subjectName(p.subjectId),
       done: done.has(p.id),
     }));
-  const items = [...classes, ...plans].sort((a, b) => a.start - b.start || (a.type === "class" ? -1 : 1));
+  // Haftaya özel bloklar: yalnızca ayın o haftasının o gününde görünür. Yapıldı işareti yoktur (planChecks
+  // ortak blokların kimliğine bağlıdır); `weekly: true` ile sayfa işaret düğmesini göstermez.
+  const here = weekOfDate(date);
+  const weekly = ofTrack(state.weekPlans ?? [], state)
+    .filter((p) => p.month === here.month && p.week === here.week && p.day === day)
+    .map((p) => ({
+      type: p.kind,
+      id: p.id,
+      start: p.start,
+      end: p.end,
+      title: planLabel(state, p),
+      note: p.title,
+      subjectId: p.subjectId,
+      subjectName: subjectName(p.subjectId),
+      done: false,
+      weekly: true,
+    }));
+  const items = [...classes, ...plans, ...weekly].sort((a, b) => a.start - b.start || (a.type === "class" ? -1 : 1));
   return { status: 200, body: { date, day, items } };
 }
 

@@ -65,12 +65,15 @@ import {
   updateSchedule,
 } from "./routes/schedule.js";
 import {
+  carryMonthPlans,
   createMonthPlan,
   deleteMonthPlan,
   listMonthPlans,
   setMonthPlanDone,
+  setMonthPlanWeeks,
   updateMonthPlan,
 } from "./routes/monthPlans.js";
+import { createWeekPlan, deleteWeekPlan, listWeekPlans, updateWeekPlan } from "./routes/weekPlans.js";
 import {
   getAchievements,
   getBySubject,
@@ -151,9 +154,16 @@ const ROUTES = [
   ["DELETE", "/api/plans/:id", deletePlan],
   ["GET", "/api/month-plans", listMonthPlans],
   ["POST", "/api/month-plans", createMonthPlan],
+  // "weeks" ve "carry" kimlik değil: :id kalıbından önce yazılır ki PUT /api/month-plans/:id gibi algılanmasın
+  ["PUT", "/api/month-plans/weeks", setMonthPlanWeeks],
+  ["POST", "/api/month-plans/carry", carryMonthPlans],
   ["PUT", "/api/month-plans/:id/done", setMonthPlanDone],
   ["PUT", "/api/month-plans/:id", updateMonthPlan],
   ["DELETE", "/api/month-plans/:id", deleteMonthPlan],
+  ["GET", "/api/week-plans", listWeekPlans],
+  ["POST", "/api/week-plans", createWeekPlan],
+  ["PUT", "/api/week-plans/:id", updateWeekPlan],
+  ["DELETE", "/api/week-plans/:id", deleteWeekPlan],
   ["GET", "/api/schedule", getSchedule],
   ["PUT", "/api/schedule", updateSchedule],
   ["GET", "/api/achievements", getAchievements],

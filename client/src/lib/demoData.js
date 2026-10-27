@@ -4,7 +4,7 @@
 import { emptyState, seedIfEmpty } from "../data/seed.js";
 import { addDays } from "./insights.js";
 import { EXAM_TYPES } from "./exams.js";
-import { monthOf, shiftMonth } from "./months.js";
+import { monthOf, shiftMonth, weekOfDate } from "./months.js";
 import { dayIndexOfDate } from "./schedule.js";
 import { seeded } from "./random.js";
 
@@ -172,6 +172,8 @@ export function buildDemoState(today, seed = 2027) {
         title: topic.name,
         note: i === 0 ? note : "",
         doneAt: i < 2 ? addDays(today, -(2 + i + s)) : null,
+        // Bitenler bittikleri haftaya, sonraki iki konu 3. ve 4. haftaya yazılır; sonuncusu dağıtılmamış kalır
+        week: i < 2 ? (weekOfDate(addDays(today, -(2 + i + s))).month === thisMonth ? weekOfDate(addDays(today, -(2 + i + s))).week : null) : i === 2 ? 3 : i === 3 ? 4 : null,
       });
     });
     topics.slice(5, 9).forEach((topic) => {
@@ -183,9 +185,13 @@ export function buildDemoState(today, seed = 2027) {
         title: topic.name,
         note: "",
         doneAt: null,
+        week: null,
       });
     });
   });
+  // Haftaya özel bloklar: 3. hafta pazarı ve 2. hafta cuması (ortak blokların ve derslerin boş yerlerine)
+  state.weekPlans.push({ id: 1, track: "yks", month: thisMonth, week: 3, day: 6, start: 840, end: 960, kind: "other", title: "Akraba ziyareti", subjectId: null });
+  state.weekPlans.push({ id: 2, track: "yks", month: thisMonth, week: 2, day: 4, start: 1140, end: 1200, kind: "other", title: "Aile yemeği", subjectId: null });
 
   // --- Denemeler: TYT ve AYT SAY netleri zamanla yükselir; branş denemeleri ---
   const typeOf = (id) => EXAM_TYPES.find((t) => t.id === id);

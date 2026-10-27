@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { isMonth, monthLabel, monthOf, progressOf, shiftMonth } from '../src/lib/months.js';
+import {
+  WEEKS,
+  daysInMonth,
+  isMonth,
+  monthLabel,
+  monthOf,
+  progressOf,
+  shiftMonth,
+  weekDays,
+  weekLabel,
+  weekOfDate,
+  weekOfDay,
+} from '../src/lib/months.js';
 
 describe('Ay yardımcıları', () => {
   it('isMonth yalnızca YYYY-AA biçimini ve gerçek ayları kabul eder', () => {
@@ -36,5 +48,43 @@ describe('Ay yardımcıları', () => {
     const items = [{ doneAt: '2026-10-02' }, { doneAt: null }, { doneAt: null }];
     expect(progressOf(items)).toEqual({ total: 3, done: 1, percent: 33 });
     expect(progressOf([{ doneAt: '2026-10-02' }, { doneAt: '2026-10-03' }])).toEqual({ total: 2, done: 2, percent: 100 });
+  });
+});
+
+describe('Ayın dört haftası', () => {
+  it('ay 4 haftaya bölünür', () => {
+    expect(WEEKS).toBe(4);
+  });
+
+  it('daysInMonth artık yılı ve ay uzunluklarını bilir', () => {
+    expect(daysInMonth('2026-10')).toBe(31);
+    expect(daysInMonth('2026-11')).toBe(30);
+    expect(daysInMonth('2027-02')).toBe(28);
+    expect(daysInMonth('2028-02')).toBe(29);
+  });
+
+  it('weekOfDay: 1–7 birinci, 22 ve sonrası (31 dahil) dördüncü hafta', () => {
+    expect([1, 7, 8, 14, 15, 21, 22, 28, 29, 31].map(weekOfDay)).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 4, 4]);
+  });
+
+  it('weekOfDate günün ayını ve haftasını verir', () => {
+    expect(weekOfDate('2026-10-14')).toEqual({ month: '2026-10', week: 2 });
+    expect(weekOfDate('2026-10-31')).toEqual({ month: '2026-10', week: 4 });
+    expect(weekOfDate('2027-02-01')).toEqual({ month: '2027-02', week: 1 });
+  });
+
+  it('weekDays haftanın gün aralığını verir; son hafta ayın sonuna kadar uzar', () => {
+    expect(weekDays('2026-10', 1)).toEqual({ from: 1, to: 7 });
+    expect(weekDays('2026-10', 3)).toEqual({ from: 15, to: 21 });
+    expect(weekDays('2026-10', 4)).toEqual({ from: 22, to: 31 });
+    expect(weekDays('2026-11', 4)).toEqual({ from: 22, to: 30 });
+    expect(weekDays('2027-02', 4)).toEqual({ from: 22, to: 28 });
+    expect(weekDays('2028-02', 4)).toEqual({ from: 22, to: 29 });
+  });
+
+  it('weekLabel gün aralığını ay adıyla yazar', () => {
+    expect(weekLabel('2026-10', 1)).toBe('1–7 Ekim');
+    expect(weekLabel('2026-10', 4)).toBe('22–31 Ekim');
+    expect(weekLabel('2027-02', 4)).toBe('22–28 Şubat');
   });
 });

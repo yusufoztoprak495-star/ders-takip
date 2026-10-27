@@ -77,7 +77,7 @@ export function deleteSubject({ state, params }) {
   state.subjects.splice(index, 1);
   state.topics = state.topics.filter((t) => t.subjectId !== id);
   // Ders programı ve haftalık plandaki satırlar silinmez, yalnızca ders bağlantısı boşalır
-  for (const row of [...state.classes, ...state.plans, ...(state.assignments ?? [])]) {
+  for (const row of [...state.classes, ...state.plans, ...(state.weekPlans ?? []), ...(state.assignments ?? [])]) {
     if (row.subjectId === id) row.subjectId = null;
   }
   // Dersin kredi/not bilgisi dersle birlikte gider

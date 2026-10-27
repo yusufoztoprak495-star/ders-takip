@@ -21,7 +21,8 @@ export function emptyState() {
     plans: [], // haftalık programın blokları
     exams: [], // deneme sınavları
     planChecks: [], // haftalık program bloklarının "yapıldı" işaretleri: { id, planId, date }
-    monthPlans: [], // aylık plan: ay + ders başına bitirilmesi planlanan konular
+    monthPlans: [], // aylık plan: ay + ders başına bitirilmesi planlanan konular (week: dağıtıldığı hafta, 1–4 ya da null)
+    weekPlans: [], // haftaya özel bloklar: ortak şablona ek olarak ayın tek bir haftasına konan bloklar
     mistakes: [], // hata defteri (fotoğraflar ayrı depoda: data/images.js)
     cards: [], // bilgi kartları (Leitner kutuları)
     courses: [], // üniversite: ders başına kredi, not bileşenleri, devamsızlık hakkı
@@ -108,14 +109,14 @@ export function ensureTrackSeeded(state, track) {
 // Bir şey değiştiyse true döner (veri kaydedilmeli).
 export function prepareState(state, { seed = true } = {}) {
   const tracksOf = () =>
-    [state.subjects, state.classes ?? [], state.plans ?? [], state.exams ?? [], state.mistakes ?? [], state.cards ?? [], state.absences ?? [], state.assignments ?? [], state.monthPlans ?? []].map((rows) => rows.map((r) => r.track));
+    [state.subjects, state.classes ?? [], state.plans ?? [], state.exams ?? [], state.mistakes ?? [], state.cards ?? [], state.absences ?? [], state.assignments ?? [], state.monthPlans ?? [], state.weekPlans ?? []].map((rows) => rows.map((r) => r.track));
   const before = JSON.stringify([state.settings, tracksOf()]);
   state.settings = cleanSettings(state.settings, { hasSubjects: state.subjects.length > 0 });
   for (const subject of state.subjects) {
     if (!TRACK_IDS.includes(subject.track)) subject.track = "yks";
   }
   // Program satırları da hedefe bağlıdır; hedefsiz (elle düzenlenmiş yedek) satırlar YKS sayılır
-  for (const row of [...(state.classes ?? []), ...(state.plans ?? []), ...(state.exams ?? []), ...(state.mistakes ?? []), ...(state.cards ?? []), ...(state.absences ?? []), ...(state.assignments ?? []), ...(state.monthPlans ?? [])]) {
+  for (const row of [...(state.classes ?? []), ...(state.plans ?? []), ...(state.exams ?? []), ...(state.mistakes ?? []), ...(state.cards ?? []), ...(state.absences ?? []), ...(state.assignments ?? []), ...(state.monthPlans ?? []), ...(state.weekPlans ?? [])]) {
     if (!TRACK_IDS.includes(row.track)) row.track = "yks";
   }
   const track = state.settings.track;
