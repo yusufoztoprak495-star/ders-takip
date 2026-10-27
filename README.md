@@ -33,9 +33,10 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 ### 🗓️ Planla
 - **Bugünün programı:** ana sayfada bugünün dersleri ve blokları; bir bloktan tek dokunuşla Pomodoro başlat, tur bitince blok "yapıldı" olur.
 - **Ders programı:** okul, kurs ya da üniversite ders saatleri; her günün şeridinde dersler ve boş zaman.
-- **Haftalık program:** haftayı saat saat planla, bir günü başka günlere kopyala, planlanan ve gerçekleşen süre yan yana.
+- **Haftalık program:** seçili ayın 4 haftası (1–7, 8–14, 15–21, 22–sonu) alt alta. Ders saatlerin ve **ortak** bloklar 4 haftada aynıdır; bir haftaya özel iş o haftanın ızgarasına eklenir. Her haftanın boş çalışma süresi, planlanan ve yapılan süre görünür. Bir günü başka günlere kopyalayabilirsin.
 - **Aylık plan:** her ay için dersleri ayrı ayrı planla; bitirmeyi düşündüğün konuları dersin tablosuna ekle (konu adları Dersler ve Konular sayfasından önerilir), bitirdikçe işaretle. Ders başına ve ay geneli ilerleme görünür.
-- **Akıllı öneri:** boş saatlere en çok zorlandığın konulardan (denemede soru kaybettiren, doğruluğu düşük, tekrarı gelen) bloklar önerir.
+- **Aylık planı haftalara dağıtma:** ayın bitmemiş konuları, ders saatleri ve bloklar düşüldükten sonra kalan boş çalışma süresine oranla 4 haftaya paylaştırılır; sonucu uygulama içinde görür, Aylık Plan tablosundaki “Hafta” sütunundan elle değiştirirsin.
+- **Akıllı öneri:** bu ayın bütün konuları bittiyse sırayla önceki aydan bitmeyenleri, önceki ayın tekrarını ve sonraki ayı öne çekmeyi sorar (her listede ilk 5 konu işaretli gelir); bitmediyse kaç konu kaldığını söyler.
 - **Takvime aktar:** programı ve sınav gününü `.ics` olarak Google / Apple Takvim'e aktar.
 - **Sınav geri sayımı ve günlük hedef.**
 
@@ -204,7 +205,9 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 | `/api/goals`, `/api/reviews`, `/api/topics/:id/done`, `/review`, `/note` | Sınav tarihi ve günlük hedef; konu bitirme, 1-3-7-30 tekrar, konu notu |
 | `/api/mistakes`, `/api/cards` | Hata defteri ve bilgi kartları (tekrar: `/:id/review`). Fotoğraflar ayrı bir IndexedDB deposunda (`data/images.js`) |
 | `/api/courses`, `/api/absences`, `/api/assignments` | Üniversite: kredi ve not bileşenleri, devamsızlık, ödevler |
-| `/api/weak-topics`, `/api/achievements` | Akıllı öneri için zayıf konular; rozetler için sayılar |
+| `/api/week-plans` | Haftaya özel bloklar (ay + hafta 1–4 + gün); ders saatiyle, ortak blokla ve aynı haftadaki blokla çakışan reddedilir |
+| `/api/month-plans/weeks`, `/api/month-plans/carry` | Konuların haftasını toplu yazma (dağıtım sonucu); konuları aydan aya taşıma/kopyalama (akıllı öneri) |
+| `/api/weak-topics`, `/api/achievements` | Zayıf konular; rozetler için sayılar |
 | `/api/stats/daily`, `hourly`, `by-subject`, `by-topic`, `topic/:id` | İstatistikler |
 
 <details>
@@ -252,7 +255,7 @@ npm test
 ```
 
 - **Veri katmanı** (`client/tests/data/`): her uç için başarılı ve hatalı durumlar, doğrulama, gün sınırı, net/istatistik hesapları, hedefe göre süzme, eski verinin taşınması, yedek doğrulaması ve klasör yedeği (sahte klasörle).
-- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, mola kuralları, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi, ısı haritası, net/konu tahmini, puan ve sıralama tahmini, Leitner kutuları ve mini test, plan önerisi, rozetler, harf notu/AGNO, takvim dosyası, aylık plan ay yardımcıları, kısayollar.
+- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, mola kuralları, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi, ısı haritası, net/konu tahmini, puan ve sıralama tahmini, Leitner kutuları ve mini test, ay/hafta yardımcıları, haftalara dağıtım ve akıllı öneri, rozetler, harf notu/AGNO, takvim dosyası, aylık plan ay yardımcıları, kısayollar.
 
 Sayfaların görünümü testlerle yakalanmaz; her değişiklik tarayıcıda masaüstü ve telefon genişliğinde açılıp denenir.
 

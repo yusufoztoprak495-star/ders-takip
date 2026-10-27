@@ -333,7 +333,12 @@ export default function WeeklyPlan() {
       return {
         week,
         capacity: capacities[week - 1].total,
-        planned: plannedStudyMinutes({ month, week, plans: data.plans, weekPlans: data.weekPlans }),
+        planned: plannedStudyMinutes({
+          month,
+          week,
+          plans: data.plans,
+          weekPlans: data.weekPlans.filter((p) => p.week === week),
+        }),
         doneSeconds,
         topics,
       };

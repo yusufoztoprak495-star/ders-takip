@@ -7,7 +7,8 @@ import { EmptyNote } from '../components/Doodles.jsx';
 import { celebrate } from '../lib/celebrate.js';
 import { toLocalDateString } from '../lib/dates.js';
 import { formatDate } from '../lib/format.js';
-import { monthLabel, monthOf, progressOf, shiftMonth } from '../lib/months.js';
+import { distributeMonth, distributionSummary } from '../lib/distributeMonth.js';
+import { WEEKS, monthLabel, monthOf, progressOf, shiftMonth, weekLabel } from '../lib/months.js';
 import { subjectLabel } from '../lib/tracks.js';
 
 // Veri katmanı 2000–2100 arası yılları kabul eder; ay düğmeleri bu sınırda durur
@@ -17,7 +18,7 @@ const LAST_MONTH = '2100-12';
 const lower = (text) => text.toLocaleLowerCase('tr');
 
 // Tablodaki tek satır: bitti kutusu, konu, not; yerinde düzenleme ve silme
-function PlanRow({ row, subjectName, othersOpen, onChanged, onError }) {
+function PlanRow({ row, month, subjectName, othersOpen, onChanged, onError }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(row.title);
   const [note, setNote] = useState(row.note);
@@ -39,6 +40,20 @@ function PlanRow({ row, subjectName, othersOpen, onChanged, onError }) {
       onError(e.message);
     } finally {
       setPending(null);
+    }
+  }
+
+  // Konunun haftasını elle değiştirir (boş = haftası belli değil)
+  async function setWeek(value) {
+    onError(null);
+    try {
+      await apiFetch('/api/month-plans/weeks', {
+        method: 'PUT',
+        body: { month, weeks: [{ id: row.id, week: value === '' ? null : Number(value) }] },
+      });
+      await onChanged();
+    } catch (e) {
+      onError(e.message);
     }
   }
 
@@ -97,6 +112,16 @@ function PlanRow({ row, subjectName, othersOpen, onChanged, onError }) {
           <td className="mp-note">
             <input type="text" maxLength={100} value={note} placeholder="Not" aria-label="Not" onChange={(e) => setNote(e.target.value)} onKeyDown={handleKey} />
           </td>
+          <td className="mp-week">
+            <select value={row.week ?? ''} aria-label={`${row.title} haftası`} onChange={(e) => setWeek(e.target.value)}>
+              <option value="">—</option>
+              {Array.from({ length: WEEKS }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  Hafta {i + 1}
+                </option>
+              ))}
+            </select>
+          </td>
           <td className="mp-actions">
             <button type="button" className="small" disabled={!title.trim()} onClick={save}>
               Kaydet
@@ -113,6 +138,16 @@ function PlanRow({ row, subjectName, othersOpen, onChanged, onError }) {
             {row.doneAt && checked && <small className="muted mp-done-date">bitti {formatDate(row.doneAt)}</small>}
           </td>
           <td className="mp-note">{row.note && <span className="muted">{row.note}</span>}</td>
+          <td className="mp-week">
+            <select value={row.week ?? ''} aria-label={`${row.title} haftası`} onChange={(e) => setWeek(e.target.value)}>
+              <option value="">—</option>
+              {Array.from({ length: WEEKS }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  Hafta {i + 1}
+                </option>
+              ))}
+            </select>
+          </td>
           <td className="mp-actions">
             <button type="button" className="secondary small" onClick={startEdit} aria-label={`${row.title} konusunu düzenle`}>
               Düzenle
@@ -216,6 +251,7 @@ function SubjectCard({ subject, rows, month, onChanged, onError, onClose, focusA
               <th className="mp-check" aria-label="Bitti" />
               <th>Konu</th>
               <th>Not</th>
+              <th className="mp-week">Hafta</th>
               <th className="mp-actions" aria-label="İşlemler" />
             </tr>
           </thead>
@@ -224,6 +260,7 @@ function SubjectCard({ subject, rows, month, onChanged, onError, onClose, focusA
               <PlanRow
                 key={row.id}
                 row={row}
+                month={month}
                 subjectName={subject.name}
                 othersOpen={rows.filter((r) => !r.doneAt && r.id !== row.id).length}
                 onChanged={onChanged}
@@ -238,6 +275,43 @@ function SubjectCard({ subject, rows, month, onChanged, onError, onClose, focusA
   );
 }
 
+// "Haftalara göre" görünüm: her haftada hangi dersten hangi konular var (haftası belli olmayanlar ayrı)
+function WeekOverview({ month, plans, subjects }) {
+  const nameOf = new Map(subjects.map((s) => [s.id, subjectLabel(s.name, s.examType)]));
+  const order = new Map(subjects.map((s, i) => [s.id, i]));
+  const groups = [...Array.from({ length: WEEKS }, (_, i) => i + 1), null];
+  const cells = groups.map((week) => {
+    const rows = plans
+      .filter((p) => (p.week ?? null) === week)
+      .sort((a, b) => (order.get(a.subjectId) ?? 99) - (order.get(b.subjectId) ?? 99) || a.id - b.id);
+    return { week, rows };
+  });
+  if (cells[WEEKS].rows.length === 0) cells.pop();
+  return (
+    <div className="week-overview" aria-label="Haftalara göre konular">
+      {cells.map(({ week, rows }) => (
+        <section key={week ?? 'none'} className="panel week-overview-card">
+          <h3 className="panel-label">
+            {week ? `Hafta ${week}` : 'Haftası belli değil'}
+            <span className="muted"> {week ? weekLabel(month, week) : ''}</span>
+          </h3>
+          {rows.length === 0 ? (
+            <p className="muted small-note">Konu yok</p>
+          ) : (
+            <ul>
+              {rows.map((r) => (
+                <li key={r.id} className={r.doneAt ? 'done' : undefined}>
+                  <span className="muted">{nameOf.get(r.subjectId)}</span> {r.title}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 export default function MonthlyPlan() {
   // Bugünün ayı sayfa açılırken bir kez alınır; "Bu ay" düğmesi buraya döner
   const [currentMonth] = useState(() => monthOf(toLocalDateString(new Date())));
@@ -247,6 +321,9 @@ export default function MonthlyPlan() {
   // Tablosu henüz boş olan ama kullanıcının açtığı dersler (ay değişince sıfırlanır)
   const [opened, setOpened] = useState({ month, ids: [] });
   const [pick, setPick] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const [skipPast, setSkipPast] = useState(true);
   // Ay hızlı değişirse geç gelen eski cevap ekranı bozmasın
   const latestMonth = useRef(month);
   latestMonth.current = month;
@@ -285,6 +362,24 @@ export default function MonthlyPlan() {
     if (pick === '') return;
     setOpened({ month, ids: [...openedIds, Number(pick)], focus: Number(pick) });
     setPick('');
+  }
+
+  async function distribute() {
+    const hasWeeks = loaded.plans.some((p) => !p.doneAt && p.week != null);
+    if (hasWeeks && !window.confirm('Bazı konuların haftası zaten belirli; yeniden dağıtılınca değişecek. Devam edilsin mi?')) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const fromDate = skipPast && month === currentMonth ? toLocalDateString(new Date()) : null;
+      const result = await distributeMonth({ month, fromDate });
+      await reload();
+      setNotice(distributionSummary(result));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   function closeSubject(id) {
@@ -331,6 +426,36 @@ export default function MonthlyPlan() {
       </div>
 
       {!ready && !error && <p className="muted page-loading">Yükleniyor…</p>}
+
+      {notice && (
+        <p className="notice" role="status">
+          {notice}
+        </p>
+      )}
+
+      {ready && total.total > 0 && (
+        <>
+          <div className="distribute-panel">
+            <div>
+              <b>Konuları haftalara dağıt</b>
+              <p className="muted small-note">
+                Ders saatlerin ve Haftalık Program’daki bloklar düşülür; her haftanın boş çalışma süresine oranla
+                bitmemiş konular 4 haftaya paylaştırılır. Sonra tablodaki “Hafta” sütunundan elle değiştirebilirsin.
+              </p>
+            </div>
+            {month === currentMonth && (
+              <label className="check-row">
+                <input type="checkbox" checked={skipPast} onChange={(e) => setSkipPast(e.target.checked)} />
+                <span>Geçmiş günleri sayma</span>
+              </label>
+            )}
+            <button type="button" onClick={distribute} disabled={busy || total.done === total.total}>
+              {busy ? 'Dağıtılıyor…' : 'Haftalara dağıt'}
+            </button>
+          </div>
+          <WeekOverview month={month} plans={loaded.plans} subjects={loaded.subjects} />
+        </>
+      )}
 
       {ready && addable.length > 0 && (
         <div className="month-open">
