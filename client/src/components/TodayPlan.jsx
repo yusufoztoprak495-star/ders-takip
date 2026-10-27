@@ -47,7 +47,7 @@ export default function TodayPlan({ today }) {
   const items = data.items;
   // Şu an süren ya da sıradaki ilk öğe
   const focus = items.find((i) => i.end > minute);
-  const plans = items.filter((i) => i.type !== 'class');
+  const plans = items.filter((i) => i.type !== 'class' && !i.weekly);
   const doneCount = plans.filter((i) => i.done).length;
 
   return (
@@ -74,7 +74,7 @@ export default function TodayPlan({ today }) {
               .filter(Boolean)
               .join(' ');
             return (
-              <li key={`${item.type === 'class' ? 'c' : 'p'}${item.id}`} className={cls}>
+              <li key={`${item.type === 'class' ? 'c' : item.weekly ? 'w' : 'p'}${item.id}`} className={cls}>
                 <span className="today-time">
                   {formatClock(item.start)}–{formatClock(item.end)}
                 </span>
@@ -83,6 +83,7 @@ export default function TodayPlan({ today }) {
                   <span className="muted">
                     {' '}
                     {KIND_LABEL[item.type]}
+                    {item.weekly ? ' · bu haftaya özel' : ''}
                     {now ? ' · şu an' : next ? ' · sıradaki' : ''}
                   </span>
                 </span>
@@ -91,11 +92,12 @@ export default function TodayPlan({ today }) {
                     {item.type === 'study' && !item.done && (
                       <Link
                         className="button-link small-link"
-                        to={`/pomodoro?blok=${item.id}${item.subjectId ? `&ders=${item.subjectId}` : ''}`}
+                        to={item.weekly ? `/pomodoro${item.subjectId ? `?ders=${item.subjectId}` : ''}` : `/pomodoro?blok=${item.id}${item.subjectId ? `&ders=${item.subjectId}` : ''}`}
                       >
                         Başlat
                       </Link>
                     )}
+                    {!item.weekly && (
                     <button
                       type="button"
                       className={item.done ? 'secondary small done-toggle on' : 'secondary small done-toggle'}
@@ -104,6 +106,7 @@ export default function TodayPlan({ today }) {
                     >
                       {item.done ? 'Yapıldı ✓' : 'Yapıldı'}
                     </button>
+                    )}
                   </span>
                 )}
               </li>

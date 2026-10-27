@@ -110,3 +110,16 @@ export function distributeTopics({ topics, capacities }) {
   }
   return { assignments, counts, noCapacity };
 }
+
+// Bir haftada planlanan toplam çalışma süresi (dakika): ortak çalışma blokları + o haftaya özel çalışma blokları.
+// Haftanın gerçek günleri üzerinden sayılır (son hafta 10 güne kadar uzar); weekPlans yalnızca bu haftanınkiler olmalı.
+export function plannedStudyMinutes({ month, week, plans, weekPlans }) {
+  const study = [...plans, ...weekPlans].filter((b) => b.kind === "study");
+  const { from, to } = weekDays(month, week);
+  let total = 0;
+  for (let d = from; d <= to; d++) {
+    const day = dayIndexOfDate(`${month}-${pad(d)}`);
+    for (const b of study) if (b.day === day) total += b.end - b.start;
+  }
+  return total;
+}

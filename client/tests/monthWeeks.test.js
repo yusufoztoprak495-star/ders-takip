@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_DAILY_STUDY, distributeTopics, monthCapacities, weekCapacity } from '../src/lib/monthWeeks.js';
+import { DEFAULT_DAILY_STUDY, distributeTopics, monthCapacities, plannedStudyMinutes, weekCapacity } from '../src/lib/monthWeeks.js';
 
 // 08:00–18:00 (10 saat = 600 dk)
 const window = { dayStart: 480, dayEnd: 1080 };
@@ -163,5 +163,28 @@ describe('Konuları haftalara dağıtma (distributeTopics)', () => {
     const copy = JSON.parse(JSON.stringify(topics));
     distributeTopics({ topics, capacities: [5, 5, 5, 5] });
     expect(topics).toEqual(copy);
+  });
+});
+
+describe('Haftada planlanan çalışma (plannedStudyMinutes)', () => {
+  const plans = [
+    { day: 0, kind: 'study', start: 600, end: 660 },
+    { day: 0, kind: 'break', start: 660, end: 675 },
+    { day: 1, kind: 'other', start: 600, end: 720 },
+  ];
+
+  it('yalnızca çalışma bloklarını sayar', () => {
+    expect(plannedStudyMinutes({ month: '2026-10', week: 1, plans, weekPlans: [] })).toBe(60);
+  });
+
+  it('haftaya özel çalışma bloğu eklenir', () => {
+    const weekPlans = [{ day: 2, kind: 'study', start: 480, end: 540 }];
+    expect(plannedStudyMinutes({ month: '2026-10', week: 2, plans, weekPlans })).toBe(60 + 60);
+  });
+
+  it('son haftada tekrar eden gün adı iki kez sayılır (22–31 Ekim: pazartesi bir, perşembe iki kez)', () => {
+    const weekPlans = [{ day: 3, kind: 'study', start: 480, end: 510 }];
+    // pazartesi 26 Ekim bir kez (60) + perşembe 22 ve 29 Ekim (2 × 30)
+    expect(plannedStudyMinutes({ month: '2026-10', week: 4, plans, weekPlans })).toBe(60 + 60);
   });
 });
