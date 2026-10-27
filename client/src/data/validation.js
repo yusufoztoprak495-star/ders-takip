@@ -149,6 +149,7 @@ const MAX_TEXT = 2000;
 const isInt = (v) => Number.isSafeInteger(v);
 const isText = (v) => typeof v === "string" && v.length <= MAX_TEXT;
 const intOrNull = (v) => v === null || isInt(v);
+const isBool = (v) => typeof v === "boolean";
 const textOrNull = (v) => v === null || isText(v);
 // Hata defteri fotoğraf kimliği: yalnızca küçük harf, rakam ve tire (görsel deposundaki anahtar)
 const imageIdOrNull = (v) => v === null || (typeof v === "string" && /^[a-z0-9-]{8,40}$/.test(v));
@@ -215,7 +216,7 @@ const ROW_SCHEMAS = {
   plans: { track: isText, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull },
   planChecks: { planId: isInt, date: isText },
   monthPlans: { track: isText, month: isText, subjectId: isInt, title: isText, note: isText, doneAt: textOrNull, week: intOrNull },
-  weekPlans: { track: isText, month: isText, week: isInt, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull },
+  weekPlans: { track: isText, month: isText, week: isInt, day: isInt, start: isInt, end: isInt, kind: isText, title: isText, subjectId: intOrNull, auto: isBool },
   courses: { subjectId: isInt, credits: isInt, absenceLimit: intOrNull, components: "components" },
   absences: { track: isText, subjectId: isInt, date: isText, hours: isInt },
   assignments: { track: isText, subjectId: intOrNull, title: isText, due: isText, note: isText, doneAt: textOrNull },

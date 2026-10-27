@@ -192,6 +192,9 @@ export function buildDemoState(today, seed = 2027) {
   // Haftaya özel bloklar: 3. hafta pazarı ve 2. hafta cuması (ortak blokların ve derslerin boş yerlerine)
   state.weekPlans.push({ id: 1, track: "yks", month: thisMonth, week: 3, day: 6, start: 840, end: 960, kind: "other", title: "Akraba ziyareti", subjectId: null });
   state.weekPlans.push({ id: 2, track: "yks", month: thisMonth, week: 2, day: 4, start: 1140, end: 1200, kind: "other", title: "Aile yemeği", subjectId: null });
+  // "Haftayı planla" önerisinin eklediği bloklar (auto): cumartesi öğleden sonra çift dikiş
+  state.weekPlans.push({ id: 3, track: "yks", month: thisMonth, week: 1, day: 5, start: 840, end: 930, kind: "study", title: "Konu: Üslü Sayılar", subjectId: mat.id, auto: true });
+  state.weekPlans.push({ id: 4, track: "yks", month: thisMonth, week: 1, day: 6, start: 840, end: 930, kind: "study", title: "Soru: Üslü Sayılar", subjectId: mat.id, auto: true });
 
   // --- Denemeler: TYT ve AYT SAY netleri zamanla yükselir; branş denemeleri ---
   const typeOf = (id) => EXAM_TYPES.find((t) => t.id === id);

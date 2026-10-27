@@ -74,7 +74,7 @@ import {
   setMonthPlanWeeks,
   updateMonthPlan,
 } from "./routes/monthPlans.js";
-import { createWeekPlan, deleteWeekPlan, listWeekPlans, updateWeekPlan } from "./routes/weekPlans.js";
+import { createWeekPlan, deleteWeekPlan, listWeekPlans, replaceAutoWeekPlans, updateWeekPlan } from "./routes/weekPlans.js";
 import {
   getAchievements,
   getBySubject,
@@ -164,6 +164,8 @@ const ROUTES = [
   ["DELETE", "/api/month-plans/:id", deleteMonthPlan],
   ["GET", "/api/week-plans", listWeekPlans],
   ["POST", "/api/week-plans", createWeekPlan],
+  // "auto" kimlik değil: :id kalıplarından önce yazılır
+  ["POST", "/api/week-plans/auto", replaceAutoWeekPlans],
   ["PUT", "/api/week-plans/:id", updateWeekPlan],
   ["DELETE", "/api/week-plans/:id", deleteWeekPlan],
   ["GET", "/api/schedule", getSchedule],

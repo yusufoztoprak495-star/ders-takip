@@ -60,13 +60,44 @@ export function createWeekPlan({ state, body: rawBody }) {
   return { status: 201, body: { ...row } };
 }
 
-// Ay sabittir; hafta, gün, saat ve içerik değişebilir
+// Ay sabittir; hafta, gün, saat ve içerik değişebilir.
+// Elle düzenlenen önerilen blok artık kullanıcınındır: "önerilen" işareti kalkar, yeniden öneride silinmez.
 export function updateWeekPlan({ state, params, body: rawBody }) {
   const row = findOwn(state, params.id);
   const fields = parseWeekPlan(state, requireBody(rawBody));
   assertFits(state, row.month, fields, row.id);
   Object.assign(row, fields);
+  delete row.auto;
   return { status: 200, body: { ...row } };
+}
+
+// --- Önerilen bloklar (Haftayı planla) ---
+// Akıllı öneri bir haftanın çalışma bloklarını tek seferde yazar. Bu bloklar `auto: true` ile işaretlenir;
+// aynı hafta için yeniden öneri alınınca yalnızca bunlar silinip yenileri konur, elle eklenen bloklara dokunulmaz.
+// Bir blok bile geçersizse ya da çakışıyorsa hiçbir şey değişmez (veritabanı hata olunca işlemi geri alır).
+export const AUTO_MAX = 200;
+
+export function replaceAutoWeekPlans({ state, body: rawBody }) {
+  const body = requireBody(rawBody);
+  const month = requireMonth(body.month);
+  const week = requireInt(body.week, "Hafta", { min: 1, max: WEEKS });
+  if (!Array.isArray(body.blocks)) throw new HttpError(400, "Bloklar bir liste olmalı");
+  if (body.blocks.length > AUTO_MAX) throw new HttpError(400, `Bir haftaya tek seferde en fazla ${AUTO_MAX} blok eklenebilir`);
+
+  const isOld = (p) => p.auto === true && p.track === track(state) && p.month === month && p.week === week;
+  const removed = state.weekPlans.filter(isOld).length;
+  state.weekPlans = state.weekPlans.filter((p) => !isOld(p));
+
+  const created = body.blocks.map((block) => {
+    if (block === null || typeof block !== "object" || Array.isArray(block)) throw new HttpError(400, "Blok geçersiz");
+    const fields = parseWeekPlan(state, { ...block, week });
+    if (fields.kind !== "study") throw new HttpError(400, "Önerilen blok bir çalışma bloğu olmalı");
+    assertFits(state, month, fields, null);
+    const row = { id: nextId(state.weekPlans), track: track(state), month, ...fields, auto: true };
+    state.weekPlans.push(row);
+    return { ...row };
+  });
+  return { status: 201, body: { removed, created } };
 }
 
 export function deleteWeekPlan({ state, params }) {
