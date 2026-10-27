@@ -34,6 +34,7 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 - **Bugünün programı:** ana sayfada bugünün dersleri ve blokları; bir bloktan tek dokunuşla Pomodoro başlat, tur bitince blok "yapıldı" olur.
 - **Ders programı:** okul, kurs ya da üniversite ders saatleri; her günün şeridinde dersler ve boş zaman.
 - **Haftalık program:** haftayı saat saat planla, bir günü başka günlere kopyala, planlanan ve gerçekleşen süre yan yana.
+- **Aylık plan:** her ay için dersleri ayrı ayrı planla; bitirmeyi düşündüğün konuları dersin tablosuna ekle (konu adları Dersler ve Konular sayfasından önerilir), bitirdikçe işaretle. Ders başına ve ay geneli ilerleme görünür.
 - **Akıllı öneri:** boş saatlere en çok zorlandığın konulardan (denemede soru kaybettiren, doğruluğu düşük, tekrarı gelen) bloklar önerir.
 - **Takvime aktar:** programı ve sınav gününü `.ics` olarak Google / Apple Takvim'e aktar.
 - **Sınav geri sayımı ve günlük hedef.**
@@ -172,7 +173,7 @@ client/
   public/            manifest, simge, servis çalışanı
   src/
     pages/           Ana sayfa, Pomodoro, Günlük, Soru Kaydı, Kaynaklar, Denemeler, Hata Defteri, Bilgi Kartları,
-                     Dersler ve Konular, Ders Programı, Haftalık Program, İlerleme, Başarılar, Dönem, Ayarlar
+                     Dersler ve Konular, Ders Programı, Haftalık Program, Aylık Plan, İlerleme, Başarılar, Dönem, Ayarlar
     components/      ortak parçalar, hedef seçici, Pomodoro kadranı, SVG grafikler, çizimler
     context/         Pomodoro sayacı, çalışma hedefi, klasör yedeği
     hooks/, lib/     saf yardımcılar (tarih, süre, grafik, tema, hedefler, yedek, ders saatleri)
@@ -196,6 +197,7 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 | `/api/resources` | Test kitapları |
 | `/api/classes` | Ders programı (seçili hedefin); bir dersi birden çok güne ekle / düzenle / sil. Aynı gün çakışan ders reddedilir |
 | `/api/plans`, `/api/plans/copy` | Haftalık programın blokları (çalışma, mola, diğer); ders saatine ya da başka bloğa denk gelen blok reddedilir. Bir günü başka günlere kopyalama |
+| `/api/month-plans`, `/api/month-plans/:id/done` | Aylık plan: ay + ders başına bitirilecek konular (ekle / düzenle / sil / bitti işareti). Aynı ayda aynı derse aynı konu iki kez eklenemez; bir ders ayda en fazla 60 konu alır |
 | `/api/schedule` | Gün aralığı (varsayılan 08:00–23:00): şerit ve ızgara bu saatlere göre çizilir |
 | `/api/today`, `/api/plans/:id/done` | Bugünün programı ve blokların o güne özel "yapıldı" işareti |
 | `/api/exams`, `/api/exams/:id/wrong-topics`, `/api/exams/wrong-topics` | Denemeler; denemede yanlış yapılan konular ve tüm denemelerden toplamı |
@@ -250,7 +252,7 @@ npm test
 ```
 
 - **Veri katmanı** (`client/tests/data/`): her uç için başarılı ve hatalı durumlar, doğrulama, gün sınırı, net/istatistik hesapları, hedefe göre süzme, eski verinin taşınması, yedek doğrulaması ve klasör yedeği (sahte klasörle).
-- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, mola kuralları, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi, ısı haritası, net/konu tahmini, puan ve sıralama tahmini, Leitner kutuları ve mini test, plan önerisi, rozetler, harf notu/AGNO, takvim dosyası, kısayollar.
+- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, mola kuralları, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi, ısı haritası, net/konu tahmini, puan ve sıralama tahmini, Leitner kutuları ve mini test, plan önerisi, rozetler, harf notu/AGNO, takvim dosyası, aylık plan ay yardımcıları, kısayollar.
 
 Sayfaların görünümü testlerle yakalanmaz; her değişiklik tarayıcıda masaüstü ve telefon genişliğinde açılıp denenir.
 

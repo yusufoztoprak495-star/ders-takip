@@ -134,6 +134,21 @@ export const WeekIcon = () => (
   </Icon>
 );
 
+// Aylık plan: üstte iki halkası, içinde gün işaretleri olan ay takvimi
+export const MonthIcon = () => (
+  <Icon>
+    <path d="M4.5 5.5h15v15h-15z" />
+    <path d="M8.5 3v4" />
+    <path d="M15.5 3v4" />
+    <path d="M4.5 10h15" />
+    <path d="M8 13.5h1.5" />
+    <path d="M11.25 13.5h1.5" />
+    <path d="M14.5 13.5H16" />
+    <path d="M8 17h1.5" />
+    <path d="M11.25 17h1.5" />
+  </Icon>
+);
+
 // Diğer: telefonda alt çubuğa sığmayan sayfaların paneli (üç nokta değil, dört küçük kare)
 export const MoreIcon = () => (
   <Icon>

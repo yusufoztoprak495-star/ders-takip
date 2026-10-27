@@ -10,6 +10,7 @@ export const SHORTCUTS = [
   { key: "b", to: "/kartlar", label: "Bilgi kartları" },
   { key: "k", to: "/konular", label: "Dersler ve konular" },
   { key: "h", to: "/haftalik", label: "Haftalık program" },
+  { key: "m", to: "/aylik", label: "Aylık plan" },
   { key: "i", to: "/ilerleme", label: "İlerleme" },
   { key: "r", to: "/basarilar", label: "Başarılar (rozetler)" },
   { key: "?", to: "help", label: "Bu kısayol listesi" },

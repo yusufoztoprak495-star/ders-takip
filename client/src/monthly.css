@@ -1,0 +1,242 @@
+/* --- Aylık plan: ay gezgini ve ders başına konu tabloları --- */
+.month-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 28px;
+  margin: 22px 0 18px;
+}
+
+.month-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.month-nav button:not(.small) {
+  min-width: 42px;
+}
+
+.month-name {
+  min-width: 9.5ch;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.month-summary {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.month-open {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.month-open label {
+  flex: 0 1 340px;
+  min-width: 220px;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 470px), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.month-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.month-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin-bottom: 10px;
+}
+
+.month-card-head .panel-label {
+  margin: 0;
+}
+
+.month-count {
+  margin-left: auto;
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.month-count b {
+  color: var(--gold-text);
+  font-weight: 600;
+}
+
+/* İlerleme çubuğu: ince çerçeve, dolu kısım bitirilen konuların oranı */
+.month-meter {
+  display: block;
+  height: 6px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border-strong);
+}
+
+.month-meter i {
+  display: block;
+  height: 100%;
+  background: var(--gold-text);
+  transition: width 0.3s ease;
+}
+
+.month-table {
+  width: 100%;
+  margin-bottom: 14px;
+  border-collapse: collapse;
+}
+
+.month-table th {
+  padding: 0 8px 6px 0;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.month-table td {
+  padding: 8px 8px 8px 0;
+  vertical-align: middle;
+  border-top: 1px solid var(--chart-grid);
+}
+
+.month-table .mp-check {
+  width: 32px;
+}
+
+.mp-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-fill);
+}
+
+.mp-name {
+  font-weight: 600;
+}
+
+.mp-done-date {
+  display: block;
+}
+
+.mp-row.done .mp-name {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.mp-row.done .mp-note {
+  opacity: 0.6;
+}
+
+.mp-title input,
+.mp-note input {
+  width: 100%;
+  min-width: 0;
+}
+
+.month-table .mp-actions {
+  width: 1%;
+  padding-right: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mp-actions button + button {
+  margin-left: 6px;
+}
+
+.month-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  margin-top: auto;
+}
+
+.month-add input {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .month-name {
+    font-size: 1.55rem;
+  }
+
+  .month-count {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  /* Dar ekranda tablo satırı kart gibi dizilir: üstte kutu + konu + düğmeler, altında not */
+  .month-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .month-table tr {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "check title actions"
+      ". note note";
+    gap: 2px 8px;
+    align-items: center;
+    padding: 8px 0;
+    border-top: 1px solid var(--chart-grid);
+  }
+
+  .month-table td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+
+  .month-table .mp-check {
+    grid-area: check;
+    width: auto;
+  }
+
+  .month-table .mp-title {
+    grid-area: title;
+  }
+
+  .month-table .mp-note {
+    grid-area: note;
+  }
+
+  .month-table .mp-actions {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    width: auto;
+  }
+
+  .mp-actions button + button {
+    margin-left: 0;
+  }
+
+  .month-add {
+    grid-template-columns: 1fr;
+  }
+}

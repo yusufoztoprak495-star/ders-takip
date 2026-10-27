@@ -12,6 +12,7 @@ Kişisel ders çalışma takip uygulaması. YKS (sayısal), DGS ya da üniversit
 - Kaynak takibi: test kitapları (kitap, yayınevi, ders, çözülen test sayısı, son çözüm tarihi, elimde/bitirdim)
 - Grafiklerle ilerleme takibi (günlük, haftalık, ders bazında)
 - Ders programı (okul/üniversite ders saatleri, boş zaman şeridi) ve saat saat haftalık program
+- Aylık plan: her ay, her ders için bitirilmesi planlanan konuların tabloları
 
 ### Kapsam Dışı (şimdilik YAPILMAYACAK)
 
@@ -86,6 +87,7 @@ Sunucusuz, tamamen statik bir web uygulaması (PWA olarak yayınlanacak): React 
 - **Program:** saatler dakika olarak saklanır (08:30 = 510, gün sonu 1440; 5 dk adım). `classes` (ders programı) ve `plans` (haftalık bloklar) hedefe bağlıdır. Ders haftalık programa kopyalanmaz; haftalık sayfa iki tabloyu birlikte okur. Saf yardımcılar `client/src/lib/schedule.js`, uçlar `client/src/data/routes/schedule.js`.
 - **Temalar:** `dark` (Gece), `light` (Kâğıt), `neon`, `pastel` (`client/src/lib/theme.js` → `THEMES`; `index.html`'deki ilk betik de aynı listeyi taşır). Renkler yalnızca CSS değişkenlerinden: Gece `index.css :root`, Kâğıt `theme.css`, Neon/Pastel `themes.css`. Arka plan sahneleri `components/Backdrop.jsx` + `backdrop.css` (yalnızca transform/opacity canlandırılır, "hareketi azalt"ta durur).
 - **Denemeler / hedefler / tekrar:** deneme türleri ve soru sayıları `lib/exams.js` (`EXAM_TYPES`), uçlar `routes/exams.js`; sınav tarihi (hedef başına) ve günlük hedef `settings.examDates` / `settings.dailyGoal` (`routes/goals.js`); konu bitirme ve 1-3-7-30 gün tekrarı konu kaydında `doneAt`, `reviewStep`, `nextReview` (`routes/topics.js`).
+- **Aylık plan:** `monthPlans` tablosu `{ track, month ('YYYY-AA'), subjectId, title, note, doneAt }`; konu adı serbest metindir (Konular sayfasından yalnızca öneri gelir, bağlantı tutulmaz). Aynı ay + ders + ad ikinci kez eklenemez, ders başına ayda en fazla 60 satır. Ders silinince satırları da gider. Uçlar `routes/monthPlans.js`, ay yardımcıları (saf, testli) `lib/months.js`, sayfa `pages/MonthlyPlan.jsx`, stil `monthly.css`.
 - **Yedek dosyası güvenilmezdir:** `validation.js` → `ROW_SCHEMAS` yalnızca bilinen alanları alır; yeni bir tabloya/alana veri eklenince şemaya da eklenmeli, yoksa yedekten geri yüklenmez. Güvenlik önlemleri `SECURITY.md`.
 - **Odak sesleri:** nota üretimi saf ve testli (`lib/focusSound.js`), ses sentezi `lib/focusPlayer.js` (Web Audio, dosya yok).
 - **Hata defteri fotoğrafları** ana veride değil, ayrı IndexedDB deposunda (`data/images.js`, `getImageStore()`); satırda yalnızca `imageId`. Yedek dosyasına `images: { id: data: adresi }` olarak girer (`data/backupData.js`: `collectBackup` / `restoreBackupText`). CSP `img-src`'de `blob:` bunun için.

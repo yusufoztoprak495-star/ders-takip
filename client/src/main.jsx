@@ -18,6 +18,7 @@ import './mistakes.css';
 import './cards.css';
 import './achievements.css';
 import './term.css';
+import './monthly.css';
 import './animations.css';
 import './theme.css';
 import './themes.css';

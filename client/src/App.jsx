@@ -27,6 +27,7 @@ import {
   ResourcesIcon,
   SettingsIcon,
   MoreIcon,
+  MonthIcon,
   TimerIcon,
   TimetableIcon,
   TopicsIcon,
@@ -46,6 +47,7 @@ const PAGES = {
   ProgressTopic: () => import('./pages/ProgressTopic.jsx'),
   ClassSchedule: () => import('./pages/ClassSchedule.jsx'),
   WeeklyPlan: () => import('./pages/WeeklyPlan.jsx'),
+  MonthlyPlan: () => import('./pages/MonthlyPlan.jsx'),
   Exams: () => import('./pages/Exams.jsx'),
   Mistakes: () => import('./pages/Mistakes.jsx'),
   Cards: () => import('./pages/Cards.jsx'),
@@ -62,6 +64,7 @@ const ProgressSubject = lazy(PAGES.ProgressSubject);
 const ProgressTopic = lazy(PAGES.ProgressTopic);
 const ClassSchedule = lazy(PAGES.ClassSchedule);
 const WeeklyPlan = lazy(PAGES.WeeklyPlan);
+const MonthlyPlan = lazy(PAGES.MonthlyPlan);
 const Exams = lazy(PAGES.Exams);
 const Mistakes = lazy(PAGES.Mistakes);
 const Cards = lazy(PAGES.Cards);
@@ -88,6 +91,7 @@ const NAV_ITEMS = [
   { to: '/konular', label: 'Dersler ve Konular', short: 'Dersler', Icon: TopicsIcon },
   { to: '/ders-programi', label: 'Ders Programı', short: 'Program', Icon: TimetableIcon },
   { to: '/haftalik', label: 'Haftalık Program', short: 'Hafta', Icon: WeekIcon, primary: true },
+  { to: '/aylik', label: 'Aylık Plan', short: 'Ay', Icon: MonthIcon },
   { to: '/ilerleme', label: 'İlerleme', short: 'İlerleme', Icon: ProgressIcon, primary: true },
   { to: '/basarilar', label: 'Başarılar', short: 'Rozet', Icon: BadgeIcon },
   { to: '/ayarlar', label: 'Ayarlar', short: 'Ayarlar', Icon: SettingsIcon },
@@ -208,6 +212,7 @@ function Pages() {
         <Route path="/konular" element={<Topics />} />
         <Route path="/ders-programi" element={<ClassSchedule />} />
         <Route path="/haftalik" element={<WeeklyPlan />} />
+        <Route path="/aylik" element={<MonthlyPlan />} />
         <Route path="/ilerleme" element={<Progress />} />
         <Route path="/ilerleme/ders/:subjectId" element={<ProgressSubject />} />
         <Route path="/ilerleme/ders/:subjectId/konu/:topicId" element={<ProgressTopic />} />
