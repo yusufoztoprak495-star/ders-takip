@@ -35,6 +35,7 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 - **Ders programı:** okul, kurs ya da üniversite ders saatleri; her günün şeridinde dersler ve boş zaman.
 - **Haftalık program:** seçili ayın 4 haftası (1–7, 8–14, 15–21, 22–sonu) alt alta. Ders saatlerin ve **ortak** bloklar 4 haftada aynıdır; bir haftaya özel iş o haftanın ızgarasına eklenir. Her haftanın boş çalışma süresi, planlanan ve yapılan süre görünür. Bir günü başka günlere kopyalayabilirsin.
 - **Aylık plan:** her ay için dersleri ayrı ayrı planla; bitirmeyi düşündüğün konuları dersin tablosuna ekle (konu adları Dersler ve Konular sayfasından önerilir), bitirdikçe işaretle. Ders başına ve ay geneli ilerleme görünür.
+- **Planı kaydırma:** çalışmaya başlayacağın ay değişirse Aylık Plan'da tek düğmeyle bu ayın ve sonraki ayların planı 1 ay ileri/geri kayar.
 - **Aylık planı haftalara dağıtma:** ayın bitmemiş konuları, ders saatleri ve bloklar düşüldükten sonra kalan boş çalışma süresine oranla 4 haftaya paylaştırılır; sonucu uygulama içinde görür, Aylık Plan tablosundaki “Hafta” sütunundan elle değiştirirsin.
 - **Akıllı öneri:** bu ayın bütün konuları bittiyse sırayla önceki aydan bitmeyenleri, önceki ayın tekrarını ve sonraki ayı öne çekmeyi sorar (her listede ilk 5 konu işaretli gelir); bitmediyse kaç konu kaldığını söyler.
 - **Takvime aktar:** programı ve sınav gününü `.ics` olarak Google / Apple Takvim'e aktar.
@@ -206,7 +207,7 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 | `/api/mistakes`, `/api/cards` | Hata defteri ve bilgi kartları (tekrar: `/:id/review`). Fotoğraflar ayrı bir IndexedDB deposunda (`data/images.js`) |
 | `/api/courses`, `/api/absences`, `/api/assignments` | Üniversite: kredi ve not bileşenleri, devamsızlık, ödevler |
 | `/api/week-plans` | Haftaya özel bloklar (ay + hafta 1–4 + gün); ders saatiyle, ortak blokla ve aynı haftadaki blokla çakışan reddedilir |
-| `/api/month-plans/weeks`, `/api/month-plans/carry` | Konuların haftasını toplu yazma (dağıtım sonucu); konuları aydan aya taşıma/kopyalama (akıllı öneri) |
+| `/api/month-plans/weeks`, `/api/month-plans/carry`, `/api/month-plans/shift` | Konuların haftasını toplu yazma (dağıtım sonucu); konuları aydan aya taşıma/kopyalama (akıllı öneri); bir aydan sonraki bütün planı (haftaya özel bloklar dahil) ileri/geri kaydırma |
 | `/api/weak-topics`, `/api/achievements` | Zayıf konular; rozetler için sayılar |
 | `/api/stats/daily`, `hourly`, `by-subject`, `by-topic`, `topic/:id` | İstatistikler |
 

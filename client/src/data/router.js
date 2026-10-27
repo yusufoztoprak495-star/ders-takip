@@ -66,6 +66,7 @@ import {
 } from "./routes/schedule.js";
 import {
   carryMonthPlans,
+  shiftMonthPlans,
   createMonthPlan,
   deleteMonthPlan,
   listMonthPlans,
@@ -157,6 +158,7 @@ const ROUTES = [
   // "weeks" ve "carry" kimlik değil: :id kalıbından önce yazılır ki PUT /api/month-plans/:id gibi algılanmasın
   ["PUT", "/api/month-plans/weeks", setMonthPlanWeeks],
   ["POST", "/api/month-plans/carry", carryMonthPlans],
+  ["POST", "/api/month-plans/shift", shiftMonthPlans],
   ["PUT", "/api/month-plans/:id/done", setMonthPlanDone],
   ["PUT", "/api/month-plans/:id", updateMonthPlan],
   ["DELETE", "/api/month-plans/:id", deleteMonthPlan],

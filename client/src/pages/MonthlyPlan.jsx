@@ -382,6 +382,24 @@ export default function MonthlyPlan() {
     }
   }
 
+  // Bu ayın ve sonraki ayların bütün planını (haftalar ve haftaya özel bloklar dahil) kaydırır
+  async function shiftPlan(by) {
+    const target = shiftMonth(month, by);
+    const text = `${monthLabel(month)} ve sonraki ayların planı ${Math.abs(by)} ay ${by > 0 ? 'ileri' : 'geri'} kayacak (${monthLabel(month)} → ${monthLabel(target)}). Devam edilsin mi?`;
+    if (!window.confirm(text)) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await apiFetch('/api/month-plans/shift', { method: 'POST', body: { from: month, by } });
+      setMonth(target);
+      setNotice(`${result.count} konu ${monthLabel(target)} ayına ${by > 0 ? 'ileri' : 'geri'} kaydırıldı.`);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function closeSubject(id) {
     setOpened({ month, ids: openedIds.filter((x) => x !== id), focus: undefined });
   }
@@ -435,6 +453,23 @@ export default function MonthlyPlan() {
 
       {ready && total.total > 0 && (
         <>
+          <div className="distribute-panel">
+            <div>
+              <b>Başlangıcı kaydır</b>
+              <p className="muted small-note">
+                Çalışmaya başlayacağın ay değiştiyse bu ayın ve sonraki ayların planını topluca kaydır; haftalar ve
+                haftaya özel bloklar da birlikte gider.
+              </p>
+            </div>
+            <div className="actions">
+              <button type="button" className="secondary" disabled={busy} onClick={() => shiftPlan(-1)}>
+                1 ay geri
+              </button>
+              <button type="button" disabled={busy} onClick={() => shiftPlan(1)}>
+                1 ay ileri → {monthLabel(shiftMonth(month, 1))}
+              </button>
+            </div>
+          </div>
           <div className="distribute-panel">
             <div>
               <b>Konuları haftalara dağıt</b>

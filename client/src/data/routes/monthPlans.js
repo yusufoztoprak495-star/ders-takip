@@ -1,7 +1,7 @@
 import { HttpError } from "../errors.js";
 import { nextId } from "../ids.js";
 import { activeSubjectIds } from "../seed.js";
-import { WEEKS, isMonth, monthLabel } from "../../lib/months.js";
+import { WEEKS, isMonth, monthLabel, shiftMonth as shiftMonthBy } from "../../lib/months.js";
 import { optionalString, parseId, requireBody, requireDate, requireInt, requireOneOf, requireString } from "../validation.js";
 
 // Aylık plan: her ay, her ders için "bu ay bitireceğim" diye seçilen konuların tablosu.
@@ -198,4 +198,45 @@ export function carryMonthPlans({ state, body: rawBody }) {
     return out(copy);
   });
   return { status: 200, body: { count: result.length, rows: result } };
+}
+
+// Planı aya göre kaydırır: `from` ayından (dahil) sonraki bütün aylık plan konuları ve haftaya özel bloklar
+// `by` ay ileri (+) ya da geri (−) gider. Haftalar, notlar ve bitiş günleri korunur.
+// Sonuçta aynı ayda aynı konu iki kez ya da bir ders ayda 60'tan fazla konu olacaksa hiçbiri uygulanmaz.
+export function shiftMonthPlans({ state, body: rawBody }) {
+  const body = requireBody(rawBody);
+  const from = requireMonth(body.from);
+  const by = requireInt(body.by, "Kaydırma");
+  if (by === 0 || Math.abs(by) > 12) throw new HttpError(400, "Kaydırma 1 ile 12 ay arasında olmalı (geriye için eksi)");
+
+  const target = (month) => requireMonth(shiftMonthBy(month, by));
+  target(from); // yıl sınırının dışına çıkıyorsa daha baştan reddedilir
+  const moved = mine(state).filter((r) => r.month >= from);
+  const targets = moved.map((r) => target(r.month));
+  const weekRows = state.weekPlans.filter((r) => r.track === track(state) && r.month >= from);
+  const weekTargets = weekRows.map((r) => target(r.month));
+
+  // Kaydırılmış hâlin tamamı denetlenir
+  const seen = new Set();
+  const perMonthSubject = new Map();
+  const finalRows = [
+    ...mine(state).filter((r) => r.month < from).map((r) => ({ row: r, month: r.month })),
+    ...moved.map((r, i) => ({ row: r, month: targets[i] })),
+  ];
+  for (const { row, month } of finalRows) {
+    const key = `${month}|${row.subjectId}|${lower(row.title)}`;
+    if (seen.has(key)) throw new HttpError(400, `"${row.title}" ${monthLabel(month)} ayında zaten planında var`);
+    seen.add(key);
+    const group = `${month}|${row.subjectId}`;
+    perMonthSubject.set(group, (perMonthSubject.get(group) ?? 0) + 1);
+    assertRoom(perMonthSubject.get(group) - 1);
+  }
+
+  moved.forEach((r, i) => {
+    r.month = targets[i];
+  });
+  weekRows.forEach((r, i) => {
+    r.month = weekTargets[i];
+  });
+  return { status: 200, body: { count: moved.length, weekCount: weekRows.length } };
 }
