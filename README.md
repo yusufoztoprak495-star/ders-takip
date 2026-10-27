@@ -37,7 +37,8 @@ Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sun
 - **Aylık plan:** her ay için dersleri ayrı ayrı planla; bitirmeyi düşündüğün konuları dersin tablosuna ekle (konu adları Dersler ve Konular sayfasından önerilir), bitirdikçe işaretle. Ders başına ve ay geneli ilerleme görünür.
 - **Planı kaydırma:** çalışmaya başlayacağın ay değişirse Aylık Plan'da tek düğmeyle bu ayın ve sonraki ayların planı 1 ay ileri/geri kayar.
 - **Aylık planı haftalara dağıtma:** ayın bitmemiş konuları, ders saatleri ve bloklar düşüldükten sonra kalan boş çalışma süresine oranla 4 haftaya paylaştırılır; sonucu uygulama içinde görür, Aylık Plan tablosundaki “Hafta” sütunundan elle değiştirirsin.
-- **Akıllı öneri:** bu ayın bütün konuları bittiyse sırayla önceki aydan bitmeyenleri, önceki ayın tekrarını ve sonraki ayı öne çekmeyi sorar (her listede ilk 5 konu işaretli gelir); bitmediyse kaç konu kaldığını söyler.
+- **Akıllı öneri → Haftayı planla:** ders ders sorar: bu hafta bu derste yöntem ne (**çift dikiş**: 1 gün konu, ertesi gün sorusu; **konu haftası**; **soru haftası**), bir oturum kaç dakika, günde kaç oturum, hangi konu kaç gün konu / kaç gün soru. Sonra haftanın oturumlarını ders saatlerinin ve diğer blokların arasındaki boşluklara yerleştirir: okul günlerinde dersler bitince başlar, günlük üst sınırı (okul günü / boş gün ayrı) aşmaz, okul günlerinde üniversite dersleri için 1 saat ayırır, her gün önce bekleyen soruları koyar. Önizlemeden sonra bloklar o haftaya özel çalışma bloğu olarak eklenir; aynı hafta için yeniden öneri alınca yalnızca önerilen bloklar değişir, elle eklenenlere dokunulmaz. Ders başına seçimler tarayıcıda hatırlanır.
+- **Akıllı öneri → Aylık öneri:** bu ayın bütün konuları bittiyse sırayla önceki aydan bitmeyenleri, önceki ayın tekrarını ve sonraki ayı öne çekmeyi sorar (her listede ilk 5 konu işaretli gelir); bitmediyse kaç konu kaldığını söyler.
 - **Takvime aktar:** programı ve sınav gününü `.ics` olarak Google / Apple Takvim'e aktar.
 - **Sınav geri sayımı ve günlük hedef.**
 
@@ -207,6 +208,7 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 | `/api/mistakes`, `/api/cards` | Hata defteri ve bilgi kartları (tekrar: `/:id/review`). Fotoğraflar ayrı bir IndexedDB deposunda (`data/images.js`) |
 | `/api/courses`, `/api/absences`, `/api/assignments` | Üniversite: kredi ve not bileşenleri, devamsızlık, ödevler |
 | `/api/week-plans` | Haftaya özel bloklar (ay + hafta 1–4 + gün); ders saatiyle, ortak blokla ve aynı haftadaki blokla çakışan reddedilir |
+| `/api/week-plans/auto` | Haftayı planla: bir haftanın önerilen bloklarını (`auto: true`) tek seferde değiştirir; biri bile geçersizse ya da çakışıyorsa hiçbir şey değişmez |
 | `/api/month-plans/weeks`, `/api/month-plans/carry`, `/api/month-plans/shift` | Konuların haftasını toplu yazma (dağıtım sonucu); konuları aydan aya taşıma/kopyalama (akıllı öneri); bir aydan sonraki bütün planı (haftaya özel bloklar dahil) ileri/geri kaydırma |
 | `/api/weak-topics`, `/api/achievements` | Zayıf konular; rozetler için sayılar |
 | `/api/stats/daily`, `hourly`, `by-subject`, `by-topic`, `topic/:id` | İstatistikler |
@@ -256,7 +258,7 @@ npm test
 ```
 
 - **Veri katmanı** (`client/tests/data/`): her uç için başarılı ve hatalı durumlar, doğrulama, gün sınırı, net/istatistik hesapları, hedefe göre süzme, eski verinin taşınması, yedek doğrulaması ve klasör yedeği (sahte klasörle).
-- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, mola kuralları, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi, ısı haritası, net/konu tahmini, puan ve sıralama tahmini, Leitner kutuları ve mini test, ay/hafta yardımcıları, haftalara dağıtım ve akıllı öneri, rozetler, harf notu/AGNO, takvim dosyası, aylık plan ay yardımcıları, kısayollar.
+- **Arayüz yardımcıları** (`client/tests/`): Pomodoro süresi, mola kuralları, kadran, tarih/süre biçimi, grafik eksenleri, tema seçimi, odak sesi, ısı haritası, net/konu tahmini, puan ve sıralama tahmini, Leitner kutuları ve mini test, ay/hafta yardımcıları, haftalara dağıtım, akıllı öneri ve haftayı planla (konu/soru sırası, günlük sınır, boş saatlere yerleştirme), rozetler, harf notu/AGNO, takvim dosyası, aylık plan ay yardımcıları, kısayollar.
 
 Sayfaların görünümü testlerle yakalanmaz; her değişiklik tarayıcıda masaüstü ve telefon genişliğinde açılıp denenir.
 

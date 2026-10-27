@@ -4,6 +4,7 @@ import { apiFetch } from '../api.js';
 import DayPicker from '../components/DayPicker.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import MonthSuggestDialog from '../components/MonthSuggestDialog.jsx';
+import WeekSuggestDialog from '../components/WeekSuggestDialog.jsx';
 import WeekGrid from '../components/WeekGrid.jsx';
 import { subjectLabel, trackInfo } from '../lib/tracks.js';
 import { useTrack } from '../context/TrackContext.jsx';
@@ -254,7 +255,7 @@ export default function WeeklyPlan() {
   const [dialogError, setDialogError] = useState(null);
   const [editor, setEditor] = useState(null);
   const [copying, setCopying] = useState(false);
-  const [suggesting, setSuggesting] = useState(false);
+  const [suggesting, setSuggesting] = useState(null); // null | 'week' | 'month'
   const [busy, setBusy] = useState(false);
   const [skipPast, setSkipPast] = useState(true); // geçmiş günleri dağıtımda sayma
   const [shownDay, setShownDay] = useState(today); // telefonda gösterilen gün
@@ -542,7 +543,15 @@ export default function WeeklyPlan() {
           )}
         </div>
         <div className="actions">
-          <button type="button" className="secondary" onClick={() => setSuggesting(true)} title="Aylık plana göre ne yapacağını önerir">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => {
+              setNotice(null);
+              setSuggesting('week');
+            }}
+            title="Ders ders sorar, haftanın konularını yöntemine göre günlere ve saatlere yerleştirir"
+          >
             Akıllı öneri
           </button>
           <button type="button" className="secondary" onClick={handleExport} title="Dersleri ve ortak blokları .ics olarak indirir">
@@ -686,12 +695,27 @@ export default function WeeklyPlan() {
           onClose={() => setEditor(null)}
         />
       )}
-      {suggesting && (
+      {suggesting === 'week' && (
+        <WeekSuggestDialog
+          month={month}
+          initialWeek={todayWeek ?? 1}
+          todayStr={todayStr}
+          data={data}
+          onClose={() => setSuggesting(null)}
+          onApplied={async (message) => {
+            await load();
+            setNotice(message);
+          }}
+          onSwitchToMonth={() => setSuggesting('month')}
+        />
+      )}
+      {suggesting === 'month' && (
         <MonthSuggestDialog
           month={month}
           current={data.monthPlans}
           subjects={data.subjects}
-          onClose={() => setSuggesting(false)}
+          onSwitchToWeek={() => setSuggesting('week')}
+          onClose={() => setSuggesting(null)}
           onChanged={async (message) => {
             await load();
             setNotice(message);

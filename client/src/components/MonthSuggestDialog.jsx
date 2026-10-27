@@ -10,7 +10,7 @@ import ErrorBanner from './ErrorBanner.jsx';
 //  - Bu ayın bitmemiş konusu varsa: kaç konu kaldığını söyler, konuları haftalara dağıtmayı önerir.
 //  - Bu ayın hepsi bittiyse: önceki aydan bitmeyenleri, önceki ayı tekrarı ve sonraki ayı öne çekmeyi sırayla sorar.
 //    Her grupta sıradaki ilk 5 konu işaretli gelir; istediğini işaretleyip ekler.
-export default function MonthSuggestDialog({ month, current, subjects, onClose, onChanged, onDistribute }) {
+export default function MonthSuggestDialog({ month, current, subjects, onClose, onChanged, onDistribute, onSwitchToWeek }) {
   const dialogRef = useRef(null);
   const [others, setOthers] = useState(null); // { previous, next }
   const [picked, setPicked] = useState({}); // grup kimliği → kullanıcının değiştirdiği seçim (Set)
@@ -86,6 +86,16 @@ export default function MonthSuggestDialog({ month, current, subjects, onClose, 
   return (
     <dialog ref={dialogRef} className="plan-editor suggest-dialog" onCancel={onClose} aria-labelledby="suggest-title">
       <div className="suggest-body">
+        {onSwitchToWeek && (
+          <div className="segmented suggest-tabs" role="tablist" aria-label="Akıllı öneri">
+            <button type="button" role="tab" aria-selected="false" onClick={onSwitchToWeek}>
+              Haftayı planla
+            </button>
+            <button type="button" role="tab" aria-selected="true" className="active">
+              Aylık öneri
+            </button>
+          </div>
+        )}
         <h2 id="suggest-title">Akıllı öneri · {monthLabel(month)}</h2>
         <ErrorBanner message={error} />
         {!result && !error && <p className="muted">Önceki ve sonraki ayın planına bakıyorum…</p>}
