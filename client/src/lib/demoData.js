@@ -4,6 +4,7 @@
 import { emptyState, seedIfEmpty } from "../data/seed.js";
 import { addDays } from "./insights.js";
 import { EXAM_TYPES } from "./exams.js";
+import { monthOf, shiftMonth } from "./months.js";
 import { dayIndexOfDate } from "./schedule.js";
 import { seeded } from "./random.js";
 
@@ -151,6 +152,40 @@ export function buildDemoState(today, seed = 2027) {
   const todayDay = dayIndexOfDate(today);
   const firstToday = state.plans.find((p) => p.day === todayDay);
   if (firstToday) state.planChecks.push({ id: 1, planId: firstToday.id, date: today });
+
+  // --- Aylık plan: bu ay ve gelecek ay için dört dersin konuları; bu ayın ilk konuları bitmiş ---
+  const thisMonth = monthOf(today);
+  const monthRows = [
+    [mat, "Karekök soru bankasından 2 test"],
+    [fiz, "Palme'den test çöz"],
+    [kim, ""],
+    [tur, "Her gün 20 paragraf"],
+  ];
+  monthRows.forEach(([subject, note], s) => {
+    const topics = topicsOf(subject.id);
+    topics.slice(0, 5).forEach((topic, i) => {
+      state.monthPlans.push({
+        id: state.monthPlans.length + 1,
+        track: "yks",
+        month: thisMonth,
+        subjectId: subject.id,
+        title: topic.name,
+        note: i === 0 ? note : "",
+        doneAt: i < 2 ? addDays(today, -(2 + i + s)) : null,
+      });
+    });
+    topics.slice(5, 9).forEach((topic) => {
+      state.monthPlans.push({
+        id: state.monthPlans.length + 1,
+        track: "yks",
+        month: shiftMonth(thisMonth, 1),
+        subjectId: subject.id,
+        title: topic.name,
+        note: "",
+        doneAt: null,
+      });
+    });
+  });
 
   // --- Denemeler: TYT ve AYT SAY netleri zamanla yükselir; branş denemeleri ---
   const typeOf = (id) => EXAM_TYPES.find((t) => t.id === id);

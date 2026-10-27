@@ -21,6 +21,7 @@ export function emptyState() {
     plans: [], // haftalık programın blokları
     exams: [], // deneme sınavları
     planChecks: [], // haftalık program bloklarının "yapıldı" işaretleri: { id, planId, date }
+    monthPlans: [], // aylık plan: ay + ders başına bitirilmesi planlanan konular
     mistakes: [], // hata defteri (fotoğraflar ayrı depoda: data/images.js)
     cards: [], // bilgi kartları (Leitner kutuları)
     courses: [], // üniversite: ders başına kredi, not bileşenleri, devamsızlık hakkı
@@ -107,14 +108,14 @@ export function ensureTrackSeeded(state, track) {
 // Bir şey değiştiyse true döner (veri kaydedilmeli).
 export function prepareState(state, { seed = true } = {}) {
   const tracksOf = () =>
-    [state.subjects, state.classes ?? [], state.plans ?? [], state.exams ?? [], state.mistakes ?? [], state.cards ?? [], state.absences ?? [], state.assignments ?? []].map((rows) => rows.map((r) => r.track));
+    [state.subjects, state.classes ?? [], state.plans ?? [], state.exams ?? [], state.mistakes ?? [], state.cards ?? [], state.absences ?? [], state.assignments ?? [], state.monthPlans ?? []].map((rows) => rows.map((r) => r.track));
   const before = JSON.stringify([state.settings, tracksOf()]);
   state.settings = cleanSettings(state.settings, { hasSubjects: state.subjects.length > 0 });
   for (const subject of state.subjects) {
     if (!TRACK_IDS.includes(subject.track)) subject.track = "yks";
   }
   // Program satırları da hedefe bağlıdır; hedefsiz (elle düzenlenmiş yedek) satırlar YKS sayılır
-  for (const row of [...(state.classes ?? []), ...(state.plans ?? []), ...(state.exams ?? []), ...(state.mistakes ?? []), ...(state.cards ?? []), ...(state.absences ?? []), ...(state.assignments ?? [])]) {
+  for (const row of [...(state.classes ?? []), ...(state.plans ?? []), ...(state.exams ?? []), ...(state.mistakes ?? []), ...(state.cards ?? []), ...(state.absences ?? []), ...(state.assignments ?? []), ...(state.monthPlans ?? [])]) {
     if (!TRACK_IDS.includes(row.track)) row.track = "yks";
   }
   const track = state.settings.track;

@@ -82,5 +82,7 @@ export function deleteSubject({ state, params }) {
   }
   // Dersin kredi/not bilgisi dersle birlikte gider
   state.courses = (state.courses ?? []).filter((c) => c.subjectId !== id);
+  // Aylık plan satırları derssiz anlamsızdır (ders bağlantısı boş kalamaz): dersle birlikte gider
+  state.monthPlans = (state.monthPlans ?? []).filter((p) => p.subjectId !== id);
   return { status: 204, body: null };
 }

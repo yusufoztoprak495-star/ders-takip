@@ -65,6 +65,13 @@ import {
   updateSchedule,
 } from "./routes/schedule.js";
 import {
+  createMonthPlan,
+  deleteMonthPlan,
+  listMonthPlans,
+  setMonthPlanDone,
+  updateMonthPlan,
+} from "./routes/monthPlans.js";
+import {
   getAchievements,
   getBySubject,
   getByTopic,
@@ -142,6 +149,11 @@ const ROUTES = [
   ["PUT", "/api/plans/:id", updatePlan],
   ["GET", "/api/today", getToday],
   ["DELETE", "/api/plans/:id", deletePlan],
+  ["GET", "/api/month-plans", listMonthPlans],
+  ["POST", "/api/month-plans", createMonthPlan],
+  ["PUT", "/api/month-plans/:id/done", setMonthPlanDone],
+  ["PUT", "/api/month-plans/:id", updateMonthPlan],
+  ["DELETE", "/api/month-plans/:id", deleteMonthPlan],
   ["GET", "/api/schedule", getSchedule],
   ["PUT", "/api/schedule", updateSchedule],
   ["GET", "/api/achievements", getAchievements],
