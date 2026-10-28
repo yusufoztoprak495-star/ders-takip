@@ -12,6 +12,12 @@
     <!-- Simge ve PWA manifesti: tarayıcı uygulamayı "yükle" olarak sunabilsin -->
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
+    <!-- iPhone/iPad (Safari) manifestteki simgeyi kullanmaz: ana ekran simgesi ve tam ekran açılış buradan gelir -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Ders Takip" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <!-- Tarayıcı çubuğunun rengi: temanın zemin rengiyle aynı (aşağıdaki betik ayarlar) -->
     <meta name="theme-color" content="#0c0f14" />
     <!-- Tema, sayfa çizilmeden önce ayarlanır: açık temada koyu bir an görünmez -->

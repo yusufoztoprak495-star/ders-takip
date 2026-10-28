@@ -18,6 +18,13 @@ Pomodoro ile çalış, denemelerini ve netini takip et, yanlışlarını hata de
 
 Kurulum yok, hesap yok. Veriler yalnızca senin tarayıcında durur, hiçbir sunucuya gönderilmez. Telefonda "Ana ekrana ekle" ile uygulama gibi kurulur ve internetsiz de açılır.
 
+**Telefona / tablete kurma:** uygulamayı yukarıdaki adreste aç.
+- **Android (Chrome):** ⋮ menüsü → **Uygulamayı yükle** (ya da **Ana ekrana ekle**).
+- **iPhone / iPad (Safari):** Paylaş düğmesi → **Ana Ekrana Ekle**.
+- **Bilgisayar (Chrome/Edge):** adres çubuğunun sağındaki yükle simgesi.
+
+Veriler her cihazın kendi tarayıcısında durur; cihazlar arası taşımak için Ayarlar'dan yedeği indirip diğer cihazda yükle.
+
 > **Önce bir bak:** Ayarlar → **Örnek verilerle dene**, 200 günlük örnek bir YKS çalışma geçmişi yükler (kendi verin varsa önce yedek al).
 
 ![Ana sayfa: geri sayım, günün sözü, bugünün özeti ve bugünün programı](docs/screenshots/ana-sayfa.png)
