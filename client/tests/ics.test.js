@@ -14,7 +14,7 @@ describe("nextDateForDay", () => {
 
 describe("escapeIcsText / foldLine", () => {
   it("ters bölü, virgül, noktalı virgül ve satır sonunu kaçırır", () => {
-    expect(escapeIcsText("a\\b, c; d\ne")).toBe("a\\\\b\\, c\; d\\ne");
+    expect(escapeIcsText("a\\b, c; d\ne")).toBe("a\\\\b\\, c\\; d\\ne");
   });
 
   it("75 bayttan uzun satırı boşlukla başlayan devam satırlarına böler (Türkçe harfler bölünmez)", () => {

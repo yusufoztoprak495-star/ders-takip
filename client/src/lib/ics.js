@@ -13,7 +13,7 @@ export function nextDateForDay(today, day) {
 
 // Metin alanlarında özel anlamı olan karakterler kaçırılır
 export function escapeIcsText(text) {
-  return String(text).replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\;").replace(/\r?\n/g, "\\n");
+  return String(text).replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;").replace(/\r?\n/g, "\\n");
 }
 
 // Bir satır en fazla 75 bayt olmalı; uzunsa boşlukla başlayan devam satırlarına bölünür.
