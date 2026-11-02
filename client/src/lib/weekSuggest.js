@@ -55,9 +55,10 @@ export function blockTitle(type, title) {
 
 // Bir günün yerleştiricisi: sırayla verilen sürelere günün ilk uygun boşluğunu bulur.
 // busy: dolu bloklar ({ start, end }) · window: { dayStart, dayEnd } · cap: günlük çalışma üst sınırı (dakika)
-function dayPlacer(busy, window, gap, cap = Infinity) {
+// alreadyUsed: o gün sınıra sayılan, daha önce planlanmış çalışma (dakika)
+function dayPlacer(busy, window, gap, cap = Infinity, alreadyUsed = 0) {
   const taken = busy.map((b) => ({ start: b.start, end: b.end }));
-  let used = 0;
+  let used = alreadyUsed;
   return {
     // Sığarsa { start, end } döner ve o aralığı dolu sayar; sığmazsa null.
     // counts: false ise süre günlük sınıra eklenmez (üniversite saati gibi ön bloklar)
@@ -194,16 +195,17 @@ export function scheduleDays({ subjects, days, placerFor = null }) {
 //  dailyMaxByDay: { gün: dakika } o gün en fazla ne kadar ders çalışılır (yoksa sınırsız)
 //  firstBlocksByDay: { gün: [{ title, minutes }] } çalışmadan önce ilk boşluğa konan bloklar
 //    (örn. okul günlerinde üniversite dersleri için 1 saat); günlük sınıra sayılmaz
+//  usedByDay: { gün: dakika } önceden planlanmış derslerin süresi; günlük sınırdan düşülür (keptStudyByDay)
 // Dönen: { blocks: [{ day, start, end, kind: 'study', subjectId, title, type, topic }], leftover }
 //  type: 'konu' | 'soru' | 'other' (ön blok)
-export function buildWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {} }) {
+export function buildWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {}, usedByDay = {} }) {
   const firsts = {};
   const droppedFirsts = [];
   const { byDay, leftover } = scheduleDays({
     subjects,
     days,
     placerFor: (day) => {
-      const placer = dayPlacer(busyByDay[day] ?? [], window, gap, dailyMaxByDay[day] ?? Infinity);
+      const placer = dayPlacer(busyByDay[day] ?? [], window, gap, dailyMaxByDay[day] ?? Infinity, usedByDay[day] ?? 0);
       for (const f of firstBlocksByDay[day] ?? []) {
         const slot = placer.tryAdd(f.minutes, { counts: false });
         if (slot) (firsts[day] ??= []).push({ ...slot, title: f.title });
@@ -234,17 +236,18 @@ export function buildWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT
 
 // Seçimlere göre plan olduğu gibi yapılabiliyor mu? Oturumlar kaydırılmadan, ait oldukları günlerde sayılır.
 // Girdiler buildWeekPlan ile aynı. Dönen:
-//  overloads: [{ day, kind: 'cap', needed, cap, excess }]  o güne düşen çalışma günlük sınırı aşıyor
+//  overloads: [{ day, kind: 'cap', needed, cap, excess }]  o güne düşen çalışma (önceki derslerle) günlük sınırı aşıyor
 //             [{ day, kind: 'time', needed, excess }]      sınır yetiyor ama boş saatlere excess dakika sığmıyor
 //  leftover: seçilen gün sayısı konu/soru günlerine yetmediği için hiç yeri olmayan oturumlar
-export function checkWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {} }) {
+export function checkWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {}, usedByDay = {} }) {
   const { byDay, leftover } = scheduleDays({ subjects, days });
   const overloads = [];
   for (const day of days) {
     const sessions = byDay[day] ?? [];
-    const needed = sessions.reduce((sum, s) => sum + s.minutes, 0);
+    const needed = sessions.reduce((sum, s) => sum + s.minutes, usedByDay[day] ?? 0);
     const cap = dailyMaxByDay[day] ?? Infinity;
-    if (needed > cap) {
+    // Bu planda oturum düşmeyen gün zaten sınırın üstündeyse o bu planın sorunu değildir
+    if (sessions.length > 0 && needed > cap) {
       overloads.push({ day, kind: "cap", needed, cap, excess: needed - cap });
       continue;
     }
@@ -271,6 +274,22 @@ export function availableDays({ month, week, fromDate = null }) {
   return [...set].sort((a, b) => a - b);
 }
 
+// Yeni plan kaydedilince bu blok yerinde kalır mı?
+function isKept(block, replacing) {
+  return block.auto !== true || (replacing !== null && !replacing.includes(block.subjectId));
+}
+
+// Yerinde kalan derslerin önerilen çalışma süresi, gün gün (dakika). Üniversite saati gibi dersi olmayan bloklar
+// günlük sınıra sayılmadığı için atlanır.
+export function keptStudyByDay({ week, weekPlans, replacing }) {
+  const out = {};
+  for (const p of weekPlans) {
+    if (p.week !== week || p.auto !== true || p.subjectId === null || !isKept(p, replacing)) continue;
+    out[p.day] = (out[p.day] ?? 0) + (p.end - p.start);
+  }
+  return out;
+}
+
 // Dersi olan (okul) günlerin numaraları, sıralı
 export function classDays(classes) {
   return [...new Set(classes.map((c) => c.day))].sort((a, b) => a - b);
@@ -280,9 +299,11 @@ export function classDays(classes) {
 // önceki öneriden kalan bloklar (auto) sayılmaz, çünkü yeni öneri onların yerine geçer.
 // afterClasses: okul günlerinde günün başından son dersin bitişine kadar her yer dolu sayılır
 // (dersler arasındaki boşluklara çalışma konmaz).
-export function busyByDayOf({ week, classes, plans, weekPlans, afterClasses = false }) {
+// replacing: hafta ders ders planlanırken yeniden planlanan derslerin numaraları; yalnızca onların önerilen blokları
+// boşalır, diğer dersler yerinde kaldığı için dolu sayılır. Verilmezse bütün önerilen bloklar boşalır.
+export function busyByDayOf({ week, classes, plans, weekPlans, afterClasses = false, replacing = null }) {
   const out = {};
-  const own = weekPlans.filter((p) => p.week === week && p.auto !== true);
+  const own = weekPlans.filter((p) => p.week === week && isKept(p, replacing));
   for (const b of [...classes, ...plans, ...own]) (out[b.day] ??= []).push({ start: b.start, end: b.end });
   if (afterClasses) {
     for (const day of classDays(classes)) {

@@ -5,13 +5,14 @@ import ErrorBanner from './ErrorBanner.jsx';
 import { WEEKS, monthLabel, weekLabel } from '../lib/months.js';
 import { DAYS, formatClock, minutesLabel } from '../lib/schedule.js';
 import { subjectLabel } from '../lib/tracks.js';
-import { FREE_CAP_OPTIONS, METHODS, SCHOOL_CAP_OPTIONS, availableDays, buildWeekPlan, busyByDayOf, checkWeekPlan, classDays, defaultDays } from '../lib/weekSuggest.js';
+import { FREE_CAP_OPTIONS, METHODS, SCHOOL_CAP_OPTIONS, availableDays, buildWeekPlan, busyByDayOf, checkWeekPlan, classDays, defaultDays, keptStudyByDay } from '../lib/weekSuggest.js';
 
 // Akıllı öneri → Haftayı planla.
 // Adım adım sorar: önce hangi hafta ve hangi günler; sonra ders ders "bu hafta bu dersin amacı ne?"
 // (yöntem, oturum süresi, günde kaç oturum, hangi konu kaç gün konu / kaç gün soru); en sonda önizleme.
 // "Programa ekle" ile bloklar o haftaya özel çalışma bloğu olarak yazılır. Aynı hafta için yeniden öneri alınırsa
-// önceki önerilen bloklar silinip yenileri konur; elle eklenen bloklara dokunulmaz.
+// yalnızca seçilen derslerin önceki önerilen blokları silinip yenileri konur; diğer derslere ve elle eklenen bloklara
+// dokunulmaz. Böylece hafta ders ders planlanabilir: önceki dersler dolu sayılır, süreleri günlük sınırdan düşülür.
 // Ders başına seçilen yöntem, süre ve günlük oturum sayısı tarayıcıda hatırlanır (bir sonraki hafta hazır gelir).
 // Plan seçimlere uymuyorsa (bir gün sınırı aşıyor, boş saat ya da gün yetmiyor) hata gösterilir ve kaydedilmez.
 // Fazlalık sonraki günlere ancak kullanıcı isterse kaydırılır; haftaya yine sığmıyorsa o da mümkün değildir.
@@ -40,14 +41,15 @@ function writePrefs(prefs) {
   }
 }
 
-// Bir dersin başlangıç ayarı: hatırlanan yöntem/süre, konular (bu haftaya atanmış olanlar işaretli)
-function initialSubject(subject, topics, week, dayCount, saved) {
+// Bir dersin başlangıç ayarı: hatırlanan yöntem/süre, konular (bu haftaya atanmış olanlar işaretli).
+// planned: ders bu hafta zaten planlandı; yanlışlıkla yeniden planlanmasın diye işaretsiz gelir.
+function initialSubject(subject, topics, week, dayCount, saved, planned) {
   const method = METHODS[saved?.method] ? saved.method : 'ciftDikis';
   const checked = topics.filter((t) => t.week === week);
   const days = defaultDays(method, Math.max(1, checked.length), dayCount);
   return {
     subjectId: subject.id,
-    include: checked.length > 0,
+    include: checked.length > 0 && !planned,
     method,
     minutes: MINUTE_OPTIONS.includes(saved?.minutes) ? saved.minutes : 60,
     perDay: [1, 2, 3].includes(saved?.perDay) ? saved.perDay : 1,
@@ -89,7 +91,9 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
     return data.subjects
       .map((s) => ({ s, topics: open.filter((p) => p.subjectId === s.id).sort((a, b) => a.id - b.id) }))
       .filter((x) => x.topics.length > 0)
-      .map(({ s, topics }) => initialSubject(s, topics, w, dayList.length, prefs[s.id]));
+      .map(({ s, topics }) =>
+        initialSubject(s, topics, w, dayList.length, prefs[s.id], data.weekPlans.some((p) => p.week === w && p.auto === true && p.subjectId === s.id)),
+      );
   }
 
   useEffect(() => {
@@ -111,7 +115,12 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
     return s ? subjectLabel(s.name, s.examType) : 'Ders';
   };
   const included = setup.filter((x) => x.include);
-  const oldAuto = data.weekPlans.filter((p) => p.week === week && p.auto === true).length;
+  const weekAuto = data.weekPlans.filter((p) => p.week === week && p.auto === true);
+  const oldAuto = weekAuto.length;
+  const replacing = included.map((x) => x.subjectId);
+  // Seçilen derslerin önceki oturumları değişir, diğer dersler yerinde kalır
+  const replacedCount = weekAuto.filter((p) => replacing.includes(p.subjectId)).length;
+  const keptCount = weekAuto.filter((p) => p.subjectId !== null && !replacing.includes(p.subjectId)).length;
   const sortedDays = [...days].sort((a, b) => a - b);
 
   function update(subjectId, change) {
@@ -144,12 +153,15 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
     for (const d of sortedDays) {
       const school = schoolDays.includes(d);
       dailyMaxByDay[d] = school ? schoolCap : freeCap;
-      if (school && uniHour) firstBlocksByDay[d] = [{ title: UNI_TITLE, minutes: 60 }];
+      // Önceki bir planda o güne konmuş üniversite saati yerinde kalır, ikincisi eklenmez
+      const hasUni = data.weekPlans.some((p) => p.week === week && p.day === d && p.auto === true && p.subjectId === null);
+      if (school && uniHour && !hasUni) firstBlocksByDay[d] = [{ title: UNI_TITLE, minutes: 60 }];
     }
     const input = {
       subjects,
       days: sortedDays,
-      busyByDay: busyByDayOf({ week, classes: data.classes, plans: data.plans, weekPlans: data.weekPlans, afterClasses }),
+      busyByDay: busyByDayOf({ week, classes: data.classes, plans: data.plans, weekPlans: data.weekPlans, afterClasses, replacing }),
+      usedByDay: keptStudyByDay({ week, weekPlans: data.weekPlans, replacing }),
       window: data.win,
       gap,
       dailyMaxByDay,
@@ -167,7 +179,8 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
   const lastStep = included.length + 1;
   const current = step >= 1 && step <= included.length ? included[step - 1] : null;
 
-  async function save(blocks, message) {
+  // subjectIds: yalnızca bu derslerin önceki blokları değişir; verilmezse haftanın bütün önerilen blokları gider
+  async function save(blocks, message, subjectIds) {
     setBusy(true);
     setError(null);
     try {
@@ -176,6 +189,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
         body: {
           month,
           week,
+          subjectIds,
           blocks: blocks.map((b) => ({ day: b.day, start: b.start, end: b.end, kind: b.kind, title: b.title, subjectId: b.subjectId })),
         },
       });
@@ -287,6 +301,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
                 <ul className="ws-subjects">
                   {setup.map((x) => {
                     const thisWeek = x.topics.filter((t) => t.week === week).length;
+                    const planned = weekAuto.filter((p) => p.subjectId === x.subjectId).length;
                     return (
                       <li key={x.subjectId}>
                         <label className="check-row">
@@ -299,6 +314,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
                             <b>{labelOf(x.subjectId)}</b>{' '}
                             <span className="muted">
                               {thisWeek > 0 ? `bu haftaya atanmış ${thisWeek} konu` : `bu haftaya atanmış konu yok (${x.topics.length} açık konu)`}
+                              {planned > 0 && ` · planlandı (${planned} oturum)`}
                             </span>
                           </span>
                         </label>
@@ -310,9 +326,9 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
             )}
             {oldAuto > 0 && (
               <p className="notice">
-                Hafta {week} için daha önce önerilen {oldAuto} blok var; yeni öneriyi eklersen onların yerine geçer.{' '}
+                Dersleri sırayla planlayabilirsin: yalnızca işaretlediğin derslerin önceki oturumları değişir, diğerleri yerinde kalır.{' '}
                 <button type="button" className="text-link" disabled={busy} onClick={() => save([], `Hafta ${week} için önerilen ${oldAuto} blok kaldırıldı.`)}>
-                  Önerilenleri kaldır
+                  Bu haftanın bütün önerilenlerini kaldır
                 </button>
               </p>
             )}
@@ -486,7 +502,12 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
                 </table>
               </div>
             )}
-            {oldAuto > 0 && <p className="muted small-note">Hafta {week} için önceki {oldAuto} önerilen blok silinip bunlar konacak.</p>}
+            {!blocked && (replacedCount > 0 || keptCount > 0) && (
+              <p className="muted small-note">
+                {replacedCount > 0 && `Bu derslerin önceki ${replacedCount} bloğu silinip bunlar konacak. `}
+                {keptCount > 0 && `Diğer derslerin ${keptCount} oturumu yerinde kalıyor.`}
+              </p>
+            )}
           </>
         )}
 
@@ -519,7 +540,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
               disabled={busy || blocked || studyBlocks === 0}
               onClick={() => {
                 const uni = plan.blocks.length - studyBlocks;
-                save(plan.blocks, `Hafta ${week} için ${studyBlocks} çalışma oturumu${uni ? ` ve ${uni} üniversite saati` : ''} eklendi.`);
+                save(plan.blocks, `Hafta ${week} için ${studyBlocks} çalışma oturumu${uni ? ` ve ${uni} üniversite saati` : ''} eklendi.`, replacing);
               }}
             >
               {busy ? 'Ekleniyor…' : blocked ? 'Programa ekle' : `Programa ekle (${plan.blocks.length} blok)`}

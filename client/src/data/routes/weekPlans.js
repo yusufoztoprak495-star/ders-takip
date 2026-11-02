@@ -74,8 +74,15 @@ export function updateWeekPlan({ state, params, body: rawBody }) {
 // --- Önerilen bloklar (Haftayı planla) ---
 // Akıllı öneri bir haftanın çalışma bloklarını tek seferde yazar. Bu bloklar `auto: true` ile işaretlenir;
 // aynı hafta için yeniden öneri alınınca yalnızca bunlar silinip yenileri konur, elle eklenen bloklara dokunulmaz.
+// subjectIds verilirse hafta ders ders planlanır: yalnızca o derslerin önerilen blokları değişir, diğer dersler ve
+// dersi olmayan önerilen bloklar (üniversite saati) yerinde kalır. Verilmezse haftanın bütün önerilen blokları değişir.
 // Bir blok bile geçersizse ya da çakışıyorsa hiçbir şey değişmez (veritabanı hata olunca işlemi geri alır).
 export const AUTO_MAX = 200;
+
+function parseSubjectIds(value) {
+  if (!Array.isArray(value) || value.length > AUTO_MAX) throw new HttpError(400, "Ders listesi geçersiz");
+  return value.map((id) => requireInt(id, "Ders", { min: 1 }));
+}
 
 export function replaceAutoWeekPlans({ state, body: rawBody }) {
   const body = requireBody(rawBody);
@@ -84,7 +91,13 @@ export function replaceAutoWeekPlans({ state, body: rawBody }) {
   if (!Array.isArray(body.blocks)) throw new HttpError(400, "Bloklar bir liste olmalı");
   if (body.blocks.length > AUTO_MAX) throw new HttpError(400, `Bir haftaya tek seferde en fazla ${AUTO_MAX} blok eklenebilir`);
 
-  const isOld = (p) => p.auto === true && p.track === track(state) && p.month === month && p.week === week;
+  const subjectIds = body.subjectIds === undefined ? null : parseSubjectIds(body.subjectIds);
+  const isOld = (p) =>
+    p.auto === true &&
+    p.track === track(state) &&
+    p.month === month &&
+    p.week === week &&
+    (subjectIds === null || subjectIds.includes(p.subjectId));
   const removed = state.weekPlans.filter(isOld).length;
   state.weekPlans = state.weekPlans.filter((p) => !isOld(p));
 
@@ -92,6 +105,9 @@ export function replaceAutoWeekPlans({ state, body: rawBody }) {
     if (block === null || typeof block !== "object" || Array.isArray(block)) throw new HttpError(400, "Blok geçersiz");
     const fields = parseWeekPlan(state, { ...block, week });
     if (fields.kind !== "study") throw new HttpError(400, "Önerilen blok bir çalışma bloğu olmalı");
+    if (subjectIds !== null && fields.subjectId !== null && !subjectIds.includes(fields.subjectId)) {
+      throw new HttpError(400, "Önerilen blok seçilen derslerden birine ait olmalı");
+    }
     assertFits(state, month, fields, null);
     const row = { id: nextId(state.weekPlans), track: track(state), month, ...fields, auto: true };
     state.weekPlans.push(row);

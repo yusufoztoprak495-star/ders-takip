@@ -416,3 +416,53 @@ describe("günlük üst sınır seçenekleri", () => {
     expect(FREE_CAP_OPTIONS).toEqual(expect.arrayContaining([...SCHOOL_CAP_OPTIONS, 660, 720, 780]));
   });
 });
+
+import { keptStudyByDay } from "../src/lib/weekSuggest.js";
+
+describe("ders ders planlama", () => {
+  const weekPlans = [
+    { week: 1, day: 0, start: 900, end: 960, auto: true, subjectId: 3 },
+    { week: 1, day: 0, start: 975, end: 1035, auto: true, subjectId: 9 },
+    { week: 1, day: 0, start: 840, end: 900, auto: true, subjectId: null }, // üniversite saati
+    { week: 1, day: 1, start: 600, end: 660, subjectId: 3 }, // elle eklenen
+    { week: 2, day: 0, start: 900, end: 960, auto: true, subjectId: 9 },
+  ];
+
+  it("busyByDayOf: yalnızca yeniden planlanan dersin önerilen blokları boşalır, diğerleri dolu sayılır", () => {
+    const busy = busyByDayOf({ week: 1, classes: [], plans: [], weekPlans, replacing: [3] });
+    expect(busy).toEqual({
+      0: [
+        { start: 975, end: 1035 },
+        { start: 840, end: 900 },
+      ],
+      1: [{ start: 600, end: 660 }],
+    });
+  });
+
+  it("busyByDayOf: replacing verilmezse eskisi gibi bütün önerilen bloklar boşalır", () => {
+    expect(busyByDayOf({ week: 1, classes: [], plans: [], weekPlans })).toEqual({ 1: [{ start: 600, end: 660 }] });
+  });
+
+  it("keptStudyByDay: kalan derslerin önerilen süresini gün gün toplar (üniversite saati sayılmaz)", () => {
+    expect(keptStudyByDay({ week: 1, weekPlans, replacing: [3] })).toEqual({ 0: 60 });
+    expect(keptStudyByDay({ week: 1, weekPlans, replacing: [3, 9] })).toEqual({});
+  });
+
+  const window = { dayStart: 480, dayEnd: 1440 };
+  const fizik = { subjectId: 5, perDay: 1, minutes: 120, topics: [topic("Kuvvet", 1, 0)] };
+
+  it("buildWeekPlan: önceki dersin süresi günlük sınırdan düşülür, oturum sonraki güne kayar", () => {
+    const { blocks } = buildWeekPlan({ subjects: [fizik], days: [0, 1], busyByDay: {}, window, dailyMaxByDay: { 0: 180, 1: 180 }, usedByDay: { 0: 120 } });
+    expect(blocks.map((b) => b.day)).toEqual([1]);
+  });
+
+  it("checkWeekPlan: önceki dersle birlikte sınır aşılıyorsa toplam süreyi söyler", () => {
+    const { overloads } = checkWeekPlan({ subjects: [fizik], days: [0], busyByDay: {}, window, dailyMaxByDay: { 0: 180 }, usedByDay: { 0: 120 } });
+    expect(overloads).toEqual([{ day: 0, kind: "cap", needed: 240, cap: 180, excess: 60 }]);
+  });
+
+  it("checkWeekPlan: yeni oturum düşmeyen gün sınırın üstünde olsa da sorun sayılmaz", () => {
+    const { overloads } = checkWeekPlan({ subjects: [], days: [0], busyByDay: {}, window, dailyMaxByDay: { 0: 60 }, usedByDay: { 0: 120 } });
+    expect(overloads).toEqual([]);
+  });
+});

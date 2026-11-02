@@ -24,6 +24,45 @@ describe("Önerilen hafta blokları (/api/week-plans/auto)", () => {
     ]);
   });
 
+  describe("ders ders planlama (subjectIds)", () => {
+    const physics = (db) => db.subjects.find((s) => s.name === "Fizik" && s.examType === "TYT");
+
+    it("yalnızca verilen dersin önerilen blokları değişir; diğer dersler ve üniversite saati kalır", async () => {
+      const { app, db } = makeTestApp();
+      const api = request(app);
+      const uni = { day: 0, start: 900, end: 960, kind: "study", subjectId: null, title: "Üniversite dersleri" };
+      await api.post("/api/week-plans/auto").send({ month: "2026-11", week: 1, blocks: [uni, study(db)] });
+      const fizik = { day: 1, start: 1080, end: 1140, kind: "study", subjectId: physics(db).id, title: "Konu: Kuvvet" };
+      const first = await api.post("/api/week-plans/auto").send({ month: "2026-11", week: 1, subjectIds: [physics(db).id], blocks: [fizik] });
+      expect(first.status).toBe(201);
+      expect(first.body.removed).toBe(0);
+      const again = await api.post("/api/week-plans/auto").send({
+        month: "2026-11",
+        week: 1,
+        subjectIds: [physics(db).id],
+        blocks: [{ ...fizik, day: 2 }],
+      });
+      expect(again.body.removed).toBe(1);
+      const list = (await api.get("/api/week-plans?month=2026-11")).body;
+      expect(list.map((b) => [b.day, b.title]).sort()).toEqual([
+        [0, "Konu: Temel Kavramlar"],
+        [0, "Üniversite dersleri"],
+        [2, "Konu: Kuvvet"],
+      ]);
+    });
+
+    it("listede olmayan dersin bloğu ve geçersiz liste reddedilir, hiçbir şey değişmez", async () => {
+      const { app, db } = makeTestApp();
+      const api = request(app);
+      await api.post("/api/week-plans/auto").send({ month: "2026-11", week: 1, blocks: [study(db)] });
+      const outside = await api.post("/api/week-plans/auto").send({ month: "2026-11", week: 1, subjectIds: [physics(db).id], blocks: [study(db, { day: 3 })] });
+      expect(outside.status).toBe(400);
+      const bad = await api.post("/api/week-plans/auto").send({ month: "2026-11", week: 1, subjectIds: "x", blocks: [] });
+      expect(bad.status).toBe(400);
+      expect((await api.get("/api/week-plans?month=2026-11")).body).toHaveLength(1);
+    });
+  });
+
   it("yeniden çağrılınca yalnızca o haftanın önerilen bloklarını değiştirir; elle eklenenlere ve diğer haftalara dokunmaz", async () => {
     const { app, db } = makeTestApp();
     const api = request(app);
