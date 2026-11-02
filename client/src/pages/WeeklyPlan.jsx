@@ -19,7 +19,7 @@ import {
   DAYS,
   dayIndexOfDate,
   formatClock,
-  gridRange,
+  FULL_DAY_RANGE,
   minutesLabel,
   overlaps,
   slotAt,
@@ -312,7 +312,7 @@ export default function WeeklyPlan() {
         .map((p) => ({ ...p, source: 'week', type: p.kind, label: labelOf(p), clash: false }));
       return { week, items: [...classes, ...common, ...own] };
     });
-    const range = gridRange(weeks.flatMap((w) => w.items), data.win);
+    const range = FULL_DAY_RANGE;
     const dailyStudy = data.goals.dailyGoal > 0 ? data.goals.dailyGoal : DEFAULT_DAILY_STUDY;
     const capacities = monthCapacities({
       month,

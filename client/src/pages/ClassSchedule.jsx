@@ -153,7 +153,7 @@ function WeekStrip({ classes, window: win }) {
   );
 }
 
-// Günün aralığı (şeritte ve haftalık ızgarada esas alınan saatler)
+// Günün aralığı (şeritte, boş süre hesabında ve akıllı öneride esas alınan saatler)
 function DayWindowForm({ window: win, onSave }) {
   const [start, setStart] = useState(toInput(win.dayStart));
   const [end, setEnd] = useState(toInput(win.dayEnd));

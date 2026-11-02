@@ -97,19 +97,9 @@ export function weekDates(now = new Date()) {
   });
 }
 
-// Izgarada gösterilecek saat aralığı: gün aralığı ve tüm bloklar tam saatlere yuvarlanarak kapsanır
-export function gridRange(blocks, { dayStart, dayEnd }) {
-  let start = dayStart;
-  let end = dayEnd;
-  for (const b of blocks) {
-    start = Math.min(start, b.start);
-    end = Math.max(end, b.end);
-  }
-  return {
-    start: Math.floor(start / 60) * 60,
-    end: Math.min(DAY_MINUTES, Math.ceil(end / 60) * 60),
-  };
-}
+// Haftalık ızgara hep günün 24 saatini gösterir. Gün aralığı (dayStart–dayEnd) yalnızca planlamada kullanılır:
+// boş süre hesabı ve akıllı öneri gece saatlerine taşmasın diye.
+export const FULL_DAY_RANGE = { start: 0, end: DAY_MINUTES };
 
 // Ders çalışmaya yetecek en kısa boşluk (bir pomodoro + hazırlık). Daha kısası "boş zaman" sayılmaz.
 export const STUDY_GAP_MIN = 45;

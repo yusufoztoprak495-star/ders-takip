@@ -6,7 +6,7 @@ import {
   dayIndexOf,
   formatClock,
   freeWindows,
-  gridRange,
+  FULL_DAY_RANGE,
   minutesLabel,
   overlaps,
   parseClock,
@@ -130,18 +130,9 @@ describe("dayIndexOf / weekDates", () => {
   });
 });
 
-describe("gridRange", () => {
-  it("gün aralığını tam saate yuvarlar", () => {
-    expect(gridRange([], { dayStart: 485, dayEnd: 1370 })).toEqual({ start: 480, end: 1380 });
-  });
-
-  it("varsayılan gün aralığında ızgara 08:00'den 24:00'e kadar gider", () => {
-    expect(gridRange([], DEFAULT_DAY_WINDOW)).toEqual({ start: 480, end: 1440 });
-  });
-
-  it("aralık dışına taşan blokları da kapsar", () => {
-    const blocks = [{ start: 400, end: 430 }, { start: 1390, end: 1430 }];
-    expect(gridRange(blocks, DEFAULT_DAY_WINDOW)).toEqual({ start: 360, end: 1440 });
+describe("FULL_DAY_RANGE", () => {
+  it("haftalık ızgara günün 24 saatini gösterir: 00:00–24:00", () => {
+    expect(FULL_DAY_RANGE).toEqual({ start: 0, end: 1440 });
   });
 });
 
