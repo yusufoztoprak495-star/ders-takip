@@ -5,7 +5,7 @@ import ErrorBanner from './ErrorBanner.jsx';
 import { WEEKS, monthLabel, weekLabel } from '../lib/months.js';
 import { DAYS, formatClock, minutesLabel } from '../lib/schedule.js';
 import { subjectLabel } from '../lib/tracks.js';
-import { METHODS, availableDays, buildWeekPlan, busyByDayOf, checkWeekPlan, classDays, defaultDays } from '../lib/weekSuggest.js';
+import { FREE_CAP_OPTIONS, METHODS, SCHOOL_CAP_OPTIONS, availableDays, buildWeekPlan, busyByDayOf, checkWeekPlan, classDays, defaultDays } from '../lib/weekSuggest.js';
 
 // Akıllı öneri → Haftayı planla.
 // Adım adım sorar: önce hangi hafta ve hangi günler; sonra ders ders "bu hafta bu dersin amacı ne?"
@@ -20,7 +20,6 @@ const PREFS_KEY = 'haftayi-planla';
 const MINUTE_OPTIONS = [30, 45, 60, 75, 90, 120];
 const GAP_OPTIONS = [10, 15, 20, 30];
 const DAY_COUNT_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7];
-const CAP_OPTIONS = [60, 90, 120, 150, 180, 210, 240, 270, 300, 360, 420, 480, 540, 600];
 const UNI_TITLE = 'Üniversite dersleri';
 const hoursLabel = (m) => (m % 60 ? `${Math.floor(m / 60)},5 saat` : `${m / 60} saat`);
 
@@ -64,8 +63,8 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
   const saved = useMemo(() => readPrefs(), []);
   const [gap, setGap] = useState(GAP_OPTIONS.includes(saved.gap) ? saved.gap : 15);
   // Günlük üst sınır (dakika): okul olan günler ve diğer günler ayrı
-  const [schoolCap, setSchoolCap] = useState(CAP_OPTIONS.includes(saved.schoolCap) ? saved.schoolCap : 180);
-  const [freeCap, setFreeCap] = useState(CAP_OPTIONS.includes(saved.freeCap) ? saved.freeCap : 360);
+  const [schoolCap, setSchoolCap] = useState(SCHOOL_CAP_OPTIONS.includes(saved.schoolCap) ? saved.schoolCap : 180);
+  const [freeCap, setFreeCap] = useState(FREE_CAP_OPTIONS.includes(saved.freeCap) ? saved.freeCap : 360);
   const [afterClasses, setAfterClasses] = useState(saved.afterClasses ?? true);
   const [uniHour, setUniHour] = useState(saved.uniHour ?? true);
   const [step, setStep] = useState(0);
@@ -238,7 +237,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
               <label>
                 {schoolDays.length > 0 ? 'Okul olan günlerde en fazla' : 'Günde en fazla'}
                 <select value={schoolDays.length > 0 ? schoolCap : freeCap} onChange={(e) => (schoolDays.length > 0 ? setSchoolCap : setFreeCap)(Number(e.target.value))}>
-                  {CAP_OPTIONS.map((m) => (
+                  {(schoolDays.length > 0 ? SCHOOL_CAP_OPTIONS : FREE_CAP_OPTIONS).map((m) => (
                     <option key={m} value={m}>
                       {hoursLabel(m)}
                     </option>
@@ -249,7 +248,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
                 <label>
                   Diğer günlerde en fazla
                   <select value={freeCap} onChange={(e) => setFreeCap(Number(e.target.value))}>
-                    {CAP_OPTIONS.map((m) => (
+                    {FREE_CAP_OPTIONS.map((m) => (
                       <option key={m} value={m}>
                         {hoursLabel(m)}
                       </option>

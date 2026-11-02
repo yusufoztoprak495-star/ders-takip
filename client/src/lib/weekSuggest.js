@@ -32,6 +32,9 @@ export const METHODS = {
 export const STEP = 5; // saatler 5 dakikalık adımla
 export const DEFAULT_GAP = 15; // oturumlar arası mola (dakika)
 export const TITLE_MAX = 60; // blok adı sınırı (veri katmanıyla aynı)
+// Günlük çalışma üst sınırı seçenekleri (dakika): ders olan günlerde en fazla 10, olmayan günlerde 14 saat
+export const SCHOOL_CAP_OPTIONS = [60, 90, 120, 150, 180, 210, 240, 270, 300, 360, 420, 480, 540, 600];
+export const FREE_CAP_OPTIONS = [...SCHOOL_CAP_OPTIONS, 660, 720, 780, 840];
 
 const roundUp = (minutes) => Math.ceil(minutes / STEP) * STEP;
 

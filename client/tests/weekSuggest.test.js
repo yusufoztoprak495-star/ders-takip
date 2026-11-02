@@ -404,3 +404,15 @@ describe("buildWeekPlan: fazlalığı dağıtma", () => {
     expect(leftover).toEqual([{ subjectId: null, type: "other", title: "Üniversite dersleri" }]);
   });
 });
+
+import { FREE_CAP_OPTIONS, SCHOOL_CAP_OPTIONS } from "../src/lib/weekSuggest.js";
+
+describe("günlük üst sınır seçenekleri", () => {
+  it("ders olan günlerde en fazla 10 saat", () => {
+    expect(Math.max(...SCHOOL_CAP_OPTIONS)).toBe(600);
+  });
+  it("ders olmayan günlerde en fazla 14 saat", () => {
+    expect(Math.max(...FREE_CAP_OPTIONS)).toBe(840);
+    expect(FREE_CAP_OPTIONS).toEqual(expect.arrayContaining([...SCHOOL_CAP_OPTIONS, 660, 720, 780]));
+  });
+});
