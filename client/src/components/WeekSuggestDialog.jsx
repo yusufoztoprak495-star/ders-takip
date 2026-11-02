@@ -5,24 +5,24 @@ import ErrorBanner from './ErrorBanner.jsx';
 import { WEEKS, monthLabel, weekLabel } from '../lib/months.js';
 import { DAYS, formatClock, minutesLabel } from '../lib/schedule.js';
 import { subjectLabel } from '../lib/tracks.js';
-import { FREE_CAP_OPTIONS, METHODS, SCHOOL_CAP_OPTIONS, availableDays, buildWeekPlan, busyByDayOf, checkWeekPlan, classDays, defaultDays, keptStudyByDay } from '../lib/weekSuggest.js';
+import { METHODS, availableDays, buildWeekPlan, busyByDayOf, classDays, defaultDays, lastDayOfWeek } from '../lib/weekSuggest.js';
 
 // Akıllı öneri → Haftayı planla.
 // Adım adım sorar: önce hangi hafta ve hangi günler; sonra ders ders "bu hafta bu dersin amacı ne?"
 // (yöntem, oturum süresi, günde kaç oturum, hangi konu kaç gün konu / kaç gün soru); en sonda önizleme.
 // "Programa ekle" ile bloklar o haftaya özel çalışma bloğu olarak yazılır. Aynı hafta için yeniden öneri alınırsa
 // yalnızca seçilen derslerin önceki önerilen blokları silinip yenileri konur; diğer derslere ve elle eklenen bloklara
-// dokunulmaz. Böylece hafta ders ders planlanabilir: önceki dersler dolu sayılır, süreleri günlük sınırdan düşülür.
+// dokunulmaz. Böylece hafta ders ders planlanabilir: önceki dersler dolu sayılır.
 // Ders başına seçilen yöntem, süre ve günlük oturum sayısı tarayıcıda hatırlanır (bir sonraki hafta hazır gelir).
-// Plan seçimlere uymuyorsa (bir gün sınırı aşıyor, boş saat ya da gün yetmiyor) hata gösterilir ve kaydedilmez.
-// Fazlalık sonraki günlere ancak kullanıcı isterse kaydırılır; haftaya yine sığmıyorsa o da mümkün değildir.
+// Günlük çalışma sınırı yok: seçilen oturumlar kendi gününe yazılır, gece 12'yi geçen kısım ertesi günün ilk saatlerine
+// devam eder. Seçilen gün sayısı oturumlara yetmiyorsa ya da haftanın son gününde gece 12 geçiliyorsa hata gösterilir
+// ve kaydedilmez (yarım plan yazılmaz).
 
 const PREFS_KEY = 'haftayi-planla';
 const MINUTE_OPTIONS = [30, 45, 60, 75, 90, 120];
 const GAP_OPTIONS = [10, 15, 20, 30];
 const DAY_COUNT_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7];
 const UNI_TITLE = 'Üniversite dersleri';
-const hoursLabel = (m) => (m % 60 ? `${Math.floor(m / 60)},5 saat` : `${m / 60} saat`);
 
 function readPrefs() {
   try {
@@ -64,16 +64,11 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
   const [days, setDays] = useState(() => defaultDayList(initialWeek));
   const saved = useMemo(() => readPrefs(), []);
   const [gap, setGap] = useState(GAP_OPTIONS.includes(saved.gap) ? saved.gap : 15);
-  // Günlük üst sınır (dakika): okul olan günler ve diğer günler ayrı
-  const [schoolCap, setSchoolCap] = useState(SCHOOL_CAP_OPTIONS.includes(saved.schoolCap) ? saved.schoolCap : 180);
-  const [freeCap, setFreeCap] = useState(FREE_CAP_OPTIONS.includes(saved.freeCap) ? saved.freeCap : 360);
   const [afterClasses, setAfterClasses] = useState(saved.afterClasses ?? true);
   const [uniHour, setUniHour] = useState(saved.uniHour ?? true);
   const [step, setStep] = useState(0);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
-  // Kullanıcı "fazlalığı dağıt" dedi mi? Önizlemeden geri dönünce sıfırlanır (seçimler değişebilir)
-  const [spread, setSpread] = useState(false);
 
   const [setup, setSetup] = useState(() => buildSetup(initialWeek, defaultDayList(initialWeek)));
 
@@ -141,39 +136,35 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
 
   const schoolDays = useMemo(() => classDays(data.classes), [data.classes]);
 
-  const { plan, check } = useMemo(() => {
+  const plan = useMemo(() => {
     const subjects = included.map((x) => ({
       subjectId: x.subjectId,
       perDay: x.perDay,
       minutes: x.minutes,
       topics: x.topics.filter((t) => t.on).map((t) => ({ title: t.title, konu: t.konu, soru: t.soru })),
     }));
-    const dailyMaxByDay = {};
     const firstBlocksByDay = {};
     for (const d of sortedDays) {
-      const school = schoolDays.includes(d);
-      dailyMaxByDay[d] = school ? schoolCap : freeCap;
       // Önceki bir planda o güne konmuş üniversite saati yerinde kalır, ikincisi eklenmez
       const hasUni = data.weekPlans.some((p) => p.week === week && p.day === d && p.auto === true && p.subjectId === null);
-      if (school && uniHour && !hasUni) firstBlocksByDay[d] = [{ title: UNI_TITLE, minutes: 60 }];
+      if (schoolDays.includes(d) && uniHour && !hasUni) firstBlocksByDay[d] = [{ title: UNI_TITLE, minutes: 60 }];
     }
-    const input = {
+    const blocksOf = { week, classes: data.classes, plans: data.plans, weekPlans: data.weekPlans, replacing };
+    return buildWeekPlan({
       subjects,
       days: sortedDays,
-      busyByDay: busyByDayOf({ week, classes: data.classes, plans: data.plans, weekPlans: data.weekPlans, afterClasses, replacing }),
-      usedByDay: keptStudyByDay({ week, weekPlans: data.weekPlans, replacing }),
+      busyByDay: busyByDayOf({ ...blocksOf, afterClasses }),
+      nightBusyByDay: busyByDayOf(blocksOf),
       window: data.win,
       gap,
-      dailyMaxByDay,
       firstBlocksByDay,
-    };
-    return { plan: buildWeekPlan(input), check: checkWeekPlan(input) };
-  }, [included, sortedDays, week, data, gap, schoolDays, schoolCap, freeCap, afterClasses, uniHour]);
+      lastDay: lastDayOfWeek(month, week),
+    });
+  }, [included, sortedDays, week, month, data, gap, schoolDays, afterClasses, uniHour]);
   const studyBlocks = plan.blocks.filter((b) => b.type !== 'other').length;
-  const overloaded = check.overloads.length > 0;
-  // Hafta bütün oturumlara yetmiyorsa kaydırmak da çözmez
-  const noRoom = plan.leftover.length > 0;
-  const blocked = noRoom || (overloaded && !spread);
+  // Hepsi yazılamıyorsa yarım plan kaydedilmez
+  const blocked = plan.leftover.length > 0;
+  const hasNight = plan.blocks.some((b) => b.continued);
 
   // Adımlar: 0 = hafta ve günler, 1..n = dersler, n+1 = önizleme
   const lastStep = included.length + 1;
@@ -195,7 +186,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
       });
       const prefs = readPrefs();
       for (const x of included) prefs[x.subjectId] = { method: x.method, minutes: x.minutes, perDay: x.perDay };
-      Object.assign(prefs, { gap, schoolCap, freeCap, afterClasses, uniHour });
+      Object.assign(prefs, { gap, afterClasses, uniHour });
       writePrefs(prefs);
       await onApplied(message);
       onClose();
@@ -244,32 +235,8 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
               <DayPicker selected={days} onChange={setDays} label="Çalışacağın günler" />
               <small className="muted">
                 {isThisMonth ? 'Geçmiş günler ve pazar işaretsiz geldi. ' : 'Pazar işaretsiz geldi. '}
-                Oturumlar ders saatlerinin ve diğer blokların arasındaki boşluklara konur.
+                Oturumlar boş saatlere konur, günlük sınır yok. Gece 12'ye sığmayan kısım ertesi günün ilk saatlerine devam eder.
               </small>
-            </div>
-            <div className="row">
-              <label>
-                {schoolDays.length > 0 ? 'Okul olan günlerde en fazla' : 'Günde en fazla'}
-                <select value={schoolDays.length > 0 ? schoolCap : freeCap} onChange={(e) => (schoolDays.length > 0 ? setSchoolCap : setFreeCap)(Number(e.target.value))}>
-                  {(schoolDays.length > 0 ? SCHOOL_CAP_OPTIONS : FREE_CAP_OPTIONS).map((m) => (
-                    <option key={m} value={m}>
-                      {hoursLabel(m)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {schoolDays.length > 0 && (
-                <label>
-                  Diğer günlerde en fazla
-                  <select value={freeCap} onChange={(e) => setFreeCap(Number(e.target.value))}>
-                    {FREE_CAP_OPTIONS.map((m) => (
-                      <option key={m} value={m}>
-                        {hoursLabel(m)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
             </div>
             {schoolDays.length > 0 && (
               <div className="field">
@@ -279,7 +246,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
                 </label>
                 <label className="check-row">
                   <input type="checkbox" checked={uniHour} onChange={(e) => setUniHour(e.target.checked)} />
-                  <span>Okul günlerinde üniversite dersleri için 1 saat ayır (YKS süresine sayılmaz)</span>
+                  <span>Okul günlerinde üniversite dersleri için 1 saat ayır</span>
                 </label>
               </div>
             )}
@@ -426,46 +393,18 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
           <>
             {blocked && (
               <div className="error-banner ws-problem" role="alert">
-                <b>Bu plan seçimlerine uymuyor, programa eklenemez.</b>
+                <b>{plan.leftover.length} oturum bu haftaya yazılamıyor, programa eklenemez:</b>
                 <ul className="ws-leftover">
-                  {check.overloads.map((o) => (
-                    <li key={o.day}>
-                      {o.kind === 'cap'
-                        ? `${DAYS[o.day].name}: ${minutesLabel(o.needed)} çalışma gerekiyor, sınırın ${minutesLabel(o.cap)} (${minutesLabel(o.excess)} fazla)`
-                        : `${DAYS[o.day].name}: boş saatlere ${minutesLabel(o.excess)} sığmıyor`}
+                  {plan.leftover.map((l, i) => (
+                    <li key={i}>
+                      {l.type === 'other' ? l.title : `${labelOf(l.subjectId)} · ${l.type === 'konu' ? 'Konu' : 'Soru'}: ${l.title}`}
                     </li>
                   ))}
                 </ul>
-                {noRoom ? (
-                  <>
-                    <b>{plan.leftover.length} oturum bu haftaya hiç sığmıyor:</b>
-                    <ul className="ws-leftover">
-                      {plan.leftover.map((l, i) => (
-                        <li key={i}>
-                          {l.type === 'other' ? l.title : `${labelOf(l.subjectId)} · ${l.type === 'konu' ? 'Konu' : 'Soru'}: ${l.title}`}
-                        </li>
-                      ))}
-                    </ul>
-                    <small>Gün ekle, günlük sınırı artır, oturumu kısalt ya da konu azalt.</small>
-                  </>
-                ) : (
-                  <>
-                    <small>Geri dönüp sınırı artırabilir, ders ya da oturum azaltabilirsin.</small>
-                    <button type="button" className="secondary small" onClick={() => setSpread(true)}>
-                      Fazlalığı sonraki günlere dağıt
-                    </button>
-                  </>
-                )}
+                <small>Gün ekle, konu azalt ya da oturumu kısalt. Haftanın son gününde gece 12'yi geçen oturum da yazılamaz, çünkü devamı başka haftaya düşer.</small>
               </div>
             )}
-            {!blocked && spread && overloaded && (
-              <p className="notice">
-                Fazlalık sonraki günlere dağıtıldı; bu yüzden bazı sorular konusunun ertesi gününe denk gelmeyebilir.{' '}
-                <button type="button" className="text-link" onClick={() => setSpread(false)}>
-                  Dağıtmayı geri al
-                </button>
-              </p>
-            )}
+            {!blocked && hasNight && <p className="notice">Gece 12'ye sığmayan kısımlar ertesi günün ilk saatlerine devam ediyor.</p>}
             {blocked ? null : studyBlocks === 0 ? (
               <p className="notice">Eklenecek oturum çıkmadı: ders, konu ya da gün seçilmemiş olabilir.</p>
             ) : (
@@ -493,6 +432,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
                           ) : (
                             <>
                               <span className={`ws-kind ws-${b.type}`}>{b.type === 'konu' ? 'Konu' : 'Soru'}</span> {b.topic}
+                              {b.continued && <span className="muted"> (devam)</span>}
                             </>
                           )}
                         </td>
@@ -516,10 +456,7 @@ export default function WeekSuggestDialog({ month, initialWeek, todayStr, data, 
             <button
               type="button"
               className="secondary"
-              onClick={() => {
-                setSpread(false);
-                setStep(step - 1);
-              }}
+              onClick={() => setStep(step - 1)}
               disabled={busy}
             >
               Geri

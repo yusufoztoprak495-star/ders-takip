@@ -15,11 +15,10 @@
 //
 // Yerleştirme: gün gün, ders sırasıyla gidilir; her oturum günün ilk uygun boşluğuna konur. Dolu saatler
 // (ders programı, ortak bloklar, haftaya özel bloklar) ve oturumlar arasında `gap` dakikalık mola atlanır.
-// Bir oturum o güne sığmazsa o gün yapılmaz ve sırası bozulmadan sonraki güne kayar; haftaya hiç sığmayanlar
-// "leftover" olarak döner.
-//
-// Kayma kullanıcının seçimini değiştirdiği için kendiliğinden kaydedilmez: pencere önce checkWeekPlan ile
-// sınırı aşan günleri sorar, hata gösterir; buildWeekPlan'ın kaydırılmış planı ancak kullanıcı isterse yazılır.
+// Günlük çalışma sınırı yoktur: seçilen oturumların hepsi kendi gününe yazılır. Plan her zaman gece 12'ye kadar
+// gider (ayarlardaki gün bitişi planı kesmez); gece 12'ye sığmayan kısım ertesi günün 00:00'ından devam eder.
+// Gece 12'ye denk gelen oturum ikiye bölünür, ikinci parçası "(devam)" adını alır. Haftanın takvimdeki son gününden
+// sonrası başka haftaya düştüğü için yazılamaz; o oturum yarım bırakılmaz, "leftover" olarak döner.
 import { dayIndexOfDate, freeWindows } from "./schedule.js";
 import { weekDays } from "./months.js";
 
@@ -32,9 +31,8 @@ export const METHODS = {
 export const STEP = 5; // saatler 5 dakikalık adımla
 export const DEFAULT_GAP = 15; // oturumlar arası mola (dakika)
 export const TITLE_MAX = 60; // blok adı sınırı (veri katmanıyla aynı)
-// Günlük çalışma üst sınırı seçenekleri (dakika): ders olan günlerde en fazla 10, olmayan günlerde 14 saat
-export const SCHOOL_CAP_OPTIONS = [60, 90, 120, 150, 180, 210, 240, 270, 300, 360, 420, 480, 540, 600];
-export const FREE_CAP_OPTIONS = [...SCHOOL_CAP_OPTIONS, 660, 720, 780, 840];
+export const DAY_END = 1440; // plan gece 12'ye kadar gider
+const CONTINUED = " (devam)";
 
 const roundUp = (minutes) => Math.ceil(minutes / STEP) * STEP;
 
@@ -47,36 +45,52 @@ export function defaultDays(method, topicCount, dayCount) {
   return { konu: 1, soru: 1 };
 }
 
-// "Konu: Türev - 1"; blok adı 60 karakteri geçemediği için uzun konu adları "…" ile kısaltılır
-export function blockTitle(type, title) {
-  const text = `${type === "konu" ? "Konu" : "Soru"}: ${title}`;
-  return text.length <= TITLE_MAX ? text : `${text.slice(0, TITLE_MAX - 1).trimEnd()}…`;
+// "Konu: Türev - 1"; blok adı 60 karakteri geçemediği için uzun konu adları "…" ile kısaltılır.
+// continued: oturumun gece 12'den sonraki parçası, adın sonuna "(devam)" eklenir
+export function blockTitle(type, title, continued = false) {
+  return withContinued(`${type === "konu" ? "Konu" : "Soru"}: ${title}`, continued);
+}
+
+function withContinued(text, continued) {
+  const suffix = continued ? CONTINUED : "";
+  const room = TITLE_MAX - suffix.length;
+  return (text.length <= room ? text : `${text.slice(0, room - 1).trimEnd()}…`) + suffix;
 }
 
 // Bir günün yerleştiricisi: sırayla verilen sürelere günün ilk uygun boşluğunu bulur.
-// busy: dolu bloklar ({ start, end }) · window: { dayStart, dayEnd } · cap: günlük çalışma üst sınırı (dakika)
-// alreadyUsed: o gün sınıra sayılan, daha önce planlanmış çalışma (dakika)
-function dayPlacer(busy, window, gap, cap = Infinity, alreadyUsed = 0) {
-  const taken = busy.map((b) => ({ start: b.start, end: b.end }));
-  let used = alreadyUsed;
+// busy: o günün oturumları için dolu bloklar ({ start, end }) · window: { dayStart, dayEnd }
+// nightBusy: önceki günden gelen devam için dolu bloklar. "Dersler bitince başla" sabahı dolu sayar ama bu kural
+// o günün kendi oturumları içindir; gece devamı yalnızca gerçek dolu saatlere bakar.
+function dayPlacer(busy, window, gap, nightBusy = busy) {
+  const own = [];
+  // Dolu her bloğun iki yanında `gap` kadar mola payı bırakılır (gün başı ve sonu hariç)
+  const padded = (blocks) => [...blocks, ...own].map((b) => ({ start: b.start - gap, end: b.end + gap }));
+  const firstFit = (blocks, from, minutes) => {
+    for (const free of freeWindows(padded(blocks), from, window.dayEnd)) {
+      const start = roundUp(free.start);
+      if (start + minutes <= free.end) return { start, end: start + minutes };
+    }
+    return null;
+  };
+  const take = (slot) => {
+    own.push(slot);
+    return slot;
+  };
   return {
+    take,
     // Sığarsa { start, end } döner ve o aralığı dolu sayar; sığmazsa null.
-    // counts: false ise süre günlük sınıra eklenmez (üniversite saati gibi ön bloklar)
-    tryAdd(minutes, { counts = true } = {}) {
-      if (counts && used + minutes > cap) return null;
-      // Dolu her bloğun iki yanında `gap` kadar mola payı bırakılır (gün başı ve sonu hariç)
-      const padded = taken.map((b) => ({ start: b.start - gap, end: b.end + gap }));
-      for (const free of freeWindows(padded, window.dayStart, window.dayEnd)) {
-        const start = roundUp(free.start);
-        if (start + minutes <= free.end) {
-          const slot = { start, end: start + minutes };
-          taken.push(slot);
-          if (counts) used += minutes;
-          return slot;
-        }
-      }
-      return null;
+    tryAdd(minutes) {
+      const slot = firstFit(busy, window.dayStart, minutes);
+      return slot ? take(slot) : null;
     },
+    // Günün sonuna değen boşluğun başlangıcı; gün sonuna kadar boşluk yoksa gün sonu
+    tailStart() {
+      const last = freeWindows(padded(busy), window.dayStart, window.dayEnd).at(-1);
+      if (!last || last.end < window.dayEnd) return window.dayEnd;
+      return Math.min(roundUp(last.start), window.dayEnd);
+    },
+    // Önceki günden devam eden süreye günün en erken boşluğu (saat 00:00'dan başlayarak)
+    fitNight: (minutes) => firstFit(nightBusy, 0, minutes),
   };
 }
 
@@ -132,10 +146,10 @@ function candidates(topics, i) {
 // Günlere dağıtım (ve isteğe bağlı yerleştirme).
 //  subjects: [{ subjectId, perDay, minutes?, topics: [{ title, konu, soru }] }] (verilen sırayla)
 //  days: çalışılacak gün numaraları sırasıyla (0 = pazartesi)
-//  placerFor: (day) => yerleştirici; verilirse oturum ancak güne sığarsa o güne yazılır
+//  placerFor: (day) => yerleştirici; verilirse oturum ancak yerleşebiliyorsa yazılır
 // Her gün dersler turlarla gezilir: önce her ders birer oturum alır, günde 2–3 oturumlu dersler ikinci turda.
 // Her turda önce bütün derslerin bekleyen soruları, sonra yeni konuları yerleşir.
-// Adalet için her gün ilk sıradaki ders bir kayar (günlük sınır dolunca hep sondaki dersler kalmasın).
+// Adalet için her gün ilk sıradaki ders bir kayar (hep aynı ders sona kalmasın).
 // Dönen: { byDay: { gün: [oturum] }, leftover: [oturum] }
 export function scheduleDays({ subjects, days, placerFor = null }) {
   const byDay = {};
@@ -147,8 +161,7 @@ export function scheduleDays({ subjects, days, placerFor = null }) {
     const order = n === 0 ? [] : [...states.slice(i % n), ...states.slice(0, i % n)];
     const usedToday = new Map(states.map((st) => [st, new Set()]));
     const takenToday = new Map(states.map((st) => [st, 0]));
-    // Her turda önce bekleyen sorular (dünün konusunun sorusu), sonra yeni konular: günlük sınır dolarken
-    // çift dikişin "ertesi gün soru" kuralı yeni konulara feda edilmesin
+    // Her turda önce bekleyen sorular (dünün konusunun sorusu), sonra yeni konular
     for (let pass = 1; pass <= maxPass; pass++) {
       for (const phase of ["soru", "konu"]) {
         for (const st of order) {
@@ -163,7 +176,7 @@ export function scheduleDays({ subjects, days, placerFor = null }) {
               minutes: subject.minutes ?? 60,
             };
             const slot = placer ? placer.tryAdd(session.minutes) : {};
-            if (!slot) continue; // sığmadı: bu oturum bugün yapılmaz, sırası korunur
+            if (!slot) continue; // yerleşemedi: bu oturum bugün yapılmaz, sırası korunur
             if (option.type === "konu") {
               option.topic.konuLeft -= 1;
               option.topic.lastKonuDay = i;
@@ -191,73 +204,74 @@ export function scheduleDays({ subjects, days, placerFor = null }) {
 }
 
 // Haftanın planı: günlere dağıtır, boş saatlere yerleştirir, kaydedilecek blokları üretir.
-//  busyByDay: { gün: [{ start, end }] } dolu saatler · window: { dayStart, dayEnd } · gap: mola (dakika)
-//  dailyMaxByDay: { gün: dakika } o gün en fazla ne kadar ders çalışılır (yoksa sınırsız)
+//  busyByDay: { gün: [{ start, end }] } dolu saatler · window: { dayStart } · gap: mola (dakika)
+//  nightBusyByDay: gece devamı için dolu saatler (yoksa busyByDay; bkz. dayPlacer)
 //  firstBlocksByDay: { gün: [{ title, minutes }] } çalışmadan önce ilk boşluğa konan bloklar
-//    (örn. okul günlerinde üniversite dersleri için 1 saat); günlük sınıra sayılmaz
-//  usedByDay: { gün: dakika } önceden planlanmış derslerin süresi; günlük sınırdan düşülür (keptStudyByDay)
-// Dönen: { blocks: [{ day, start, end, kind: 'study', subjectId, title, type, topic }], leftover }
-//  type: 'konu' | 'soru' | 'other' (ön blok)
-export function buildWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {}, usedByDay = {} }) {
-  const firsts = {};
+//    (örn. okul günlerinde üniversite dersleri için 1 saat)
+//  lastDay: haftanın takvimdeki son günü (lastDayOfWeek); bundan sonrasına devam yazılamaz
+// Dönen: { blocks: [{ day, start, end, kind: 'study', subjectId, title, type, topic, continued }], leftover }
+//  type: 'konu' | 'soru' | 'other' (ön blok) · continued: gece 12'yi geçen oturumun ikinci parçası
+export function buildWeekPlan({ subjects, days, busyByDay, nightBusyByDay = busyByDay, window, gap = DEFAULT_GAP, firstBlocksByDay = {}, lastDay = 6 }) {
+  const planWindow = { dayStart: window.dayStart, dayEnd: DAY_END };
+  const placers = new Map();
+  const placerOf = (day) => {
+    if (!placers.has(day)) placers.set(day, dayPlacer(busyByDay[day] ?? [], planWindow, gap, nightBusyByDay[day] ?? []));
+    return placers.get(day);
+  };
+
+  // Süreyi `day` gününe koyar, gece 12'ye sığmayan kısmı ertesi güne devam ettirir.
+  // Dönen: [{ day, start, end, continued }] parçaları; yerleşemezse null (hiçbir parça yazılmaz)
+  const place = (day, minutes) => {
+    const placer = placerOf(day);
+    const slot = placer.tryAdd(minutes);
+    if (slot) return [{ day, ...slot, continued: false }];
+    if (day === lastDay) return null;
+    const next = (day + 1) % 7;
+    const start = placer.tailStart();
+    const head = DAY_END - start;
+    const rest = placerOf(next).fitNight(minutes - head);
+    if (!rest) return null;
+    placerOf(next).take(rest);
+    if (head === 0) return [{ day: next, ...rest, continued: false }];
+    return [{ day, ...placer.take({ start, end: DAY_END }), continued: false }, { day: next, ...rest, continued: true }];
+  };
+
+  const firsts = [];
   const droppedFirsts = [];
   const { byDay, leftover } = scheduleDays({
     subjects,
     days,
     placerFor: (day) => {
-      const placer = dayPlacer(busyByDay[day] ?? [], window, gap, dailyMaxByDay[day] ?? Infinity, usedByDay[day] ?? 0);
       for (const f of firstBlocksByDay[day] ?? []) {
-        const slot = placer.tryAdd(f.minutes, { counts: false });
-        if (slot) (firsts[day] ??= []).push({ ...slot, title: f.title });
+        const parts = place(day, f.minutes);
+        if (parts) firsts.push(...parts.map((p) => ({ ...p, title: f.title })));
         else droppedFirsts.push({ subjectId: null, type: "other", title: f.title });
       }
-      return placer;
+      return {
+        tryAdd(minutes) {
+          const parts = place(day, minutes);
+          return parts && { parts };
+        },
+      };
     },
   });
-  const blocks = [];
-  for (const day of days) {
-    const list = [
-      ...(firsts[day] ?? []).map((f) => ({ day, start: f.start, end: f.end, kind: "study", subjectId: null, title: f.title.slice(0, TITLE_MAX), type: "other", topic: null })),
-      ...(byDay[day] ?? []).map((s) => ({
-        day,
-        start: s.start,
-        end: s.end,
+  const blocks = [
+    ...firsts.map((f) => ({ day: f.day, start: f.start, end: f.end, kind: "study", subjectId: null, title: withContinued(f.title, f.continued), type: "other", topic: null, continued: f.continued })),
+    ...Object.values(byDay).flat().flatMap((s) =>
+      s.parts.map((p) => ({
+        day: p.day,
+        start: p.start,
+        end: p.end,
         kind: "study",
         subjectId: s.subjectId,
-        title: blockTitle(s.type, s.title),
+        title: blockTitle(s.type, s.title, p.continued),
         type: s.type,
         topic: s.title,
+        continued: p.continued,
       })),
-    ];
-    blocks.push(...list.sort((a, b) => a.start - b.start));
-  }
+    ),
+  ].sort((a, b) => a.day - b.day || a.start - b.start);
   return { blocks, leftover: [...droppedFirsts, ...leftover] };
-}
-
-// Seçimlere göre plan olduğu gibi yapılabiliyor mu? Oturumlar kaydırılmadan, ait oldukları günlerde sayılır.
-// Girdiler buildWeekPlan ile aynı. Dönen:
-//  overloads: [{ day, kind: 'cap', needed, cap, excess }]  o güne düşen çalışma (önceki derslerle) günlük sınırı aşıyor
-//             [{ day, kind: 'time', needed, excess }]      sınır yetiyor ama boş saatlere excess dakika sığmıyor
-//  leftover: seçilen gün sayısı konu/soru günlerine yetmediği için hiç yeri olmayan oturumlar
-export function checkWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {}, usedByDay = {} }) {
-  const { byDay, leftover } = scheduleDays({ subjects, days });
-  const overloads = [];
-  for (const day of days) {
-    const sessions = byDay[day] ?? [];
-    const needed = sessions.reduce((sum, s) => sum + s.minutes, usedByDay[day] ?? 0);
-    const cap = dailyMaxByDay[day] ?? Infinity;
-    // Bu planda oturum düşmeyen gün zaten sınırın üstündeyse o bu planın sorunu değildir
-    if (sessions.length > 0 && needed > cap) {
-      overloads.push({ day, kind: "cap", needed, cap, excess: needed - cap });
-      continue;
-    }
-    const placer = dayPlacer(busyByDay[day] ?? [], window, gap);
-    const excess = [...(firstBlocksByDay[day] ?? []), ...sessions]
-      .filter((s) => !placer.tryAdd(s.minutes))
-      .reduce((sum, s) => sum + s.minutes, 0);
-    if (excess > 0) overloads.push({ day, kind: "time", needed, excess });
-  }
-  return { overloads, leftover };
 }
 
 // Haftanın içinde kalan günlerin gün numaraları (0 = pazartesi), pazartesiden pazara sıralı.
@@ -274,20 +288,14 @@ export function availableDays({ month, week, fromDate = null }) {
   return [...set].sort((a, b) => a - b);
 }
 
+// Haftanın takvimdeki son gününün numarası (0 = pazartesi). Bu günden sonrası başka haftadır.
+export function lastDayOfWeek(month, week) {
+  return dayIndexOfDate(`${month}-${String(weekDays(month, week).to).padStart(2, "0")}`);
+}
+
 // Yeni plan kaydedilince bu blok yerinde kalır mı?
 function isKept(block, replacing) {
   return block.auto !== true || (replacing !== null && !replacing.includes(block.subjectId));
-}
-
-// Yerinde kalan derslerin önerilen çalışma süresi, gün gün (dakika). Üniversite saati gibi dersi olmayan bloklar
-// günlük sınıra sayılmadığı için atlanır.
-export function keptStudyByDay({ week, weekPlans, replacing }) {
-  const out = {};
-  for (const p of weekPlans) {
-    if (p.week !== week || p.auto !== true || p.subjectId === null || !isKept(p, replacing)) continue;
-    out[p.day] = (out[p.day] ?? 0) + (p.end - p.start);
-  }
-  return out;
 }
 
 // Dersi olan (okul) günlerin numaraları, sıralı

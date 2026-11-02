@@ -5,6 +5,7 @@ import {
   buildWeekPlan,
   defaultDays,
   placeDay,
+  lastDayOfWeek,
   scheduleDays,
 } from "../src/lib/weekSuggest.js";
 
@@ -151,6 +152,11 @@ describe("placeDay: oturumları günün boş saatlerine yerleştirir", () => {
 });
 
 describe("blockTitle", () => {
+  it("devam parçası 60 karakteri aşmadan (devam) yazar", () => {
+    const long = blockTitle("konu", "İndirgenme - Yükseltgenme Tepkimelerinde Elektrik Akımı", true);
+    expect(long.length).toBeLessThanOrEqual(60);
+    expect(long.endsWith("… (devam)")).toBe(true);
+  });
   it("türü başa yazar, 60 karakteri aşarsa kısaltır", () => {
     expect(blockTitle("konu", "Türev - 1")).toBe("Konu: Türev - 1");
     expect(blockTitle("soru", "Türev - 1")).toBe("Soru: Türev - 1");
@@ -161,23 +167,6 @@ describe("blockTitle", () => {
 });
 
 describe("buildWeekPlan: hepsi birlikte", () => {
-  it("bir güne sığmayan oturum ertesi güne kayar; sorusu da onunla kayar", () => {
-    const window = { dayStart: 480, dayEnd: 1380 };
-    const busyByDay = { 0: [{ start: 480, end: 1290 }] }; // pazartesi 21:30'a kadar dolu
-    const result = buildWeekPlan({
-      days: [0, 1],
-      window,
-      busyByDay,
-      gap: 15,
-      subjects: [{ subjectId: 3, perDay: 1, minutes: 90, topics: [topic("A", 1, 1), topic("B", 1, 1)] }],
-    });
-    // Pazartesi 21:30 + mola sonrası 90 dk sığmaz → konu A salıya kayar, sorusu haftaya sığmaz
-    expect(result.blocks.map((b) => [b.day, b.title, b.start, b.end, b.kind, b.subjectId])).toEqual([
-      [1, "Konu: A", 480, 570, "study", 3],
-    ]);
-    expect(result.leftover.map((u) => `${u.type}:${u.title}`)).toEqual(["soru:A", "konu:B", "soru:B"]);
-  });
-
   it("aynı gündeki farklı derslerin oturumları üst üste binmez", () => {
     const result = buildWeekPlan({
       days: [0],
@@ -197,48 +186,12 @@ describe("buildWeekPlan: hepsi birlikte", () => {
     expect(result.leftover).toEqual([]);
   });
 
-  it("günlük üst sınır aşılmaz; aşan oturum sonraki güne kayar", () => {
-    const result = buildWeekPlan({
-      days: [0, 1],
-      window: { dayStart: 480, dayEnd: 1380 },
-      busyByDay: {},
-      gap: 15,
-      dailyMaxByDay: { 0: 120, 1: 600 },
-      subjects: [
-        { subjectId: 3, perDay: 1, minutes: 60, topics: [topic("A", 1, 1)] },
-        { subjectId: 9, perDay: 1, minutes: 60, topics: [topic("X", 1, 1)] },
-        { subjectId: 11, perDay: 1, minutes: 60, topics: [topic("Bio", 1, 0)] },
-      ],
-    });
-    // Pazartesi 2 saat: A ve X konusu; biyoloji salıya kayar
-    expect(result.blocks.filter((b) => b.day === 0).map((b) => b.title)).toEqual(["Konu: A", "Konu: X"]);
-    expect(result.blocks.filter((b) => b.day === 1).map((b) => b.title).sort()).toEqual(["Konu: Bio", "Soru: A", "Soru: X"]);
-  });
-
-  it("günlük sınır dolarken önce bekleyen sorular yerleşir, yeni konular sonra (çift dikiş ertesi gün bozulmasın)", () => {
-    const result = buildWeekPlan({
-      days: [0, 1],
-      window: { dayStart: 480, dayEnd: 1380 },
-      busyByDay: {},
-      gap: 15,
-      dailyMaxByDay: { 0: 120, 1: 120 },
-      subjects: [
-        { subjectId: 1, perDay: 1, minutes: 60, topics: [topic("Ses", 1, 1)] },
-        { subjectId: 3, perDay: 1, minutes: 60, topics: [topic("A", 1, 1), topic("B", 1, 1)] },
-        { subjectId: 16, perDay: 1, minutes: 60, topics: [topic("Açı", 1, 1)] },
-      ],
-    });
-    // Pazartesi: Ses ve A konusu (sınır 2 saat). Salı: ikisinin sorusu; açı konusu sığmaz
-    expect(result.blocks.filter((b) => b.day === 1).map((b) => b.title).sort()).toEqual(["Soru: A", "Soru: Ses"]);
-  });
-
-  it("ön bloklar (üniversite saati) çalışmadan önce, ilk boşluğa konur ve günlük sınıra sayılmaz", () => {
+  it("ön bloklar (üniversite saati) çalışmadan önce, ilk boşluğa konur", () => {
     const result = buildWeekPlan({
       days: [0],
       window: { dayStart: 480, dayEnd: 1380 },
       busyByDay: { 0: [{ start: 480, end: 975 }] },
       gap: 15,
-      dailyMaxByDay: { 0: 60 },
       firstBlocksByDay: { 0: [{ title: "Üniversite dersleri", minutes: 60 }] },
       subjects: [{ subjectId: 3, perDay: 1, minutes: 60, topics: [topic("A", 1, 0)] }],
     });
@@ -302,123 +255,6 @@ describe("busyByDayOf: dolu saatler", () => {
   });
 });
 
-import { checkWeekPlan } from "../src/lib/weekSuggest.js";
-
-describe("checkWeekPlan: plan seçimlere uyuyor mu", () => {
-  const window = { dayStart: 480, dayEnd: 1440 };
-  // Her ders pazartesi birer oturum alır: n ders × 60 dk
-  const lessons = (n) =>
-    Array.from({ length: n }, (_, i) => ({ subjectId: i + 1, perDay: 1, minutes: 60, topics: [topic(`D${i + 1}`, 1, 0)] }));
-
-  it("pazartesiye 9 saat düşer, sınır 8 saatse fazlalığı söyler (salı boş olsa bile)", () => {
-    const { overloads, leftover } = checkWeekPlan({
-      subjects: lessons(9),
-      days: [0, 1],
-      busyByDay: {},
-      window,
-      gap: 0,
-      dailyMaxByDay: { 0: 480, 1: 480 },
-    });
-    expect(overloads).toEqual([{ day: 0, kind: "cap", needed: 540, cap: 480, excess: 60 }]);
-    expect(leftover).toEqual([]);
-  });
-
-  it("sınıra tam oturan plan temizdir", () => {
-    const { overloads, leftover } = checkWeekPlan({
-      subjects: lessons(8),
-      days: [0],
-      busyByDay: {},
-      window,
-      gap: 0,
-      dailyMaxByDay: { 0: 480 },
-    });
-    expect(overloads).toEqual([]);
-    expect(leftover).toEqual([]);
-  });
-
-  it("sınır yetiyor ama boş saat yetmiyorsa sığmayan süreyi söyler", () => {
-    const { overloads } = checkWeekPlan({
-      subjects: lessons(3),
-      days: [0],
-      busyByDay: { 0: [{ start: 480, end: 1320 }] }, // 22:00'a kadar dolu
-      window,
-      gap: 0,
-      dailyMaxByDay: { 0: 480 },
-    });
-    expect(overloads).toEqual([{ day: 0, kind: "time", needed: 180, excess: 60 }]);
-  });
-
-  it("seçilen gün sayısı konu günlerine yetmiyorsa artakalanı söyler", () => {
-    const { leftover } = checkWeekPlan({
-      subjects: [{ subjectId: 3, perDay: 1, minutes: 60, topics: [topic("A", 2, 2)] }],
-      days: [0, 1],
-      busyByDay: {},
-      window,
-    });
-    expect(leftover.map((l) => `${l.type}:${l.title}`)).toEqual(["soru:A", "soru:A"]);
-  });
-
-  it("sığmayan ön blok (üniversite saati) da sorun sayılır", () => {
-    const { overloads } = checkWeekPlan({
-      subjects: [],
-      days: [0],
-      busyByDay: { 0: [{ start: 480, end: 1440 }] },
-      window,
-      firstBlocksByDay: { 0: [{ title: "Üniversite dersleri", minutes: 60 }] },
-    });
-    expect(overloads).toEqual([{ day: 0, kind: "time", needed: 0, excess: 60 }]);
-  });
-
-  it("sorun yoksa buildWeekPlan aynı günlere yazar, kaydırma olmaz", () => {
-    const input = { subjects: lessons(4), days: [0, 1], busyByDay: {}, window, gap: 15, dailyMaxByDay: { 0: 240, 1: 240 } };
-    expect(checkWeekPlan(input).overloads).toEqual([]);
-    expect(buildWeekPlan(input).blocks.every((b) => b.day === 0)).toBe(true);
-  });
-});
-
-describe("buildWeekPlan: fazlalığı dağıtma", () => {
-  it("9 saatlik pazartesi dağıtılınca 9. saat salıya geçer, sınır aşılmaz", () => {
-    const subjects = Array.from({ length: 9 }, (_, i) => ({ subjectId: i + 1, perDay: 1, minutes: 60, topics: [topic(`D${i + 1}`, 1, 0)] }));
-    const { blocks, leftover } = buildWeekPlan({
-      subjects,
-      days: [0, 1],
-      busyByDay: {},
-      window: { dayStart: 480, dayEnd: 1440 },
-      gap: 0,
-      dailyMaxByDay: { 0: 480, 1: 480 },
-    });
-    expect(blocks.filter((b) => b.day === 0)).toHaveLength(8);
-    expect(blocks.filter((b) => b.day === 1)).toHaveLength(1);
-    expect(leftover).toEqual([]);
-  });
-
-  it("yerleşemeyen ön blok sessizce düşmez, artakalana yazılır", () => {
-    const { blocks, leftover } = buildWeekPlan({
-      subjects: [],
-      days: [0],
-      busyByDay: { 0: [{ start: 480, end: 1440 }] },
-      window: { dayStart: 480, dayEnd: 1440 },
-      firstBlocksByDay: { 0: [{ title: "Üniversite dersleri", minutes: 60 }] },
-    });
-    expect(blocks).toEqual([]);
-    expect(leftover).toEqual([{ subjectId: null, type: "other", title: "Üniversite dersleri" }]);
-  });
-});
-
-import { FREE_CAP_OPTIONS, SCHOOL_CAP_OPTIONS } from "../src/lib/weekSuggest.js";
-
-describe("günlük üst sınır seçenekleri", () => {
-  it("ders olan günlerde en fazla 10 saat", () => {
-    expect(Math.max(...SCHOOL_CAP_OPTIONS)).toBe(600);
-  });
-  it("ders olmayan günlerde en fazla 14 saat", () => {
-    expect(Math.max(...FREE_CAP_OPTIONS)).toBe(840);
-    expect(FREE_CAP_OPTIONS).toEqual(expect.arrayContaining([...SCHOOL_CAP_OPTIONS, 660, 720, 780]));
-  });
-});
-
-import { keptStudyByDay } from "../src/lib/weekSuggest.js";
-
 describe("ders ders planlama", () => {
   const weekPlans = [
     { week: 1, day: 0, start: 900, end: 960, auto: true, subjectId: 3 },
@@ -442,27 +278,159 @@ describe("ders ders planlama", () => {
   it("busyByDayOf: replacing verilmezse eskisi gibi bütün önerilen bloklar boşalır", () => {
     expect(busyByDayOf({ week: 1, classes: [], plans: [], weekPlans })).toEqual({ 1: [{ start: 600, end: 660 }] });
   });
+});
 
-  it("keptStudyByDay: kalan derslerin önerilen süresini gün gün toplar (üniversite saati sayılmaz)", () => {
-    expect(keptStudyByDay({ week: 1, weekPlans, replacing: [3] })).toEqual({ 0: 60 });
-    expect(keptStudyByDay({ week: 1, weekPlans, replacing: [3, 9] })).toEqual({});
-  });
-
+describe("buildWeekPlan: günlük sınır yok, gece 12'yi geçen ertesi güne devam eder", () => {
   const window = { dayStart: 480, dayEnd: 1440 };
-  const fizik = { subjectId: 5, perDay: 1, minutes: 120, topics: [topic("Kuvvet", 1, 0)] };
+  const dersler = (n, minutes = 60) =>
+    Array.from({ length: n }, (_, i) => ({ subjectId: i + 1, perDay: 1, minutes, topics: [topic(`D${i + 1}`, 1, 0)] }));
+  const liste = (blocks) => blocks.map((b) => [b.day, b.title, b.start, b.end]);
 
-  it("buildWeekPlan: önceki dersin süresi günlük sınırdan düşülür, oturum sonraki güne kayar", () => {
-    const { blocks } = buildWeekPlan({ subjects: [fizik], days: [0, 1], busyByDay: {}, window, dailyMaxByDay: { 0: 180, 1: 180 }, usedByDay: { 0: 120 } });
-    expect(blocks.map((b) => b.day)).toEqual([1]);
+  it("istenen kadar oturum o güne yazılır: 16 saatlik pazartesi kesilmez, kaydırılmaz", () => {
+    const { blocks, leftover } = buildWeekPlan({ subjects: dersler(16), days: [0, 1], busyByDay: {}, window, gap: 0 });
+    expect(blocks).toHaveLength(16);
+    expect(blocks.every((b) => b.day === 0)).toBe(true);
+    expect(blocks.at(-1).end).toBe(1440);
+    expect(leftover).toEqual([]);
   });
 
-  it("checkWeekPlan: önceki dersle birlikte sınır aşılıyorsa toplam süreyi söyler", () => {
-    const { overloads } = checkWeekPlan({ subjects: [fizik], days: [0], busyByDay: {}, window, dailyMaxByDay: { 0: 180 }, usedByDay: { 0: 120 } });
-    expect(overloads).toEqual([{ day: 0, kind: "cap", needed: 240, cap: 180, excess: 60 }]);
+  it("gece 12'de biten günden taşan oturumlar ertesi gün 00:00'dan sırayla devam eder", () => {
+    const { blocks } = buildWeekPlan({ subjects: dersler(18), days: [0, 1], busyByDay: {}, window, gap: 0 });
+    expect(liste(blocks.filter((b) => b.day === 1))).toEqual([
+      [1, "Konu: D17", 0, 60],
+      [1, "Konu: D18", 60, 120],
+    ]);
   });
 
-  it("checkWeekPlan: yeni oturum düşmeyen gün sınırın üstünde olsa da sorun sayılmaz", () => {
-    const { overloads } = checkWeekPlan({ subjects: [], days: [0], busyByDay: {}, window, dailyMaxByDay: { 0: 60 }, usedByDay: { 0: 120 } });
-    expect(overloads).toEqual([]);
+  it("gece 12'ye denk gelen oturum bölünür: 23:00–24:00 ve ertesi gün 00:00–01:00 (devam)", () => {
+    const { blocks, leftover } = buildWeekPlan({
+      subjects: dersler(1, 120),
+      days: [0, 1],
+      busyByDay: { 0: [{ start: 480, end: 1380 }] },
+      window,
+      gap: 0,
+    });
+    expect(liste(blocks)).toEqual([
+      [0, "Konu: D1", 1380, 1440],
+      [1, "Konu: D1 (devam)", 0, 60],
+    ]);
+    expect(blocks[1].continued).toBe(true);
+    expect(blocks[1].topic).toBe("D1");
+    expect(leftover).toEqual([]);
+  });
+
+  it("ayarlardaki gün bitişi (23:00) planı kesmez, plan gece 12'ye kadar gider", () => {
+    const { blocks } = buildWeekPlan({
+      subjects: dersler(1),
+      days: [0],
+      busyByDay: { 0: [{ start: 480, end: 1380 }] },
+      window: { dayStart: 480, dayEnd: 1380 },
+      gap: 0,
+    });
+    expect(liste(blocks)).toEqual([[0, "Konu: D1", 1380, 1440]]);
+  });
+
+  it("ertesi gün okul olsa da devam gece saatlerine yazılır (dersler bitince başla kuralı yalnızca o günün oturumları için)", () => {
+    const classes = [{ day: 1, start: 540, end: 960 }];
+    const { blocks } = buildWeekPlan({
+      subjects: dersler(1, 120),
+      days: [0, 1],
+      busyByDay: { 0: [{ start: 480, end: 1380 }], ...busyByDayOf({ week: 1, classes, plans: [], weekPlans: [], afterClasses: true }) },
+      nightBusyByDay: { 0: [{ start: 480, end: 1380 }], ...busyByDayOf({ week: 1, classes, plans: [], weekPlans: [] }) },
+      window,
+      gap: 0,
+    });
+    expect(liste(blocks)[1]).toEqual([1, "Konu: D1 (devam)", 0, 60]);
+  });
+
+  it("gecede devam eden blok ertesi günün dersine denk gelmez", () => {
+    const { blocks } = buildWeekPlan({
+      subjects: dersler(1, 120),
+      days: [0, 1],
+      busyByDay: { 0: [{ start: 480, end: 1380 }], 1: [{ start: 30, end: 600 }] },
+      window,
+      gap: 0,
+    });
+    expect(liste(blocks)[1]).toEqual([1, "Konu: D1 (devam)", 600, 660]);
+  });
+
+  it("ertesi günün kendi oturumları gece devamından sonra, gün başında başlar", () => {
+    const { blocks } = buildWeekPlan({
+      subjects: [{ subjectId: 3, perDay: 1, minutes: 120, topics: [topic("A", 1, 1)] }],
+      days: [0, 1],
+      busyByDay: { 0: [{ start: 480, end: 1380 }] },
+      window,
+      gap: 15,
+    });
+    expect(liste(blocks)).toEqual([
+      [0, "Konu: A", 1395, 1440],
+      [1, "Konu: A (devam)", 0, 75],
+      [1, "Soru: A", 480, 600],
+    ]);
+  });
+
+  it("seçilmemiş ertesi güne de devam edilir", () => {
+    const { blocks } = buildWeekPlan({ subjects: dersler(1, 120), days: [0], busyByDay: { 0: [{ start: 480, end: 1380 }] }, window, gap: 0 });
+    expect(blocks.map((b) => b.day)).toEqual([0, 1]);
+  });
+
+  it("pazar gecesi haftanın son günü değilse pazartesiye geçer", () => {
+    const { blocks, leftover } = buildWeekPlan({
+      subjects: dersler(1, 120),
+      days: [6],
+      busyByDay: { 6: [{ start: 480, end: 1380 }] },
+      window,
+      gap: 0,
+      lastDay: 5,
+    });
+    expect(blocks.map((b) => b.day)).toEqual([0, 6]);
+    expect(leftover).toEqual([]);
+  });
+
+  it("haftanın son günü gece 12'yi geçemez: oturum yarım yazılmaz, artakalana düşer", () => {
+    const { blocks, leftover } = buildWeekPlan({
+      subjects: dersler(1, 120),
+      days: [5],
+      busyByDay: { 5: [{ start: 480, end: 1380 }] },
+      window,
+      gap: 0,
+      lastDay: 5,
+    });
+    expect(blocks).toEqual([]);
+    expect(leftover.map((l) => `${l.type}:${l.title}`)).toEqual(["konu:D1"]);
+  });
+
+  it("haftanın son gününde yerleşemeyen ön blok sessizce düşmez, artakalana yazılır", () => {
+    const { blocks, leftover } = buildWeekPlan({
+      subjects: [],
+      days: [5],
+      lastDay: 5,
+      busyByDay: { 5: [{ start: 480, end: 1440 }] },
+      window,
+      firstBlocksByDay: { 5: [{ title: "Üniversite dersleri", minutes: 60 }] },
+    });
+    expect(blocks).toEqual([]);
+    expect(leftover).toEqual([{ subjectId: null, type: "other", title: "Üniversite dersleri" }]);
+  });
+
+  it("yerine sığan ön blok ertesi geceye devam eder", () => {
+    const { blocks, leftover } = buildWeekPlan({
+      subjects: [],
+      days: [0],
+      busyByDay: { 0: [{ start: 480, end: 1440 }] },
+      window,
+      firstBlocksByDay: { 0: [{ title: "Üniversite dersleri", minutes: 60 }] },
+    });
+    expect(blocks.map((b) => [b.day, b.start, b.end])).toEqual([[1, 0, 60]]);
+    expect(leftover).toEqual([]);
+  });
+});
+
+describe("lastDayOfWeek: haftanın takvimdeki son günü", () => {
+  it("1–7 Kasım 2026'nın son günü cumartesi", () => {
+    expect(lastDayOfWeek("2026-11", 1)).toBe(5);
+  });
+  it("22–30 Kasım 2026'nın son günü pazartesi", () => {
+    expect(lastDayOfWeek("2026-11", 4)).toBe(0);
   });
 });
