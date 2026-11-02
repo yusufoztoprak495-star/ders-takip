@@ -16,7 +16,10 @@
 // Yerleştirme: gün gün, ders sırasıyla gidilir; her oturum günün ilk uygun boşluğuna konur. Dolu saatler
 // (ders programı, ortak bloklar, haftaya özel bloklar) ve oturumlar arasında `gap` dakikalık mola atlanır.
 // Bir oturum o güne sığmazsa o gün yapılmaz ve sırası bozulmadan sonraki güne kayar; haftaya hiç sığmayanlar
-// "leftover" olarak döner (sayfa kullanıcıya söyler).
+// "leftover" olarak döner.
+//
+// Kayma kullanıcının seçimini değiştirdiği için kendiliğinden kaydedilmez: pencere önce checkWeekPlan ile
+// sınırı aşan günleri sorar, hata gösterir; buildWeekPlan'ın kaydırılmış planı ancak kullanıcı isterse yazılır.
 import { dayIndexOfDate, freeWindows } from "./schedule.js";
 import { weekDays } from "./months.js";
 
@@ -192,6 +195,7 @@ export function scheduleDays({ subjects, days, placerFor = null }) {
 //  type: 'konu' | 'soru' | 'other' (ön blok)
 export function buildWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {} }) {
   const firsts = {};
+  const droppedFirsts = [];
   const { byDay, leftover } = scheduleDays({
     subjects,
     days,
@@ -200,6 +204,7 @@ export function buildWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT
       for (const f of firstBlocksByDay[day] ?? []) {
         const slot = placer.tryAdd(f.minutes, { counts: false });
         if (slot) (firsts[day] ??= []).push({ ...slot, title: f.title });
+        else droppedFirsts.push({ subjectId: null, type: "other", title: f.title });
       }
       return placer;
     },
@@ -221,7 +226,32 @@ export function buildWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT
     ];
     blocks.push(...list.sort((a, b) => a.start - b.start));
   }
-  return { blocks, leftover };
+  return { blocks, leftover: [...droppedFirsts, ...leftover] };
+}
+
+// Seçimlere göre plan olduğu gibi yapılabiliyor mu? Oturumlar kaydırılmadan, ait oldukları günlerde sayılır.
+// Girdiler buildWeekPlan ile aynı. Dönen:
+//  overloads: [{ day, kind: 'cap', needed, cap, excess }]  o güne düşen çalışma günlük sınırı aşıyor
+//             [{ day, kind: 'time', needed, excess }]      sınır yetiyor ama boş saatlere excess dakika sığmıyor
+//  leftover: seçilen gün sayısı konu/soru günlerine yetmediği için hiç yeri olmayan oturumlar
+export function checkWeekPlan({ subjects, days, busyByDay, window, gap = DEFAULT_GAP, dailyMaxByDay = {}, firstBlocksByDay = {} }) {
+  const { byDay, leftover } = scheduleDays({ subjects, days });
+  const overloads = [];
+  for (const day of days) {
+    const sessions = byDay[day] ?? [];
+    const needed = sessions.reduce((sum, s) => sum + s.minutes, 0);
+    const cap = dailyMaxByDay[day] ?? Infinity;
+    if (needed > cap) {
+      overloads.push({ day, kind: "cap", needed, cap, excess: needed - cap });
+      continue;
+    }
+    const placer = dayPlacer(busyByDay[day] ?? [], window, gap);
+    const excess = [...(firstBlocksByDay[day] ?? []), ...sessions]
+      .filter((s) => !placer.tryAdd(s.minutes))
+      .reduce((sum, s) => sum + s.minutes, 0);
+    if (excess > 0) overloads.push({ day, kind: "time", needed, excess });
+  }
+  return { overloads, leftover };
 }
 
 // Haftanın içinde kalan günlerin gün numaraları (0 = pazartesi), pazartesiden pazara sıralı.

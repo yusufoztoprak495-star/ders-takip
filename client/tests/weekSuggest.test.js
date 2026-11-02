@@ -301,3 +301,106 @@ describe("busyByDayOf: dolu saatler", () => {
     });
   });
 });
+
+import { checkWeekPlan } from "../src/lib/weekSuggest.js";
+
+describe("checkWeekPlan: plan seçimlere uyuyor mu", () => {
+  const window = { dayStart: 480, dayEnd: 1440 };
+  // Her ders pazartesi birer oturum alır: n ders × 60 dk
+  const lessons = (n) =>
+    Array.from({ length: n }, (_, i) => ({ subjectId: i + 1, perDay: 1, minutes: 60, topics: [topic(`D${i + 1}`, 1, 0)] }));
+
+  it("pazartesiye 9 saat düşer, sınır 8 saatse fazlalığı söyler (salı boş olsa bile)", () => {
+    const { overloads, leftover } = checkWeekPlan({
+      subjects: lessons(9),
+      days: [0, 1],
+      busyByDay: {},
+      window,
+      gap: 0,
+      dailyMaxByDay: { 0: 480, 1: 480 },
+    });
+    expect(overloads).toEqual([{ day: 0, kind: "cap", needed: 540, cap: 480, excess: 60 }]);
+    expect(leftover).toEqual([]);
+  });
+
+  it("sınıra tam oturan plan temizdir", () => {
+    const { overloads, leftover } = checkWeekPlan({
+      subjects: lessons(8),
+      days: [0],
+      busyByDay: {},
+      window,
+      gap: 0,
+      dailyMaxByDay: { 0: 480 },
+    });
+    expect(overloads).toEqual([]);
+    expect(leftover).toEqual([]);
+  });
+
+  it("sınır yetiyor ama boş saat yetmiyorsa sığmayan süreyi söyler", () => {
+    const { overloads } = checkWeekPlan({
+      subjects: lessons(3),
+      days: [0],
+      busyByDay: { 0: [{ start: 480, end: 1320 }] }, // 22:00'a kadar dolu
+      window,
+      gap: 0,
+      dailyMaxByDay: { 0: 480 },
+    });
+    expect(overloads).toEqual([{ day: 0, kind: "time", needed: 180, excess: 60 }]);
+  });
+
+  it("seçilen gün sayısı konu günlerine yetmiyorsa artakalanı söyler", () => {
+    const { leftover } = checkWeekPlan({
+      subjects: [{ subjectId: 3, perDay: 1, minutes: 60, topics: [topic("A", 2, 2)] }],
+      days: [0, 1],
+      busyByDay: {},
+      window,
+    });
+    expect(leftover.map((l) => `${l.type}:${l.title}`)).toEqual(["soru:A", "soru:A"]);
+  });
+
+  it("sığmayan ön blok (üniversite saati) da sorun sayılır", () => {
+    const { overloads } = checkWeekPlan({
+      subjects: [],
+      days: [0],
+      busyByDay: { 0: [{ start: 480, end: 1440 }] },
+      window,
+      firstBlocksByDay: { 0: [{ title: "Üniversite dersleri", minutes: 60 }] },
+    });
+    expect(overloads).toEqual([{ day: 0, kind: "time", needed: 0, excess: 60 }]);
+  });
+
+  it("sorun yoksa buildWeekPlan aynı günlere yazar, kaydırma olmaz", () => {
+    const input = { subjects: lessons(4), days: [0, 1], busyByDay: {}, window, gap: 15, dailyMaxByDay: { 0: 240, 1: 240 } };
+    expect(checkWeekPlan(input).overloads).toEqual([]);
+    expect(buildWeekPlan(input).blocks.every((b) => b.day === 0)).toBe(true);
+  });
+});
+
+describe("buildWeekPlan: fazlalığı dağıtma", () => {
+  it("9 saatlik pazartesi dağıtılınca 9. saat salıya geçer, sınır aşılmaz", () => {
+    const subjects = Array.from({ length: 9 }, (_, i) => ({ subjectId: i + 1, perDay: 1, minutes: 60, topics: [topic(`D${i + 1}`, 1, 0)] }));
+    const { blocks, leftover } = buildWeekPlan({
+      subjects,
+      days: [0, 1],
+      busyByDay: {},
+      window: { dayStart: 480, dayEnd: 1440 },
+      gap: 0,
+      dailyMaxByDay: { 0: 480, 1: 480 },
+    });
+    expect(blocks.filter((b) => b.day === 0)).toHaveLength(8);
+    expect(blocks.filter((b) => b.day === 1)).toHaveLength(1);
+    expect(leftover).toEqual([]);
+  });
+
+  it("yerleşemeyen ön blok sessizce düşmez, artakalana yazılır", () => {
+    const { blocks, leftover } = buildWeekPlan({
+      subjects: [],
+      days: [0],
+      busyByDay: { 0: [{ start: 480, end: 1440 }] },
+      window: { dayStart: 480, dayEnd: 1440 },
+      firstBlocksByDay: { 0: [{ title: "Üniversite dersleri", minutes: 60 }] },
+    });
+    expect(blocks).toEqual([]);
+    expect(leftover).toEqual([{ subjectId: null, type: "other", title: "Üniversite dersleri" }]);
+  });
+});
