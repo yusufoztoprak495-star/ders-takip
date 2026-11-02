@@ -181,9 +181,9 @@ describe("Haftalık program (/api/plans)", () => {
 });
 
 describe("Gün aralığı (/api/schedule)", () => {
-  it("varsayılan 08:00–23:00, değiştirilebilir ve doğrulanır", async () => {
+  it("varsayılan 08:00–24:00, değiştirilebilir ve doğrulanır", async () => {
     const { app } = makeTestApp();
-    expect((await request(app).get("/api/schedule")).body).toEqual({ dayStart: 480, dayEnd: 1380 });
+    expect((await request(app).get("/api/schedule")).body).toEqual({ dayStart: 480, dayEnd: 1440 });
     const ok = await request(app).put("/api/schedule").send({ dayStart: 420, dayEnd: 1410 });
     expect(ok.status).toBe(200);
     expect((await request(app).get("/api/schedule")).body).toEqual({ dayStart: 420, dayEnd: 1410 });

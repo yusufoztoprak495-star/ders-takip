@@ -135,6 +135,10 @@ describe("gridRange", () => {
     expect(gridRange([], { dayStart: 485, dayEnd: 1370 })).toEqual({ start: 480, end: 1380 });
   });
 
+  it("varsayılan gün aralığında ızgara 08:00'den 24:00'e kadar gider", () => {
+    expect(gridRange([], DEFAULT_DAY_WINDOW)).toEqual({ start: 480, end: 1440 });
+  });
+
   it("aralık dışına taşan blokları da kapsar", () => {
     const blocks = [{ start: 400, end: 430 }, { start: 1390, end: 1430 }];
     expect(gridRange(blocks, DEFAULT_DAY_WINDOW)).toEqual({ start: 360, end: 1440 });

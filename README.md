@@ -208,7 +208,7 @@ Proje önce Node.js + SQLite sunucusuyla yazıldı, sonra sunucusuz hâle getiri
 | `/api/classes` | Ders programı (seçili hedefin); bir dersi birden çok güne ekle / düzenle / sil. Aynı gün çakışan ders reddedilir |
 | `/api/plans`, `/api/plans/copy` | Haftalık programın blokları (çalışma, mola, diğer); ders saatine ya da başka bloğa denk gelen blok reddedilir. Bir günü başka günlere kopyalama |
 | `/api/month-plans`, `/api/month-plans/:id/done` | Aylık plan: ay + ders başına bitirilecek konular (ekle / düzenle / sil / bitti işareti). Aynı ayda aynı derse aynı konu iki kez eklenemez; bir ders ayda en fazla 60 konu alır |
-| `/api/schedule` | Gün aralığı (varsayılan 08:00–23:00): şerit ve ızgara bu saatlere göre çizilir |
+| `/api/schedule` | Gün aralığı (varsayılan 08:00–24:00): şerit ve ızgara bu saatlere göre çizilir |
 | `/api/today`, `/api/plans/:id/done` | Bugünün programı ve blokların o güne özel "yapıldı" işareti |
 | `/api/exams`, `/api/exams/:id/wrong-topics`, `/api/exams/wrong-topics` | Denemeler; denemede yanlış yapılan konular ve tüm denemelerden toplamı |
 | `/api/goals`, `/api/reviews`, `/api/topics/:id/done`, `/review`, `/note` | Sınav tarihi ve günlük hedef; konu bitirme, 1-3-7-30 tekrar, konu notu |

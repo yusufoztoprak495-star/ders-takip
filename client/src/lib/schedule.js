@@ -17,8 +17,8 @@ export const DAYS = [
 export const DAY_MINUTES = 1440;
 // Saatler 5 dakikalık adımlarla girilir (ızgarada düzgün hizalansın, 08:37 gibi yazım hataları olmasın)
 export const TIME_STEP = 5;
-// Kullanıcı ayarlamadıysa günün planlanan kısmı: 08:00–23:00
-export const DEFAULT_DAY_WINDOW = { dayStart: 480, dayEnd: 1380 };
+// Kullanıcı ayarlamadıysa günün planlanan kısmı: 08:00–24:00
+export const DEFAULT_DAY_WINDOW = { dayStart: 480, dayEnd: 1440 };
 
 // '08:30' -> 510. Geçersizse null (24:00 yalnızca gün sonu olarak geçerli)
 export function parseClock(text) {

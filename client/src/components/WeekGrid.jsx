@@ -83,6 +83,10 @@ export default function WeekGrid({ items, range, hourPx, days, narrow, todayDay,
               {String(m / 60).padStart(2, '0')}
             </span>
           ))}
+          {/* Izgaranın bittiği saat: her satırın etiketi üst çizgisinde olduğu için alta ayrıca yazılır */}
+          <span className="hours-end" style={{ top: `${hours.length * hourPx}px` }}>
+            {String(range.end / 60).padStart(2, '0')}
+          </span>
         </div>
         {days.map((day) => (
           // Boş alana tıklama fareyle hızlı ekleme içindir; klavyede "Blok ekle" düğmesi aynı işi yapar

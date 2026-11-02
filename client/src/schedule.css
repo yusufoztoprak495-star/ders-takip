@@ -493,6 +493,11 @@
   transform: translateY(2px);
 }
 
+/* Bitiş saati kartın dışına taşmasın diye alt çizginin üstünde durur */
+.gutter.hours span.hours-end {
+  transform: translateY(-100%);
+}
+
 /* Gün sütunu: saat başı ince çizgi; yarım saatte daha silik ikinci çizgi (::before) */
 .day-col {
   position: relative;
